@@ -4,6 +4,7 @@
 #define KERNEL_CS 0x08
 #define GATE_TRAP 0x8f
 #define GATE_INT  0x8e
+#define GATE_INT_USER 0xee
 
 struct idt_entry {
     uint16_t off_lo;
@@ -21,6 +22,7 @@ struct idt_ptr {
 } __attribute__((packed));
 
 extern uint64_t isr_stub_table[49];
+extern void isr128(void);
 
 static struct idt_entry idt[IDT_ENTRIES];
 
@@ -39,6 +41,7 @@ void idt_init(void)
 {
     for (int i = 0; i < 48; i++)
         idt_set((uint8_t)i, isr_stub_table[i], GATE_INT);
+    idt_set(128, (uint64_t)isr128, GATE_INT_USER);
     idt_set(255, isr_stub_table[48], GATE_INT);
 
     struct idt_ptr ptr = {

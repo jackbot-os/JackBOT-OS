@@ -22,6 +22,37 @@ static uint64_t *next_table(uint64_t *parent, uint64_t index)
     return table;
 }
 
+static uint64_t *next_table_u(uint64_t *parent, uint64_t index, int user)
+{
+    if (parent[index] & PTE_PRESENT) {
+        if (user)
+            parent[index] |= PTE_USER;
+        return (uint64_t *)(uintptr_t)(parent[index] & ADDR_MASK);
+    }
+    void *frame = pmm_alloc_page_below(IDENTITY_LIMIT);
+    uint64_t *table = (uint64_t *)frame;
+    for (int i = 0; i < 512; i++)
+        table[i] = 0;
+    parent[index] = (uint64_t)(uintptr_t)frame | PTE_PRESENT | PTE_WRITABLE
+                  | (user ? PTE_USER : 0);
+    return table;
+}
+
+void vmm_map_in(uint64_t p4phys, uint64_t virt, uint64_t phys, uint64_t flags)
+{
+    int user = (flags & PTE_USER) != 0;
+    uint64_t i4 = (virt >> 39) & 0x1ff;
+    uint64_t i3 = (virt >> 30) & 0x1ff;
+    uint64_t i2 = (virt >> 21) & 0x1ff;
+    uint64_t i1 = (virt >> 12) & 0x1ff;
+
+    uint64_t *p4 = (uint64_t *)(uintptr_t)p4phys;
+    uint64_t *p3 = next_table_u(p4, i4, user);
+    uint64_t *p2 = next_table_u(p3, i3, user);
+    uint64_t *p1 = next_table_u(p2, i2, user);
+    p1[i1] = (phys & ADDR_MASK) | flags;
+}
+
 void vmm_init(void)
 {
 }

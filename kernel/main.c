@@ -15,6 +15,8 @@
 #define TIMER_PROOF_TICKS 500
 
 void gdt_init(void);
+void tss_set_rsp0(uint64_t rsp0);
+thread_t *spawn_test_user(void);
 void pic_remap(void);
 void pic_mask_all(void);
 void pic_clear_mask(uint8_t irq);
@@ -96,19 +98,6 @@ static void mem_selftest(void)
     serial_putc('\n');
 }
 
-static void worker_thread(void *arg)
-{
-    const char *name = arg;
-    for (int i = 0; i < 3; i++) {
-        serial_puts(name);
-        serial_putc((char)('0' + i));
-        serial_putc(' ');
-        uint64_t start = timer_get_ticks();
-        while (timer_get_ticks() - start < 30)
-            ;
-    }
-}
-
 void kmain(uint64_t magic, uint64_t mb_info)
 {
     (void)magic;
@@ -142,10 +131,9 @@ void kmain(uint64_t magic, uint64_t mb_info)
     mem_selftest();
 
     sched_init();
-    static const char na[] = "A";
-    static const char nb[] = "B";
-    thread_create(worker_thread, (void *)na);
-    thread_create(worker_thread, (void *)nb);
+    thread_t *user = spawn_test_user();
+    tss_set_rsp0(user->kstack_top);
+    __asm__ volatile("mov %0, %%cr3" : : "r"(user->p4phys));
 
     int timer_reported = 0;
     uint64_t last_dot = 0;

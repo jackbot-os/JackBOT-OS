@@ -20,6 +20,10 @@ context_switch:
     pop rbx
     ret
 
+global user_enter
+user_enter:
+    iretq
+
 global thread_trampoline
 thread_trampoline:
     sti

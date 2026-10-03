@@ -77,8 +77,31 @@ static void dump_frame(struct trap_frame *f)
     serial_puts("\n");
 }
 
+static void syscall_dispatch(struct trap_frame *f)
+{
+    uint64_t num = f->rax;
+    switch (num) {
+    case 0:
+        serial_putc((char)f->rdi);
+        break;
+    case 1:
+        thread_yield();
+        break;
+    case 2:
+        thread_exit();
+        break;
+    default:
+        break;
+    }
+}
+
 void trap_dispatch(struct trap_frame *f)
 {
+    if (f->vector == 128) {
+        syscall_dispatch(f);
+        return;
+    }
+
     if (f->vector == 32) {
         timer_irq();
         pic_send_eoi(0);

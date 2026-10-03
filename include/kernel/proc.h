@@ -20,6 +20,8 @@ typedef struct thread {
     uint64_t rsp;
     uint64_t kstack;
     uint64_t kstack_top;
+    uint64_t p4phys;
+    int is_user;
     tstate_t state;
     struct thread *next;
     void *entry;
@@ -28,6 +30,7 @@ typedef struct thread {
 
 void sched_init(void);
 thread_t *thread_create(void (*entry)(void *), void *arg);
+thread_t *thread_create_user(uint64_t p4phys, uint64_t user_rip, uint64_t user_rsp);
 void thread_yield(void);
 void thread_exit(void);
 thread_t *current_thread(void);
