@@ -12,6 +12,7 @@ header_end:
 
 section .bss
 align 4096
+global p4_table
 p4_table:
     resb 4096
 p3_table:
@@ -41,7 +42,9 @@ global _start
 _start:
     cli
     mov esp, stack_top
+    push 0
     push eax
+    push 0
     push ebx
     call check_cpuid
     call check_long_mode

@@ -2,6 +2,10 @@
 #include <stddef.h>
 #include <kernel/serial.h>
 #include <kernel/apic.h>
+#include <kernel/pmm.h>
+#include <kernel/vmm.h>
+#include <kernel/heap.h>
+#include <kernel/multiboot2.h>
 
 #define VGA_MEM ((volatile uint16_t *)0xb8000)
 #define VGA_W 80
@@ -47,6 +51,50 @@ static void vga_puts(const char *s)
     }
 }
 
+static int check_pattern(void *p, size_t n, uint8_t seed)
+{
+    uint8_t *b = p;
+    for (size_t i = 0; i < n; i++)
+        b[i] = (uint8_t)(seed + i);
+    for (size_t i = 0; i < n; i++)
+        if (b[i] != (uint8_t)(seed + i))
+            return 0;
+    return 1;
+}
+
+static void mem_selftest(void)
+{
+    int ok = 1;
+    size_t sizes[] = {32, 4096, 100000};
+    void *blk[3];
+    for (int i = 0; i < 3; i++) {
+        blk[i] = kmalloc(sizes[i]);
+        if (!blk[i] ||
+            !check_pattern(blk[i], sizes[i], (uint8_t)(i * 7)))
+            ok = 0;
+    }
+
+    kfree(blk[1]);
+    void *again = kmalloc(4096);
+    if (!again || !check_pattern(again, 4096, 0x5a))
+        ok = 0;
+
+    void *grown = krealloc(blk[0], 500);
+    if (!grown || !check_pattern(grown, 500, 0x33))
+        ok = 0;
+
+    void *z = kcalloc(8, 64);
+    uint8_t *zb = z;
+    for (int i = 0; i < 512; i++)
+        if (zb[i])
+            ok = 0;
+
+    serial_puts(ok ? "HEAP SELFTEST OK\n" : "HEAP SELFTEST FAIL\n");
+    serial_puts("heap mapped=");
+    serial_puthex(heap_bytes());
+    serial_putc('\n');
+}
+
 void kmain(uint64_t magic, uint64_t mb_info)
 {
     (void)magic;
@@ -64,10 +112,20 @@ void kmain(uint64_t magic, uint64_t mb_info)
     timer_init();
     pic_mask_all();
     pic_clear_mask(0);
+
+    pmm_init(mb_info);
+    vmm_init();
+    heap_init();
+
     apic_init();
     __asm__ volatile("sti");
 
-    serial_puts("GDT/IDT/PIT initialized\n");
+    serial_puts("GDT/IDT/PIT/PM initialized\n");
+    serial_puts("mem total="); serial_puthex(pmm_total_bytes());
+    serial_puts(" free="); serial_puthex(pmm_free_bytes());
+    serial_putc('\n');
+
+    mem_selftest();
 
     int timer_reported = 0;
     uint64_t last_dot = 0;
