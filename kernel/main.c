@@ -1,34 +1,21 @@
 #include <stdint.h>
 #include <stddef.h>
+#include <kernel/serial.h>
+#include <kernel/apic.h>
 
 #define VGA_MEM ((volatile uint16_t *)0xb8000)
 #define VGA_W 80
 #define VGA_H 25
 #define VGA_ATTR 0x1f
+#define TIMER_PROOF_TICKS 500
 
-#define SERIAL_PORT 0x3f8
-
-static inline void outb(uint16_t port, uint8_t val)
-{
-    __asm__ volatile("outb %0, %1" : : "a"(val), "Nd"(port));
-}
-
-static void serial_init(void)
-{
-    outb(SERIAL_PORT + 1, 0x00);
-    outb(SERIAL_PORT + 3, 0x80);
-    outb(SERIAL_PORT + 0, 0x03);
-    outb(SERIAL_PORT + 1, 0x00);
-    outb(SERIAL_PORT + 3, 0x03);
-    outb(SERIAL_PORT + 2, 0xc7);
-    outb(SERIAL_PORT + 4, 0x0b);
-}
-
-static void serial_puts(const char *s)
-{
-    while (*s)
-        outb(SERIAL_PORT, (uint8_t)*s++);
-}
+void gdt_init(void);
+void pic_remap(void);
+void pic_mask_all(void);
+void pic_clear_mask(uint8_t irq);
+void idt_init(void);
+void timer_init(void);
+uint64_t timer_get_ticks(void);
 
 static void vga_clear(void)
 {
@@ -62,21 +49,40 @@ static void vga_puts(const char *s)
 
 void kmain(uint64_t magic, uint64_t mb_info)
 {
+    (void)magic;
     (void)mb_info;
 
     serial_init();
     vga_clear();
 
     vga_puts("JackBOT OS 0.5.0\n");
-    vga_puts("x86_64 long mode kernel alive\n");
-    if (magic == 0x36d76289)
-        vga_puts("multiboot2 handoff OK\n");
-    else
-        vga_puts("warning: unexpected boot magic\n");
+    serial_puts("JackBOT OS 0.5.0\n");
 
-    serial_puts("JackBOT OS 0.5.0 - serial console alive\n");
-    serial_puts("x86_64 long mode kernel alive\n");
+    gdt_init();
+    pic_remap();
+    idt_init();
+    timer_init();
+    pic_mask_all();
+    pic_clear_mask(0);
+    apic_init();
+    __asm__ volatile("sti");
 
-    for (;;)
+    serial_puts("GDT/IDT/PIT initialized\n");
+
+    int timer_reported = 0;
+    uint64_t last_dot = 0;
+    for (;;) {
         __asm__ volatile("hlt");
+        uint64_t t = timer_get_ticks();
+        if (t / 100 > last_dot) {
+            serial_putc('.');
+            last_dot = t / 100;
+        }
+        if (!timer_reported && t >= TIMER_PROOF_TICKS) {
+            serial_puts("\ntimer IRQ alive at tick ");
+            serial_puthex(t);
+            serial_putc('\n');
+            timer_reported = 1;
+        }
+    }
 }

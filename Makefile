@@ -1,5 +1,4 @@
 CC := gcc
-LD := ld
 NASM := nasm
 
 CFLAGS := -ffreestanding -m64 -mno-red-zone -mno-mmx -mno-sse -mno-sse2 \
@@ -8,7 +7,10 @@ NASMFLAGS := -f elf64
 LDFLAGS := -n -T arch/x86_64/linker.ld
 
 BUILD := build
-OBJS := $(BUILD)/boot.o $(BUILD)/main.o
+KERN_SRCS := main idt pic timer serial trap apic
+ARCH_ASM := boot gdt vectors
+OBJS := $(addprefix $(BUILD)/,$(addsuffix .o,$(KERN_SRCS))) \
+        $(addprefix $(BUILD)/,$(addsuffix .o,$(ARCH_ASM)))
 KERNEL := iso/boot/kernel
 ISO := $(BUILD)/JackBOT-0.5.0.iso
 
@@ -19,14 +21,14 @@ all: $(KERNEL)
 $(BUILD):
 	mkdir -p $(BUILD)
 
-$(BUILD)/boot.o: arch/x86_64/boot.asm | $(BUILD)
-	$(NASM) $(NASMFLAGS) $< -o $@
-
-$(BUILD)/main.o: kernel/main.c | $(BUILD)
+$(BUILD)/%.o: kernel/%.c | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+$(BUILD)/%.o: arch/x86_64/%.asm | $(BUILD)
+	$(NASM) $(NASMFLAGS) $< -o $@
+
 $(KERNEL): $(OBJS) arch/x86_64/linker.ld
-	$(LD) $(LDFLAGS) -o $@ $(OBJS)
+	ld $(LDFLAGS) -o $@ $(OBJS)
 
 iso: $(ISO)
 

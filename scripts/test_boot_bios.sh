@@ -8,7 +8,7 @@ make iso >/dev/null
 LOG="build/boot_bios.log"
 rm -f "$LOG"
 
-timeout 12 qemu-system-x86_64 \
+timeout -s KILL 20 qemu-system-x86_64 \
     -machine pc \
     -m 512 \
     -cdrom build/JackBOT-0.5.0.iso \
@@ -18,7 +18,7 @@ timeout 12 qemu-system-x86_64 \
 echo "=== serial log ==="
 cat "$LOG"
 
-if grep -q "serial console alive" "$LOG"; then
+if grep -q "timer IRQ alive" "$LOG"; then
     echo "BIOS BOOT TEST: PASS"
 else
     echo "BIOS BOOT TEST: FAIL"

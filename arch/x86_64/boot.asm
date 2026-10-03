@@ -18,6 +18,8 @@ p3_table:
     resb 4096
 p2_table:
     resb 4096
+p2_mmio:
+    resb 4096
 stack_bottom:
     resb 16384
 stack_top:
@@ -38,9 +40,9 @@ extern kmain
 global _start
 _start:
     cli
+    mov esp, stack_top
     push eax
     push ebx
-    mov esp, stack_top
     call check_cpuid
     call check_long_mode
     call set_up_page_tables
@@ -55,6 +57,9 @@ set_up_page_tables:
     mov eax, p2_table
     or eax, 0b11
     mov [p3_table], eax
+    mov eax, p2_mmio
+    or eax, 0b11
+    mov [p3_table + 3 * 8], eax
     mov ecx, 0
 .map_p2:
     mov eax, 0x200000
@@ -62,8 +67,13 @@ set_up_page_tables:
     or eax, 0b10000011
     mov [p2_table + ecx * 8], eax
     inc ecx
+
     cmp ecx, 512
     jl .map_p2
+    mov dword [p2_mmio + 502 * 8], 0xfec0009b
+    mov dword [p2_mmio + 502 * 8 + 4], 0
+    mov dword [p2_mmio + 503 * 8], 0xfee0009b
+    mov dword [p2_mmio + 503 * 8 + 4], 0
     ret
 
 enable_paging:

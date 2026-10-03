@@ -22,7 +22,7 @@ timeout -s KILL 30 qemu-system-x86_64 \
 echo "=== serial log ==="
 cat "$LOG"
 
-if grep -q "serial console alive" "$LOG"; then
+if grep -q "timer IRQ alive" "$LOG"; then
     echo "UEFI BOOT TEST: PASS"
 else
     echo "UEFI BOOT TEST: FAIL"
