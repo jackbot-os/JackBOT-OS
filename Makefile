@@ -7,7 +7,7 @@ NASMFLAGS := -f elf64
 LDFLAGS := -n -T arch/x86_64/linker.ld
 
 BUILD := build
-KERN_SRCS := main idt pic timer serial trap apic pmm vmm heap sched userproc
+KERN_SRCS := main idt pic timer serial trap apic pmm vmm heap sched userproc crash
 ARCH_ASM := boot gdt vectors switch
 OBJS := $(addprefix $(BUILD)/,$(addsuffix .o,$(KERN_SRCS))) \
         $(addprefix $(BUILD)/,$(addsuffix .o,$(ARCH_ASM)))
@@ -23,14 +23,21 @@ all: $(KERNEL)
 $(BUILD):
 	mkdir -p $(BUILD)
 
+CRASH_USER_BIN := $(BUILD)/ucrash.bin
+CRASH_USER_H := $(BUILD)/ucrash.h
+
 $(USER_H): user/ustest.asm | $(BUILD)
 	$(NASM) -f bin $< -o $(USER_BIN)
 	xxd -i -n ustest_bin $(USER_BIN) $@
 
+$(CRASH_USER_H): user/ucrash.asm | $(BUILD)
+	$(NASM) -f bin $< -o $(CRASH_USER_BIN)
+	xxd -i -n ucrash_bin $(CRASH_USER_BIN) $@
+
 $(BUILD)/%.o: kernel/%.c | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILD)/userproc.o: $(USER_H)
+$(BUILD)/userproc.o: $(USER_H) $(CRASH_USER_H)
 
 $(BUILD)/%.o: arch/x86_64/%.asm | $(BUILD)
 	$(NASM) $(NASMFLAGS) $< -o $@

@@ -83,6 +83,12 @@ thread_t *thread_create_user(uint64_t p4phys, uint64_t user_rip, uint64_t user_r
     t->id = i;
     t->is_user = 1;
     t->p4phys = p4phys;
+    t->cpu_ticks = 0;
+    t->mem_bytes = 0;
+    t->quota_mem_bytes = DEFAULT_QUOTA_MEM_BYTES;
+    t->quota_cpu_ticks = DEFAULT_QUOTA_CPU_TICKS;
+    t->last_alive_tick = 0;
+    t->kill_reason = 0;
     t->kstack = (uint64_t)kmalloc(KSTACK_SIZE);
     if (!t->kstack)
         return 0;
@@ -146,7 +152,50 @@ void thread_exit(void)
         __asm__ volatile("hlt");
 }
 
+thread_t *thread_by_id(uint64_t id)
+{
+    if (id < MAX_THREADS && threads[id].state != T_UNUSED)
+        return &threads[id];
+    return 0;
+}
+
+int thread_count_user(void)
+{
+    int n = 0;
+    for (int i = 1; i < MAX_THREADS; i++)
+        if (threads[i].is_user && threads[i].state != T_UNUSED
+            && threads[i].state != T_ZOMBIE)
+            n++;
+    return n;
+}
+
+void process_kill(thread_t *t, const char *reason)
+{
+    uint64_t flags;
+    __asm__ volatile("pushf; pop %0" : "=r"(flags));
+    __asm__ volatile("cli");
+
+    t->kill_reason = reason;
+    t->state = T_ZOMBIE;
+
+    if (t == current) {
+        thread_t *next = pick_next();
+        if (next) {
+            next->state = T_RUNNING;
+            current = next;
+            context_switch(&t->rsp, &next->rsp);
+        } else {
+            __asm__ volatile("cli");
+            for (;;)
+                __asm__ volatile("hlt");
+        }
+    }
+    __asm__ volatile("push %0; popf" : : "r"(flags));
+}
+
 void sched_tick(void)
 {
+    if (current)
+        current->cpu_ticks++;
     thread_yield();
 }

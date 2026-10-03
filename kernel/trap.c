@@ -2,6 +2,7 @@
 #include <kernel/serial.h>
 #include <kernel/apic.h>
 #include <kernel/proc.h>
+#include <kernel/crash.h>
 
 void timer_irq(void);
 void pic_send_eoi(uint8_t irq);
@@ -118,6 +119,12 @@ void trap_dispatch(struct trap_frame *f)
 
     if (f->vector == 255)
         return;
+
+    if (f->vector < 32 && (f->cs & 3) == 3) {
+        crash_log_frame(f, "user exception");
+        process_kill(current_thread(), "user exception");
+        return;
+    }
 
     dump_frame(f);
     serial_puts("halting kernel\n");

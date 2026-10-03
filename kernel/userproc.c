@@ -4,6 +4,7 @@
 #include <kernel/vmm.h>
 #include <kernel/proc.h>
 #include "../build/ustest.h"
+#include "../build/ucrash.h"
 
 #define USER_BASE 0x8000000000ull
 #define USER_STACK_VADDR (USER_BASE + 0x100000)
@@ -18,7 +19,7 @@ static void zero_frame(void *frame)
         p[i] = 0;
 }
 
-thread_t *spawn_test_user(void)
+static thread_t *spawn_from(const uint8_t *code, uint64_t len)
 {
     void *p4f = pmm_alloc_page_below(0x40000000);
     uint64_t *p4 = p4f;
@@ -26,7 +27,6 @@ thread_t *spawn_test_user(void)
         p4[i] = p4_table[i];
     uint64_t p4phys = (uint64_t)(uintptr_t)p4f;
 
-    uint64_t len = ustest_bin_len;
     uint64_t pages = (len + 4095) / 4096;
     for (uint64_t p = 0; p < pages; p++) {
         void *frame = pmm_alloc_page_below(0x40000000);
@@ -36,7 +36,7 @@ thread_t *spawn_test_user(void)
         if (n > 4096)
             n = 4096;
         for (uint64_t k = 0; k < n; k++)
-            dst[k] = ustest_bin[off + k];
+            dst[k] = code[off + k];
         for (uint64_t k = n; k < 4096; k++)
             dst[k] = 0;
         vmm_map_in(p4phys, USER_BASE + off, (uint64_t)(uintptr_t)frame,
@@ -48,5 +48,23 @@ thread_t *spawn_test_user(void)
     vmm_map_in(p4phys, USER_STACK_VADDR, (uint64_t)(uintptr_t)sf,
                PTE_PRESENT | PTE_WRITABLE | PTE_USER);
 
-    return thread_create_user(p4phys, USER_BASE, USER_STACK_TOP);
+    thread_t *t = thread_create_user(p4phys, USER_BASE, USER_STACK_TOP);
+    if (t) {
+        t->mem_bytes = pages * 4096 + 4096;
+        if (t->quota_mem_bytes && t->mem_bytes > t->quota_mem_bytes) {
+            process_kill(t, "memory quota exceeded at spawn");
+            return 0;
+        }
+    }
+    return t;
+}
+
+thread_t *spawn_test_user(void)
+{
+    return spawn_from(ustest_bin, ustest_bin_len);
+}
+
+thread_t *spawn_crash_user(void)
+{
+    return spawn_from(ucrash_bin, ucrash_bin_len);
 }

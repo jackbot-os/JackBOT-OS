@@ -7,6 +7,7 @@
 #include <kernel/heap.h>
 #include <kernel/multiboot2.h>
 #include <kernel/proc.h>
+#include <kernel/crash.h>
 
 #define VGA_MEM ((volatile uint16_t *)0xb8000)
 #define VGA_W 80
@@ -17,6 +18,7 @@
 void gdt_init(void);
 void tss_set_rsp0(uint64_t rsp0);
 thread_t *spawn_test_user(void);
+thread_t *spawn_crash_user(void);
 void pic_remap(void);
 void pic_mask_all(void);
 void pic_clear_mask(uint8_t irq);
@@ -131,6 +133,7 @@ void kmain(uint64_t magic, uint64_t mb_info)
     mem_selftest();
 
     sched_init();
+    watchdog_init();
     thread_t *user = spawn_test_user();
     tss_set_rsp0(user->kstack_top);
     __asm__ volatile("mov %0, %%cr3" : : "r"(user->p4phys));
