@@ -1,6 +1,7 @@
 #include <kernel/trap.h>
 #include <kernel/serial.h>
 #include <kernel/apic.h>
+#include <kernel/proc.h>
 
 void timer_irq(void);
 void pic_send_eoi(uint8_t irq);
@@ -78,9 +79,15 @@ static void dump_frame(struct trap_frame *f)
 
 void trap_dispatch(struct trap_frame *f)
 {
-    if (f->vector >= 32 && f->vector < 48) {
-        if (f->vector == 32)
-            timer_irq();
+    if (f->vector == 32) {
+        timer_irq();
+        pic_send_eoi(0);
+        apic_eoi();
+        sched_tick();
+        return;
+    }
+
+    if (f->vector >= 33 && f->vector < 48) {
         pic_send_eoi((uint8_t)(f->vector - 32));
         apic_eoi();
         return;

@@ -7,8 +7,8 @@ NASMFLAGS := -f elf64
 LDFLAGS := -n -T arch/x86_64/linker.ld
 
 BUILD := build
-KERN_SRCS := main idt pic timer serial trap apic pmm vmm heap
-ARCH_ASM := boot gdt vectors
+KERN_SRCS := main idt pic timer serial trap apic pmm vmm heap sched
+ARCH_ASM := boot gdt vectors switch
 OBJS := $(addprefix $(BUILD)/,$(addsuffix .o,$(KERN_SRCS))) \
         $(addprefix $(BUILD)/,$(addsuffix .o,$(ARCH_ASM)))
 KERNEL := iso/boot/kernel

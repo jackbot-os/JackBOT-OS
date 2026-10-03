@@ -6,6 +6,7 @@
 #include <kernel/vmm.h>
 #include <kernel/heap.h>
 #include <kernel/multiboot2.h>
+#include <kernel/proc.h>
 
 #define VGA_MEM ((volatile uint16_t *)0xb8000)
 #define VGA_W 80
@@ -95,6 +96,19 @@ static void mem_selftest(void)
     serial_putc('\n');
 }
 
+static void worker_thread(void *arg)
+{
+    const char *name = arg;
+    for (int i = 0; i < 3; i++) {
+        serial_puts(name);
+        serial_putc((char)('0' + i));
+        serial_putc(' ');
+        uint64_t start = timer_get_ticks();
+        while (timer_get_ticks() - start < 30)
+            ;
+    }
+}
+
 void kmain(uint64_t magic, uint64_t mb_info)
 {
     (void)magic;
@@ -127,9 +141,16 @@ void kmain(uint64_t magic, uint64_t mb_info)
 
     mem_selftest();
 
+    sched_init();
+    static const char na[] = "A";
+    static const char nb[] = "B";
+    thread_create(worker_thread, (void *)na);
+    thread_create(worker_thread, (void *)nb);
+
     int timer_reported = 0;
     uint64_t last_dot = 0;
     for (;;) {
+        thread_yield();
         __asm__ volatile("hlt");
         uint64_t t = timer_get_ticks();
         if (t / 100 > last_dot) {
