@@ -3,6 +3,7 @@
 #include <kernel/fat32.h>
 #include <kernel/ata.h>
 #include <kernel/heap.h>
+#include <kernel/protect.h>
 #include <kernel/serial.h>
 
 #define EOC 0x0FFFFFF8
@@ -253,9 +254,22 @@ int fat_exists(const char *name83)
     return dir_find(root_cluster, nm, 0, &dp) == 0 ? 1 : 0;
 }
 
+int fat_file_size(const char *name83, uint32_t *size)
+{
+    uint8_t nm[11];
+    dpos_t dp;
+    fmt_name(name83, nm);
+    if (dir_find(root_cluster, nm, 0, &dp) < 0)
+        return -1;
+    *size = rd32(cbuf + dp.off + 28);
+    return 0;
+}
+
 int fat_write_file(const char *name83, const void *data, uint32_t len)
 {
     if (!is_mounted)
+        return -1;
+    if (protect_check(name83, ACT_WRITE) != 0)
         return -1;
     uint8_t nm[11];
     dpos_t dp;
@@ -347,6 +361,8 @@ int fat_delete(const char *name83)
 {
     if (!is_mounted)
         return -1;
+    if (protect_check(name83, ACT_DELETE) != 0)
+        return -1;
     uint8_t nm[11];
     dpos_t dp;
     fmt_name(name83, nm);
@@ -359,6 +375,49 @@ int fat_delete(const char *name83)
     free_chain(fc);
     e[0] = 0xE5;
     write_cluster(dp.cluster, cbuf);
+    return 0;
+}
+
+int fat_delete_many(const char **names83, int n)
+{
+    uint8_t fms[4][11];
+    if (n > 4)
+        n = 4;
+    for (int i = 0; i < n; i++)
+        fmt_name(names83[i], fms[i]);
+
+    uint32_t csize = (uint32_t)spc * bps;
+    uint32_t c = root_cluster;
+    while (c >= 2 && c < EOC) {
+        if (read_cluster(c, cbuf) < 0)
+            return -1;
+        int modified = 0;
+        int ended = 0;
+        for (uint32_t o = 0; o < csize; o += 32) {
+            uint8_t *e = cbuf + o;
+            if (e[0] == 0x00) {
+                ended = 1;
+                break;
+            }
+            if (e[0] == 0xE5 || (e[11] & 0x0F))
+                continue;
+            for (int k = 0; k < n; k++) {
+                if (!mymemcmp(e, fms[k], 11)) {
+                    uint32_t fc = (uint32_t)rd16(e + 26) |
+                                  ((uint32_t)rd16(e + 20) << 16);
+                    free_chain(fc);
+                    e[0] = 0xE5;
+                    modified = 1;
+                    break;
+                }
+            }
+        }
+        if (modified)
+            write_cluster(c, cbuf);
+        if (ended)
+            break;
+        c = fat_get(c);
+    }
     return 0;
 }
 
@@ -402,6 +461,11 @@ int fat_mkdir(const char *name83)
     wr16(e + 26, (uint16_t)nc);
     write_cluster(dp.cluster, cbuf);
     return 0;
+}
+
+uint32_t fat_cluster_size(void)
+{
+    return is_mounted ? (uint32_t)spc * bps : 0;
 }
 
 uint32_t fat_total_bytes(void)

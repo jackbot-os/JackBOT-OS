@@ -12,6 +12,7 @@
 #include <kernel/ata.h>
 #include <kernel/fat32.h>
 #include <kernel/installer.h>
+#include <kernel/protect.h>
 #include <kernel/ps2.h>
 #include <kernel/gfxtext.h>
 #include <kernel/desktop.h>
@@ -186,10 +187,6 @@ void kmain(uint64_t magic, uint64_t mb_info)
                 serial_puts("[FAT] delete ok\n");
             serial_puts(fat_exists("TEST.TXT") ? "[FAT] still exists\n"
                                                : "[FAT] gone\n");
-            serial_puts("[FAT] free=");
-            serial_puthex(fat_free_bytes());
-            serial_putc('\n');
-
             if (installer_run() == 0) {
                 int had_stg = fat_exists("INSTALL.STG");
                 postinstall_cleanup();
@@ -200,6 +197,31 @@ void kmain(uint64_t magic, uint64_t mb_info)
                 serial_puts(ok ? "[INST] cleanup test PASS\n"
                                : "[INST] cleanup test FAIL\n");
             }
+
+            protect_set_actor(ACTOR_USER);
+            int user_del_blocked =
+                (fat_delete("SYSTEM.IMG") != 0) && fat_exists("SYSTEM.IMG");
+            int user_write_blocked =
+                fat_write_file("SYSTEM.IMG", "x", 1) != 0;
+
+            protect_set_actor(ACTOR_JBOT);
+            int jbot_del_blocked =
+                (fat_delete("SYSTEM.IMG") != 0) && fat_exists("SYSTEM.IMG");
+            static uint8_t jrb[128];
+            uint32_t jrl = 0;
+            int jbot_read_ok =
+                fat_read_file("SYSTEM.IMG", jrb, sizeof jrb, &jrl) == 0 &&
+                jrl > 0;
+
+            protect_set_actor(ACTOR_USER);
+            int noncore_ok =
+                fat_write_file("USER.TXT", "hi", 2) == 0 &&
+                fat_delete("USER.TXT") == 0;
+
+            int pok = user_del_blocked && user_write_blocked &&
+                      jbot_del_blocked && jbot_read_ok && noncore_ok;
+            serial_puts(pok ? "[PROT] protection test PASS\n"
+                            : "[PROT] protection test FAIL\n");
         }
     }
 

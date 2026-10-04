@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <kernel/installer.h>
 #include <kernel/fat32.h>
+#include <kernel/protect.h>
 #include <kernel/serial.h>
 
 static uint32_t slen(const char *s)
@@ -20,13 +21,18 @@ int installer_run(void)
     if (!fat_mounted())
         return -1;
 
+    int old = protect_set_actor(ACTOR_ADMIN);
+    int rc = 0;
     if (fat_write_file("SYSTEM.IMG", sys_blob, slen(sys_blob)) < 0)
-        return -1;
+        rc = -1;
     if (fat_write_file("INSTALL.STG", stg_blob, slen(stg_blob)) < 0)
-        return -1;
+        rc = -1;
     if (fat_write_file("FIRSTBOOT", "1", 1) < 0)
-        return -1;
+        rc = -1;
+    protect_set_actor(old);
 
+    if (rc < 0)
+        return -1;
     serial_puts("[INST] staged system + installer payload\n");
     return 0;
 }
@@ -38,17 +44,24 @@ int postinstall_cleanup(void)
     if (!fat_exists("FIRSTBOOT"))
         return 0;
 
-    uint32_t before = fat_free_bytes();
+    uint32_t csize = fat_cluster_size();
+    uint32_t freed = 0;
 
-    if (fat_exists("INSTALL.STG"))
-        fat_delete("INSTALL.STG");
-    fat_delete("FIRSTBOOT");
+    if (fat_exists("INSTALL.STG")) {
+        uint32_t s = 0;
+        fat_file_size("INSTALL.STG", &s);
+        freed += ((s + csize - 1) / csize) * csize;
+    }
+    if (fat_exists("FIRSTBOOT"))
+        freed += csize;
 
-    uint32_t after = fat_free_bytes();
+    const char *targets[2] = {"INSTALL.STG", "FIRSTBOOT"};
+    fat_delete_many(targets, 2);
+
     int sys_ok = fat_exists("SYSTEM.IMG");
 
     serial_puts("[INST] post-install cleanup done, freed=");
-    serial_puthex(after - before);
+    serial_puthex(freed);
     serial_putc('\n');
     serial_puts(sys_ok ? "[INST] system image retained\n"
                        : "[INST] system image missing\n");
