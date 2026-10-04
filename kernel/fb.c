@@ -79,6 +79,12 @@ static void vbe_write(uint16_t index, uint16_t value)
     outw(VBE_DISPI_IOPORT_DATA, value);
 }
 
+static uint16_t vbe_read(uint16_t index)
+{
+    outw(VBE_DISPI_IOPORT_INDEX, index);
+    return inw(VBE_DISPI_IOPORT_DATA);
+}
+
 static uint32_t mask_val(uint8_t size)
 {
     if (size == 0)
@@ -121,16 +127,23 @@ int fb_bochs_init(uint32_t width, uint32_t height)
     vbe_write(VBE_DISPI_INDEX_ENABLE,
               VBE_DISPI_ENABLED | VBE_DISPI_LFB_ENABLED);
 
-    g_fb.width = width;
-    g_fb.height = height;
-    g_fb.pitch = width * 4;
+    uint32_t aw = vbe_read(VBE_DISPI_INDEX_XRES);
+    uint32_t ah = vbe_read(VBE_DISPI_INDEX_YRES);
+    if (aw == 0)
+        aw = width;
+    if (ah == 0)
+        ah = height;
+
+    g_fb.width = aw;
+    g_fb.height = ah;
+    g_fb.pitch = aw * 4;
     g_fb.bpp = 32;
     g_fb.bytes_pp = 4;
     g_fb.rpos = 16; g_fb.rsize = 8;
     g_fb.gpos = 8;  g_fb.gsize = 8;
     g_fb.bpos = 0;  g_fb.bsize = 8;
 
-    uint64_t size = (uint64_t)g_fb.pitch * height;
+    uint64_t size = (uint64_t)g_fb.pitch * ah;
     uint64_t pages = (size + 4095) / 4096;
     for (uint64_t p = 0; p < pages; p++)
         vmm_map_page(FB_VBASE + p * 4096, fbphys + p * 4096,
@@ -138,12 +151,12 @@ int fb_bochs_init(uint32_t width, uint32_t height)
     g_fb.addr = (uint8_t *)FB_VBASE;
     g_fb.present = 1;
 
-    serial_puts("bochs framebuffer ");
+    serial_puts("bochs framebuffer want=");
     serial_puthex(width); serial_putc('x'); serial_puthex(height);
-    serial_puts(" bar="); serial_puthex(bar);
+    serial_puts(" got=");
+    serial_puthex(aw); serial_putc('x'); serial_puthex(ah);
     serial_puts(" fbphys="); serial_puthex(fbphys);
     serial_putc('\n');
-    (void)inw;
     return 1;
 }
 
@@ -212,4 +225,16 @@ void fb_blit(int dx, int dy, int w, int h, const uint32_t *pixels)
     for (int j = 0; j < h; j++)
         for (int i = 0; i < w; i++)
             fb_putpixel(dx + i, dy + j, pixels[j * w + i]);
+}
+
+void fb_blit_full(const uint32_t *pixels)
+{
+    if (!g_fb.present || g_fb.bytes_pp != 4)
+        return;
+    for (uint32_t y = 0; y < g_fb.height; y++) {
+        uint32_t *dst = (uint32_t *)(g_fb.addr + (uint64_t)y * g_fb.pitch);
+        const uint32_t *src = pixels + (uint64_t)y * g_fb.width;
+        for (uint32_t x = 0; x < g_fb.width; x++)
+            dst[x] = src[x];
+    }
 }

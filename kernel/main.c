@@ -13,6 +13,8 @@
 #include <kernel/fat32.h>
 #include <kernel/installer.h>
 #include <kernel/protect.h>
+#include <kernel/i18n.h>
+#include "i18n_data.h"
 #include <kernel/ps2.h>
 #include <kernel/gfxtext.h>
 #include <kernel/desktop.h>
@@ -225,7 +227,7 @@ void kmain(uint64_t magic, uint64_t mb_info)
         }
     }
 
-    fb_bochs_init(1024, 768);
+    fb_bochs_init(1920, 1080);
     if (fb_present()) {
         fb_clear(fb_rgb(18, 22, 34));
         fb_fill_rect(0, 0, (int)fb_width() / 3, (int)fb_height(),
@@ -248,6 +250,23 @@ void kmain(uint64_t magic, uint64_t mb_info)
     tss_set_rsp0(user->kstack_top);
 
     desktop_init();
+
+    {
+        i18n_init();
+        const char *en = tr(STR_CLOSE);
+        i18n_set_code("zh-CN");
+        const char *zh = tr(STR_CLOSE);
+        int changed = (en != zh) && ((unsigned char)zh[0] >= 0x80);
+        i18n_set_lang(0);
+        int langok = i18n_count() == 7 && changed;
+        int fontok = gfx_font_count() == 3;
+        int f0 = gfx_get_font();
+        gfx_set_font(2);
+        fontok = fontok && gfx_get_font() == 2;
+        gfx_set_font(f0);
+        serial_puts((langok && fontok) ? "[I18N] test PASS\n"
+                                      : "[I18N] test FAIL\n");
+    }
 
     __asm__ volatile("mov %0, %%cr3" : : "r"(user->p4phys));
 

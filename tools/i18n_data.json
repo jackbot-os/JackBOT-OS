@@ -1,0 +1,136 @@
+{
+  "keys": [
+    "wallpaper",
+    "personalization",
+    "close",
+    "carousel_on",
+    "carousel_off",
+    "click_hint",
+    "settings",
+    "language",
+    "font",
+    "display",
+    "system"
+  ],
+  "langs": [
+    {
+      "code": "en",
+      "name": "English",
+      "strings": {
+        "wallpaper": "Wallpaper",
+        "personalization": "Personalization - Wallpaper",
+        "close": "Close",
+        "carousel_on": "Carousel: ON",
+        "carousel_off": "Carousel: OFF",
+        "click_hint": "Click a thumbnail to set.",
+        "settings": "Settings",
+        "language": "Language",
+        "font": "Font",
+        "display": "Display",
+        "system": "System"
+      }
+    },
+    {
+      "code": "zh-CN",
+      "name": "简体中文",
+      "strings": {
+        "wallpaper": "壁纸",
+        "personalization": "个性化 - 壁纸",
+        "close": "关闭",
+        "carousel_on": "轮播：开",
+        "carousel_off": "轮播：关",
+        "click_hint": "点击缩略图以设置。",
+        "settings": "设置",
+        "language": "语言",
+        "font": "字体",
+        "display": "显示",
+        "system": "系统"
+      }
+    },
+    {
+      "code": "zh-TW",
+      "name": "繁體中文",
+      "strings": {
+        "wallpaper": "桌布",
+        "personalization": "個人化 - 桌布",
+        "close": "關閉",
+        "carousel_on": "輪播：開",
+        "carousel_off": "輪播：關",
+        "click_hint": "點擊縮圖以設定。",
+        "settings": "設定",
+        "language": "語言",
+        "font": "字體",
+        "display": "顯示",
+        "system": "系統"
+      }
+    },
+    {
+      "code": "ja",
+      "name": "日本語",
+      "strings": {
+        "wallpaper": "壁紙",
+        "personalization": "個人設定 - 壁紙",
+        "close": "閉じる",
+        "carousel_on": "スライド：オン",
+        "carousel_off": "スライド：オフ",
+        "click_hint": "サムネイルをクリック。",
+        "settings": "設定",
+        "language": "言語",
+        "font": "フォント",
+        "display": "表示",
+        "system": "システム"
+      }
+    },
+    {
+      "code": "es",
+      "name": "Español",
+      "strings": {
+        "wallpaper": "Fondo de pantalla",
+        "personalization": "Personalización - Fondo",
+        "close": "Cerrar",
+        "carousel_on": "Carrusel: ON",
+        "carousel_off": "Carrusel: OFF",
+        "click_hint": "Haz clic en una miniatura.",
+        "settings": "Ajustes",
+        "language": "Idioma",
+        "font": "Fuente",
+        "display": "Pantalla",
+        "system": "Sistema"
+      }
+    },
+    {
+      "code": "fr",
+      "name": "Français",
+      "strings": {
+        "wallpaper": "Fond d'écran",
+        "personalization": "Personnalisation - Fond",
+        "close": "Fermer",
+        "carousel_on": "Carrousel: ON",
+        "carousel_off": "Carrousel: OFF",
+        "click_hint": "Cliquez sur une miniature.",
+        "settings": "Paramètres",
+        "language": "Langue",
+        "font": "Police",
+        "display": "Affichage",
+        "system": "Système"
+      }
+    },
+    {
+      "code": "de",
+      "name": "Deutsch",
+      "strings": {
+        "wallpaper": "Hintergrund",
+        "personalization": "Personalisierung - Hintergrund",
+        "close": "Schließen",
+        "carousel_on": "Diashow: AN",
+        "carousel_off": "Diashow: AUS",
+        "click_hint": "Auf Miniatur klicken.",
+        "settings": "Einstellungen",
+        "language": "Sprache",
+        "font": "Schriftart",
+        "display": "Anzeige",
+        "system": "System"
+      }
+    }
+  ]
+}
