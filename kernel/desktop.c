@@ -6,6 +6,7 @@
 #include <kernel/i18n.h>
 #include "i18n_data.h"
 #include <kernel/heap.h>
+#include <kernel/config.h>
 #include <kernel/desktop.h>
 
 #define N_WP 6
@@ -269,6 +270,8 @@ static void draw_settings(int mx, int my, int clicked)
         if (button2(x, y, 300 * S, rh, i18n_name(i), i == i18n_lang(),
                     mx, my, clicked)) {
             i18n_set_lang(i);
+            config_set_language(i);
+            config_save();
             win_painted = 0;
             need_redraw = 1;
         }
@@ -278,6 +281,8 @@ static void draw_settings(int mx, int my, int clicked)
         if (button2(x, y, 280 * S, rh, gfx_font_name(i),
                     i == gfx_get_font(), mx, my, clicked)) {
             gfx_set_font(i);
+            config_set_font(i);
+            config_save();
             win_painted = 0;
             need_redraw = 1;
         }
@@ -341,6 +346,8 @@ void desktop_init(void)
     gfx_init_fonts();
     gfx_set_scale(S);
     i18n_init();
+    i18n_set_lang(config_language());
+    gfx_set_font(config_font());
     wp_index = 0;
     carousel = 0;
     win_id = 0;

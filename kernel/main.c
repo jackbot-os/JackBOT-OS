@@ -14,6 +14,7 @@
 #include <kernel/installer.h>
 #include <kernel/protect.h>
 #include <kernel/persist.h>
+#include <kernel/config.h>
 #include <kernel/i18n.h>
 #include "i18n_data.h"
 #include <kernel/ps2.h>
@@ -229,6 +230,8 @@ void kmain(uint64_t magic, uint64_t mb_info)
     }
 
     persist_self_test();
+    config_init();
+    config_self_test();
 
     fb_bochs_init(1920, 1080);
     if (fb_present())

@@ -7,7 +7,7 @@ NASMFLAGS := -f elf64
 LDFLAGS := -n -T arch/x86_64/linker.ld
 
 BUILD := build
-KERN_SRCS := main idt pic timer serial trap apic pmm vmm heap sched userproc crash fb ata fat32 installer protect persist i18n gfxtext ps2 desktop
+KERN_SRCS := main idt pic timer serial trap apic pmm vmm heap sched userproc crash fb ata fat32 installer protect persist config i18n gfxtext ps2 desktop
 ARCH_ASM := boot gdt vectors switch
 OBJS := $(addprefix $(BUILD)/,$(addsuffix .o,$(KERN_SRCS))) \
         $(addprefix $(BUILD)/,$(addsuffix .o,$(ARCH_ASM)))
@@ -74,9 +74,10 @@ iso: $(ISO) $(DISK)
 $(ISO): $(KERNEL) iso/boot/grub/grub.cfg
 	grub-mkrescue -o $@ iso
 
-$(DISK): | $(BUILD)
+$(DISK): assets/logo.png | $(BUILD)
 	dd if=/dev/zero of=$@ bs=1M count=64
 	mkfs.fat -F32 $@ >/dev/null
+	mcopy -i $@ assets/logo.png ::LOGO.PNG
 
 clean:
 	rm -f $(BUILD)/*.o $(KERNEL) $(BUILD)/*.iso $(DISK)
