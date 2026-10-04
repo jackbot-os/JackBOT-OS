@@ -9,6 +9,9 @@
 #include <kernel/proc.h>
 #include <kernel/crash.h>
 #include <kernel/fb.h>
+#include <kernel/ata.h>
+#include <kernel/fat32.h>
+#include <kernel/installer.h>
 #include <kernel/ps2.h>
 #include <kernel/gfxtext.h>
 #include <kernel/desktop.h>
@@ -135,6 +138,70 @@ void kmain(uint64_t magic, uint64_t mb_info)
     serial_putc('\n');
 
     mem_selftest();
+
+    ata_init();
+    static uint8_t ab[512];
+    if (ata_present() && ata_read(0, 1, ab) == 0) {
+        serial_puts("[ATA] oem=");
+        for (int i = 3; i < 11; i++) {
+            char c = (char)ab[i];
+            serial_putc((c >= 32 && c < 127) ? c : '.');
+        }
+        serial_putc('\n');
+
+        static uint8_t wb[512], rb2[512];
+        uint64_t tlba = ata_sector_count() - 2;
+        for (int i = 0; i < 512; i++)
+            wb[i] = (uint8_t)(i * 31 + 7);
+        int wok = 1;
+        if (ata_write(tlba, 1, wb) != 0)
+            wok = 0;
+        if (ata_read(tlba, 1, rb2) != 0)
+            wok = 0;
+        for (int i = 0; i < 512; i++)
+            if (rb2[i] != wb[i])
+                wok = 0;
+        serial_puts(wok ? "[ATA] write PASS\n" : "[ATA] write FAIL\n");
+    }
+
+    if (fat_mount() == 0) {
+        const char *msg = "JackBOT FAT32 test payload 0123456789";
+        uint32_t slen = 0;
+        while (msg[slen])
+            slen++;
+        if (fat_write_file("TEST.TXT", msg, slen) == 0) {
+            static uint8_t fbuf[256];
+            uint32_t rl = 0;
+            int ok = 0;
+            if (fat_read_file("TEST.TXT", fbuf, sizeof fbuf, &rl) == 0 &&
+                rl == slen) {
+                ok = 1;
+                for (uint32_t i = 0; i < slen; i++)
+                    if (fbuf[i] != (uint8_t)msg[i])
+                        ok = 0;
+            }
+            serial_puts(ok ? "[FAT] readback PASS\n"
+                           : "[FAT] readback FAIL\n");
+            if (fat_delete("TEST.TXT") == 0)
+                serial_puts("[FAT] delete ok\n");
+            serial_puts(fat_exists("TEST.TXT") ? "[FAT] still exists\n"
+                                               : "[FAT] gone\n");
+            serial_puts("[FAT] free=");
+            serial_puthex(fat_free_bytes());
+            serial_putc('\n');
+
+            if (installer_run() == 0) {
+                int had_stg = fat_exists("INSTALL.STG");
+                postinstall_cleanup();
+                int stg_gone = !fat_exists("INSTALL.STG");
+                int marker_gone = !fat_exists("FIRSTBOOT");
+                int sys_kept = fat_exists("SYSTEM.IMG");
+                int ok = had_stg && stg_gone && marker_gone && sys_kept;
+                serial_puts(ok ? "[INST] cleanup test PASS\n"
+                               : "[INST] cleanup test FAIL\n");
+            }
+        }
+    }
 
     fb_bochs_init(1024, 768);
     if (fb_present()) {

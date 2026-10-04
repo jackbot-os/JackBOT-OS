@@ -7,12 +7,13 @@ NASMFLAGS := -f elf64
 LDFLAGS := -n -T arch/x86_64/linker.ld
 
 BUILD := build
-KERN_SRCS := main idt pic timer serial trap apic pmm vmm heap sched userproc crash fb gfxtext ps2 desktop
+KERN_SRCS := main idt pic timer serial trap apic pmm vmm heap sched userproc crash fb ata fat32 installer gfxtext ps2 desktop
 ARCH_ASM := boot gdt vectors switch
 OBJS := $(addprefix $(BUILD)/,$(addsuffix .o,$(KERN_SRCS))) \
         $(addprefix $(BUILD)/,$(addsuffix .o,$(ARCH_ASM)))
 KERNEL := iso/boot/kernel
 ISO := $(BUILD)/JackBOT-0.5.0.iso
+DISK := $(BUILD)/disk.img
 USER_BIN := $(BUILD)/ustest.bin
 USER_H := $(BUILD)/ustest.h
 
@@ -51,10 +52,14 @@ $(BUILD)/%.o: arch/x86_64/%.asm | $(BUILD)
 $(KERNEL): $(OBJS) arch/x86_64/linker.ld
 	ld $(LDFLAGS) -o $@ $(OBJS)
 
-iso: $(ISO)
+iso: $(ISO) $(DISK)
 
 $(ISO): $(KERNEL) iso/boot/grub/grub.cfg
 	grub-mkrescue -o $@ iso
 
+$(DISK): | $(BUILD)
+	dd if=/dev/zero of=$@ bs=1M count=64
+	mkfs.fat -F32 $@ >/dev/null
+
 clean:
-	rm -f $(BUILD)/*.o $(KERNEL) $(BUILD)/*.iso
+	rm -f $(BUILD)/*.o $(KERNEL) $(BUILD)/*.iso $(DISK)
