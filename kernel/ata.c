@@ -164,3 +164,13 @@ int ata_write(uint64_t lba, uint8_t count, const void *buf)
     wait_not_bsy();
     return 0;
 }
+
+int ata_flush_cache(void)
+{
+    if (!present)
+        return -1;
+    select_master();
+    outb(REG_CMD, CMD_FLUSH);
+    uint8_t s = wait_not_bsy();
+    return (s & (ST_ERR | ST_DF)) ? -1 : 0;
+}

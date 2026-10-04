@@ -4,6 +4,7 @@
 #include <kernel/ata.h>
 #include <kernel/heap.h>
 #include <kernel/protect.h>
+#include <kernel/persist.h>
 #include <kernel/serial.h>
 
 #define EOC 0x0FFFFFF8
@@ -271,6 +272,7 @@ int fat_write_file(const char *name83, const void *data, uint32_t len)
         return -1;
     if (protect_check(name83, ACT_WRITE) != 0)
         return -1;
+    persist_mark_dirty(name83);
     uint8_t nm[11];
     dpos_t dp;
     fmt_name(name83, nm);

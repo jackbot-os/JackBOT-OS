@@ -13,6 +13,7 @@
 #include <kernel/fat32.h>
 #include <kernel/installer.h>
 #include <kernel/protect.h>
+#include <kernel/persist.h>
 #include <kernel/i18n.h>
 #include "i18n_data.h"
 #include <kernel/ps2.h>
@@ -227,17 +228,11 @@ void kmain(uint64_t magic, uint64_t mb_info)
         }
     }
 
+    persist_self_test();
+
     fb_bochs_init(1920, 1080);
-    if (fb_present()) {
-        fb_clear(fb_rgb(18, 22, 34));
-        fb_fill_rect(0, 0, (int)fb_width() / 3, (int)fb_height(),
-                     fb_rgb(200, 60, 60));
-        fb_fill_rect((int)fb_width() / 3, 0, (int)fb_width() / 3,
-                     (int)fb_height(), fb_rgb(60, 170, 90));
-        fb_fill_rect(2 * (int)fb_width() / 3, 0,
-                     (int)fb_width() - 2 * (int)fb_width() / 3,
-                     (int)fb_height(), fb_rgb(70, 110, 210));
-    }
+    if (fb_present())
+        fb_clear(fb_rgb(12, 16, 28));
 
     ps2_init();
     pic_clear_mask(1);
