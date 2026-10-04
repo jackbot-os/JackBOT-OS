@@ -13,6 +13,7 @@ uint8_t fb_bpp(void);
 uint32_t fb_rgb(uint8_t r, uint8_t g, uint8_t b);
 void fb_clear(uint32_t packed);
 void fb_putpixel(int x, int y, uint32_t packed);
+uint32_t fb_getpixel(int x, int y);
 void fb_fill_rect(int x, int y, int w, int h, uint32_t packed);
 void fb_blit(int dx, int dy, int w, int h, const uint32_t *pixels);
 

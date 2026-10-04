@@ -175,6 +175,17 @@ void fb_putpixel(int x, int y, uint32_t packed)
             p[i] = (packed >> (i * 8)) & 0xff;
 }
 
+uint32_t fb_getpixel(int x, int y)
+{
+    if (!g_fb.present || x < 0 || y < 0
+        || (uint32_t)x >= g_fb.width || (uint32_t)y >= g_fb.height)
+        return 0;
+    uint8_t *p = g_fb.addr + (uint64_t)y * g_fb.pitch + x * g_fb.bytes_pp;
+    if (g_fb.bytes_pp == 4)
+        return *(uint32_t *)p;
+    return fb_rgb(p[2], p[1], p[0]);
+}
+
 void fb_clear(uint32_t packed)
 {
     if (!g_fb.present)

@@ -2,12 +2,12 @@ CC := gcc
 NASM := nasm
 
 CFLAGS := -ffreestanding -m64 -mno-red-zone -mno-mmx -mno-sse -mno-sse2 \
-          -mcmodel=large -std=c11 -Wall -Wextra -g -Iinclude
+          -mcmodel=large -std=c11 -Wall -Wextra -g -Iinclude -Ibuild
 NASMFLAGS := -f elf64
 LDFLAGS := -n -T arch/x86_64/linker.ld
 
 BUILD := build
-KERN_SRCS := main idt pic timer serial trap apic pmm vmm heap sched userproc crash fb
+KERN_SRCS := main idt pic timer serial trap apic pmm vmm heap sched userproc crash fb gfxtext ps2 desktop
 ARCH_ASM := boot gdt vectors switch
 OBJS := $(addprefix $(BUILD)/,$(addsuffix .o,$(KERN_SRCS))) \
         $(addprefix $(BUILD)/,$(addsuffix .o,$(ARCH_ASM)))
@@ -33,6 +33,12 @@ $(USER_H): user/ustest.asm | $(BUILD)
 $(CRASH_USER_H): user/ucrash.asm | $(BUILD)
 	$(NASM) -f bin $< -o $(CRASH_USER_BIN)
 	xxd -i -n ucrash_bin $(CRASH_USER_BIN) $@
+
+FONT_TTF := /usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf
+FONT_H := $(BUILD)/font_glyph.h
+$(FONT_H): tools/font_to_header.py $(FONT_TTF) | $(BUILD)
+	python3 tools/font_to_header.py $(FONT_TTF) $@
+$(BUILD)/gfxtext.o: $(FONT_H)
 
 $(BUILD)/%.o: kernel/%.c | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@

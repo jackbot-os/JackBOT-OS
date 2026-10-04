@@ -9,6 +9,9 @@
 #include <kernel/proc.h>
 #include <kernel/crash.h>
 #include <kernel/fb.h>
+#include <kernel/ps2.h>
+#include <kernel/gfxtext.h>
+#include <kernel/desktop.h>
 
 #define VGA_MEM ((volatile uint16_t *)0xb8000)
 #define VGA_W 80
@@ -145,27 +148,23 @@ void kmain(uint64_t magic, uint64_t mb_info)
                      (int)fb_height(), fb_rgb(70, 110, 210));
     }
 
+    ps2_init();
+    pic_clear_mask(1);
+    pic_clear_mask(2);
+    pic_clear_mask(12);
+
     sched_init();
     watchdog_init();
     thread_t *user = spawn_test_user();
     tss_set_rsp0(user->kstack_top);
+
+    desktop_init();
+
     __asm__ volatile("mov %0, %%cr3" : : "r"(user->p4phys));
 
-    int timer_reported = 0;
-    uint64_t last_dot = 0;
     for (;;) {
+        desktop_run();
         thread_yield();
         __asm__ volatile("hlt");
-        uint64_t t = timer_get_ticks();
-        if (t / 100 > last_dot) {
-            serial_putc('.');
-            last_dot = t / 100;
-        }
-        if (!timer_reported && t >= TIMER_PROOF_TICKS) {
-            serial_puts("\ntimer IRQ alive at tick ");
-            serial_puthex(t);
-            serial_putc('\n');
-            timer_reported = 1;
-        }
     }
 }

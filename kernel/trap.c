@@ -3,6 +3,7 @@
 #include <kernel/apic.h>
 #include <kernel/proc.h>
 #include <kernel/crash.h>
+#include <kernel/ps2.h>
 
 void timer_irq(void);
 void pic_send_eoi(uint8_t irq);
@@ -108,6 +109,16 @@ void trap_dispatch(struct trap_frame *f)
         pic_send_eoi(0);
         apic_eoi();
         sched_tick();
+        return;
+    }
+
+    if (f->vector == 33 || f->vector == 44) {
+        if (f->vector == 33)
+            ps2_kbd_irq();
+        else
+            ps2_mouse_irq();
+        pic_send_eoi((uint8_t)(f->vector - 32));
+        apic_eoi();
         return;
     }
 
