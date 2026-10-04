@@ -8,6 +8,7 @@
 #include <kernel/multiboot2.h>
 #include <kernel/proc.h>
 #include <kernel/crash.h>
+#include <kernel/fb.h>
 
 #define VGA_MEM ((volatile uint16_t *)0xb8000)
 #define VGA_W 80
@@ -131,6 +132,18 @@ void kmain(uint64_t magic, uint64_t mb_info)
     serial_putc('\n');
 
     mem_selftest();
+
+    fb_bochs_init(1024, 768);
+    if (fb_present()) {
+        fb_clear(fb_rgb(18, 22, 34));
+        fb_fill_rect(0, 0, (int)fb_width() / 3, (int)fb_height(),
+                     fb_rgb(200, 60, 60));
+        fb_fill_rect((int)fb_width() / 3, 0, (int)fb_width() / 3,
+                     (int)fb_height(), fb_rgb(60, 170, 90));
+        fb_fill_rect(2 * (int)fb_width() / 3, 0,
+                     (int)fb_width() - 2 * (int)fb_width() / 3,
+                     (int)fb_height(), fb_rgb(70, 110, 210));
+    }
 
     sched_init();
     watchdog_init();

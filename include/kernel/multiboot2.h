@@ -51,6 +51,23 @@ struct mb2_tag_mmap {
 #define MB2_MEMORY_ACPI_NVS 4
 #define MB2_MEMORY_BAD 5
 
+struct mb2_tag_framebuffer {
+    uint32_t type;
+    uint32_t size;
+    uint64_t framebuffer_addr;
+    uint32_t framebuffer_pitch;
+    uint32_t framebuffer_width;
+    uint32_t framebuffer_height;
+    uint8_t framebuffer_bpp;
+    uint8_t framebuffer_type;
+    uint8_t red_field_position;
+    uint8_t red_mask_size;
+    uint8_t green_field_position;
+    uint8_t green_mask_size;
+    uint8_t blue_field_position;
+    uint8_t blue_mask_size;
+};
+
 static inline struct mb2_tag *mb2_first_tag(struct mb2_info *info)
 {
     return (struct mb2_tag *)((uint8_t *)info + 8);

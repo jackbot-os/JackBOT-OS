@@ -8,6 +8,7 @@ header_start:
     dw 0
     dw 0
     dd 8
+
 header_end:
 
 section .bss
