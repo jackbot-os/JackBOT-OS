@@ -35,6 +35,11 @@ int i18n_set_code(const char *code)
 }
 
 int i18n_lang(void) { return lang; }
+int i18n_rtl_idx(int idx)
+{
+    return (idx >= 0 && idx < I18N_NLANG) ? (int)i18n_rtl_flags[idx] : 0;
+}
+int i18n_rtl(void) { return i18n_rtl_idx(lang); }
 const char *i18n_code(int idx)
 {
     return (idx >= 0 && idx < I18N_NLANG) ? i18n_codes[idx] : "";

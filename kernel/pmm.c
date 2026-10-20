@@ -3,9 +3,13 @@
 #include <kernel/pmm.h>
 #include <kernel/multiboot2.h>
 
-#define BITMAP_PHYS 0x200000ull
-#define LOW_RESERVE_END 0x200000ull
+/* 位图放在内核 BSS 静态区：早期固定 0x400000 会与 GRUB multiboot 模块
+   (GRUBMODS 常加载在 0x400000 附近) 重叠并覆盖模块数据。上限 4GB=128KB。 */
+#define MAX_PHYS_BYTES (4ull * 1024 * 1024 * 1024)
+#define MAX_PFN (MAX_PHYS_BYTES / PAGE_SIZE)
+#define LOW_RESERVE_END 0x400000ull
 
+static uint8_t bitmap_storage[MAX_PFN / 8];
 static uint8_t *bitmap;
 static uint64_t max_pfn;
 static uint64_t total_pages;
@@ -77,11 +81,13 @@ void pmm_init(uint64_t mb_info)
     }
 
     max_pfn = (highest + PAGE_SIZE - 1) / PAGE_SIZE;
+    if (max_pfn > MAX_PFN)
+        max_pfn = MAX_PFN;
     total_pages = max_pfn;
 
+    bitmap = bitmap_storage;
     uint64_t bitmap_bytes = (max_pfn + 7) / 8;
     bitmap_bytes = (bitmap_bytes + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
-    bitmap = (uint8_t *)(uintptr_t)BITMAP_PHYS;
     for (uint64_t i = 0; i < bitmap_bytes; i++)
         bitmap[i] = 0xff;
     free_pages = 0;
@@ -102,10 +108,26 @@ void pmm_init(uint64_t mb_info)
         tag = mb2_next_tag(tag);
     }
 
-    uint64_t bitmap_end = BITMAP_PHYS + bitmap_bytes;
-    pmm_reserve(0, bitmap_end > LOW_RESERVE_END ? bitmap_end
-                                               : LOW_RESERVE_END);
-    hint_pfn = bitmap_end / PAGE_SIZE;
+    /* 低 4MB 保留：内核镜像、multiboot info 与早期模块 */
+    pmm_reserve(0, LOW_RESERVE_END);
+
+    /* 显式保留 multiboot info 结构本身（可能位于 4MB 之后，含 tags） */
+    {
+        uint64_t mbp = mb_info & ~(PAGE_SIZE - 1);
+        pmm_reserve(mbp, mbp + 16384);
+    }
+
+    tag = mb2_first_tag(info);
+    while (tag->type != MB2_TAG_END) {
+        if (tag->type == MB2_TAG_MODULE) {
+            struct mb2_tag_module *m = (struct mb2_tag_module *)tag;
+            if (m->mod_end > m->mod_start)
+                pmm_reserve(m->mod_start, m->mod_end);
+        }
+        tag = mb2_next_tag(tag);
+    }
+
+    hint_pfn = LOW_RESERVE_END / PAGE_SIZE;
 }
 
 void *pmm_alloc_page(void)

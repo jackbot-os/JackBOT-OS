@@ -2,7 +2,6 @@
 #include <stddef.h>
 #include <kernel/ps2.h>
 #include <kernel/fb.h>
-#include <kernel/serial.h>
 
 #define KBD_BUF 64
 static char kbuf[KBD_BUF];
@@ -12,6 +11,7 @@ static int shift, caps, e0;
 
 static int mx, my;
 static int left_prev;
+static int mouse_primed;
 static int click_pending, click_x, click_y;
 static int left_down;
 static uint8_t cycle[3];
@@ -99,6 +99,16 @@ void ps2_kbd_irq(void)
     uint8_t sc = inb(0x60);
     if (e0) {
         e0 = 0;
+        if (!(sc & 0x80)) {
+            char k = 0;
+            if (sc == 0x48) k = JB_KEY_UP;
+            else if (sc == 0x50) k = JB_KEY_DOWN;
+            else if (sc == 0x4b) k = JB_KEY_LEFT;
+            else if (sc == 0x4d) k = JB_KEY_RIGHT;
+            else if (sc == 0x5b || sc == 0x5c) k = JB_KEY_WIN;
+            if (k)
+                enqueue(k);
+        }
         return;
     }
     if (sc == 0xe0) {
@@ -159,7 +169,10 @@ void ps2_mouse_irq(void)
     }
 
     left_down = flags & 0x01;
-    if (left_down && !left_prev) {
+    if (!mouse_primed) {
+        left_prev = left_down;
+        mouse_primed = 1;
+    } else if (!left_down && left_prev) {
         click_pending = 1;
         click_x = mx;
         click_y = my;
@@ -174,6 +187,29 @@ int ps2_read_key(char *out)
     *out = kbuf[khead];
     khead = (khead + 1) % KBD_BUF;
     return 1;
+}
+
+int ps2_consume_key(char want)
+{
+    int i = khead;
+    while (i != ktail) {
+        if (kbuf[i] == want) {
+            int j = i;
+            while (1) {
+                int n = (j + 1) % KBD_BUF;
+                if (n == ktail) {
+                    kbuf[j] = 0;
+                    break;
+                }
+                kbuf[j] = kbuf[n];
+                j = n;
+            }
+            ktail = (ktail - 1 + KBD_BUF) % KBD_BUF;
+            return 1;
+        }
+        i = (i + 1) % KBD_BUF;
+    }
+    return 0;
 }
 
 void ps2_mouse_xy(int *x, int *y)
@@ -193,6 +229,19 @@ int ps2_mouse_click(int *x, int *y)
 }
 
 int ps2_mouse_down(void) { return left_down; }
+
+/* Discard every input event accumulated before a GUI starts: the firmware
+   and early boot emit spurious mouse packets whose button edge would
+   otherwise be consumed as a click on the first wizard frame. */
+void ps2_mouse_flush(void)
+{
+    click_pending = 0;
+    mouse_primed = 0;
+    left_prev = 0;
+    left_down = 0;
+    khead = 0;
+    ktail = 0;
+}
 
 void ps2_init(void)
 {

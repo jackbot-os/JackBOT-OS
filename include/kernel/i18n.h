@@ -6,6 +6,8 @@ int i18n_count(void);
 int i18n_set_lang(int idx);
 int i18n_set_code(const char *code);
 int i18n_lang(void);
+int i18n_rtl_idx(int idx);
+int i18n_rtl(void);
 const char *i18n_code(int idx);
 const char *i18n_name(int idx);
 const char *tr(int id);

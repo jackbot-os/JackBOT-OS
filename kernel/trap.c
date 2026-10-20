@@ -8,6 +8,24 @@
 void timer_irq(void);
 void pic_send_eoi(uint8_t irq);
 
+#define IRQ_SHARED 4
+
+static struct {
+    irq_handler_fn fn;
+    void *ctx;
+} irq_table[16][IRQ_SHARED];
+
+void irq_register(uint8_t irq, irq_handler_fn fn, void *ctx)
+{
+    if (irq < 16)
+        for (int i = 0; i < IRQ_SHARED; i++)
+            if (!irq_table[irq][i].fn) {
+                irq_table[irq][i].fn = fn;
+                irq_table[irq][i].ctx = ctx;
+                break;
+            }
+}
+
 static const char *exception_names[32] = {
     "divide error",
     "debug",
@@ -112,18 +130,16 @@ void trap_dispatch(struct trap_frame *f)
         return;
     }
 
-    if (f->vector == 33 || f->vector == 44) {
-        if (f->vector == 33)
-            ps2_kbd_irq();
-        else
-            ps2_mouse_irq();
-        pic_send_eoi((uint8_t)(f->vector - 32));
-        apic_eoi();
-        return;
-    }
-
     if (f->vector >= 33 && f->vector < 48) {
-        pic_send_eoi((uint8_t)(f->vector - 32));
+        uint8_t irq = (uint8_t)(f->vector - 32);
+        if (irq == 1)
+            ps2_kbd_irq();
+        else if (irq == 12)
+            ps2_mouse_irq();
+        for (int i = 0; i < IRQ_SHARED; i++)
+            if (irq_table[irq][i].fn)
+                irq_table[irq][i].fn(irq_table[irq][i].ctx);
+        pic_send_eoi(irq);
         apic_eoi();
         return;
     }

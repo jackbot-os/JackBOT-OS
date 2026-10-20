@@ -30,6 +30,16 @@ for lg in langs:
         for ch in lg["strings"].get(k, ""):
             if ord(ch) >= 128:
                 cps.add(ord(ch))
+    for ch in lg["name"]:
+        if ord(ch) >= 128:
+            cps.add(ord(ch))
+
+# Arabic is shaped at runtime in gfxtext.c (initial/medial/final/iso
+# forms plus the lam+alef ligatures), so the bitmap font must carry the
+# whole Presentation Forms-B block the shaper can emit.
+if any(0x0600 <= c <= 0x06FF for c in cps):
+    for c in range(0xFE80, 0xFEFD):
+        cps.add(c)
 
 with open(OUT_H, "w", encoding="utf-8") as f:
     f.write("#ifndef I18N_DATA_H\n#define I18N_DATA_H\n")
@@ -45,11 +55,18 @@ with open(OUT_H, "w", encoding="utf-8") as f:
     for lg in langs:
         f.write('  "%s",\n' % cesc(lg["name"]))
     f.write("};\n")
+    f.write("static const unsigned char i18n_rtl_flags[I18N_NLANG] = {\n  ")
+    f.write(",".join("1" if lg.get("rtl") else "0" for lg in langs))
+    f.write("\n};\n")
+    en = langs[0]["strings"]
     f.write("static const char *const i18n_str[I18N_NLANG][I18N_NKEY] = {\n")
     for lg in langs:
         f.write("  {\n")
         for k in keys:
-            f.write('    "%s",\n' % cesc(lg["strings"].get(k, "")))
+            val = lg["strings"].get(k)
+            if not val:
+                val = en.get(k, "")
+            f.write('    "%s",\n' % cesc(val))
         f.write("  },\n")
     f.write("};\n#endif\n")
 

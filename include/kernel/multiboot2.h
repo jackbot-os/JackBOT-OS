@@ -23,6 +23,20 @@ struct mb2_tag {
 #define MB2_TAG_MMAP 6
 #define MB2_TAG_FRAMEBUFFER 8
 
+struct mb2_tag_cmdline {
+    uint32_t type;
+    uint32_t size;
+    char string[];
+};
+
+struct mb2_tag_module {
+    uint32_t type;
+    uint32_t size;
+    uint32_t mod_start;
+    uint32_t mod_end;
+    char cmdline[];
+};
+
 struct mb2_tag_basic_meminfo {
     uint32_t type;
     uint32_t size;

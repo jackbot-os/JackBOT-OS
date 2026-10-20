@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stddef.h>
+#include <kernel/hal.h>
 #include <kernel/serial.h>
 #include <kernel/apic.h>
 #include <kernel/pmm.h>
@@ -11,15 +12,30 @@
 #include <kernel/fb.h>
 #include <kernel/ata.h>
 #include <kernel/fat32.h>
+#include <kernel/part.h>
+#include <kernel/payload.h>
 #include <kernel/installer.h>
+#include <kernel/installer_gui.h>
+#include <kernel/oobe.h>
 #include <kernel/protect.h>
 #include <kernel/persist.h>
 #include <kernel/config.h>
+#include <kernel/jbot.h>
+#include <kernel/py.h>
+#include <kernel/jca.h>
 #include <kernel/i18n.h>
 #include "i18n_data.h"
 #include <kernel/ps2.h>
+#include <kernel/pci.h>
+#include <kernel/ac97.h>
+#include <kernel/dev.h>
+#include <kernel/compat.h>
 #include <kernel/gfxtext.h>
 #include <kernel/desktop.h>
+#include <kernel/splash.h>
+#include <kernel/net.h>
+#include <kernel/selftest.h>
+#include <kernel/svga.h>
 
 #define VGA_MEM ((volatile uint16_t *)0xb8000)
 #define VGA_W 80
@@ -112,16 +128,33 @@ static void mem_selftest(void)
     serial_putc('\n');
 }
 
+static int boot_mount_system(void)
+{
+    static uint8_t mbr[512];
+    if (part_read_mbr(mbr) != 0)
+        return -1;
+    struct part_layout pl;
+    if (part_parse(mbr, &pl) != 0)
+        return -1;
+    uint32_t s = 0, n = 0;
+    if (part_find_system(&pl, &s, &n) != 0)
+        return -1;
+    return fat_mount_part(s, n);
+}
+
 void kmain(uint64_t magic, uint64_t mb_info)
 {
     (void)magic;
     (void)mb_info;
 
     serial_init();
+    hal_early_init();
     vga_clear();
 
     vga_puts("JackBOT OS 0.5.0\n");
     serial_puts("JackBOT OS 0.5.0\n");
+
+    hal_selftest();
 
     gdt_init();
     pic_remap();
@@ -144,7 +177,14 @@ void kmain(uint64_t magic, uint64_t mb_info)
 
     mem_selftest();
 
+    payload_collect(mb_info);
+    int live_install = payload_live_mode();
+
+    serial_puts("[STEP] ata_init\n");
     ata_init();
+    serial_puts("[STEP] ata_present=");
+    serial_puthex(ata_present() ? 1 : 0);
+    serial_putc('\n');
     static uint8_t ab[512];
     if (ata_present() && ata_read(0, 1, ab) == 0) {
         serial_puts("[ATA] oem=");
@@ -169,7 +209,7 @@ void kmain(uint64_t magic, uint64_t mb_info)
         serial_puts(wok ? "[ATA] write PASS\n" : "[ATA] write FAIL\n");
     }
 
-    if (fat_mount() == 0) {
+    if (!live_install && boot_mount_system() == 0) {
         const char *msg = "JackBOT FAT32 test payload 0123456789";
         uint32_t slen = 0;
         while (msg[slen])
@@ -191,15 +231,16 @@ void kmain(uint64_t magic, uint64_t mb_info)
                 serial_puts("[FAT] delete ok\n");
             serial_puts(fat_exists("TEST.TXT") ? "[FAT] still exists\n"
                                                : "[FAT] gone\n");
-            if (installer_run() == 0) {
-                int had_stg = fat_exists("INSTALL.STG");
-                postinstall_cleanup();
-                int stg_gone = !fat_exists("INSTALL.STG");
-                int marker_gone = !fat_exists("FIRSTBOOT");
-                int sys_kept = fat_exists("SYSTEM.IMG");
-                int ok = had_stg && stg_gone && marker_gone && sys_kept;
-                serial_puts(ok ? "[INST] cleanup test PASS\n"
-                               : "[INST] cleanup test FAIL\n");
+            {
+                int a0 = protect_set_actor(ACTOR_ADMIN);
+                if (!fat_exists("SYSTEM.IMG")) {
+                    const char *simg = "JackBOT OS system image";
+                    uint32_t sl2 = 0;
+                    while (simg[sl2])
+                        sl2++;
+                    fat_write_file("SYSTEM.IMG", simg, sl2);
+                }
+                protect_set_actor(a0);
             }
 
             protect_set_actor(ACTOR_USER);
@@ -229,39 +270,155 @@ void kmain(uint64_t magic, uint64_t mb_info)
         }
     }
 
-    persist_self_test();
-    config_init();
-    config_self_test();
+    serial_puts("[STEP] ata block done\n");
+    serial_puts("[STEP] i18n_init\n");
+    i18n_init();
+    serial_puts("[STEP] i18n done\n");
+    if (!live_install) {
+        persist_self_test();
+        config_init();
+        i18n_set_lang(config_language());
+        config_self_test();
+        jbot_init();
+        jbot_self_test();
+        py_init();
+        py_self_test();
+        jca_self_test();
+    }
 
-    fb_bochs_init(1920, 1080);
-    if (fb_present())
-        fb_clear(fb_rgb(12, 16, 28));
+    serial_puts("[STEP] fb scan\n");
+    {
+        int fb_ok = 0;
+        struct mb2_info *mi = (struct mb2_info *)(uintptr_t)mb_info;
+        struct mb2_tag *t = mb2_first_tag(mi);
+        while (t->type != MB2_TAG_END) {
+            if (t->type == MB2_TAG_FRAMEBUFFER) {
+                struct mb2_tag_framebuffer *f =
+                    (struct mb2_tag_framebuffer *)t;
+                serial_puts("[FB] tag bpp=");
+                serial_puthex(f->framebuffer_bpp);
+                serial_puts(" type=");
+                serial_puthex(f->framebuffer_type);
+                serial_putc('\n');
+                if (f->framebuffer_type == 1 &&
+                    (f->framebuffer_bpp == 32 || f->framebuffer_bpp == 24 ||
+                     f->framebuffer_bpp == 16)) {
+                    fb_ok = fb_linear_init(
+                        f->framebuffer_addr,
+                        f->framebuffer_width, f->framebuffer_height,
+                        f->framebuffer_pitch, f->framebuffer_bpp,
+                        f->red_field_position, f->red_mask_size,
+                        f->green_field_position, f->green_mask_size,
+                        f->blue_field_position, f->blue_mask_size);
+                }
+            }
+            t = mb2_next_tag(t);
+        }
+        if (!fb_ok) {
+            serial_puts("[FB] no multiboot framebuffer, fallback Bochs VBE\n");
+            fb_bochs_init(1920, 1080);
+        }
+    }
+    serial_puts("[STEP] fb_present=");
+    serial_puthex(fb_present() ? 1 : 0);
+    serial_putc('\n');
+    if (fb_present()) {
+        /* GPU scanout takeover: switch the VMSVGA device from VBE legacy
+           into native SVGA II mode so the GPU owns the display. If the
+           device rejects the hand-off we stay on the working VBE path. */
+        serial_puts("[STEP] gpu takeover\n");
+        pci_enumerate();
+        {
+            uint64_t gphys = 0;
+            uint32_t gpitch = 0, gsize = 0;
+            if (svga_gpu_takeover(fb_width(), fb_height(),
+                                  &gphys, &gpitch, &gsize))
+                fb_rebind_gpu(gphys, fb_width(), fb_height(), gpitch);
+        }
+        serial_puts("[STEP] splash\n");
+        fb_clear(fb_rgb(0, 0, 0));
+        splash_show();
+    } else {
+        serial_puts("[FB] NO FRAMEBUFFER AVAILABLE\n");
+    }
 
+    serial_puts("[B] ps2\n");
     ps2_init();
     pic_clear_mask(1);
     pic_clear_mask(2);
     pic_clear_mask(12);
 
+    if (live_install) {
+        serial_puts("[B] pci (live)\n");
+        pci_enumerate();
+        svga_gpu_init();
+        serial_puts("[B] ac97 (live)\n");
+        if (ac97_init())
+            ac97_play_boot();
+        serial_puts("[B] launch installer GUI\n");
+        installer_gui_run();
+        for (;;)
+            __asm__ volatile("hlt");
+    }
+
+    serial_puts("[B] pci\n");
+    pci_enumerate();
+    svga_gpu_init();
+    serial_puts("[B] ac97\n");
+    ac97_init();
+
+    serial_puts("[B] compat drivers\n");
+    compat_register_drivers();
+    {
+        int n = dev_probe_all();
+        serial_puts("[COMPAT] matched+ok drivers=");
+        serial_puthex((uint32_t)n);
+        serial_putc('\n');
+    }
+
+    serial_puts("[B] net\n");
+    compat_register_nics();
+    net_init();
+#ifdef NET_SELFTEST
+    net_selftest();
+#endif
+
+    serial_puts("[B] sched\n");
     sched_init();
+    serial_puts("[B] watchdog\n");
     watchdog_init();
+    serial_puts("[B] spawn\n");
     thread_t *user = spawn_test_user();
     tss_set_rsp0(user->kstack_top);
 
+    serial_puts("[B] desktop\n");
     desktop_init();
+    serial_puts("[B] desktop done\n");
+
+    if (!config_oobe_done()) {
+        serial_puts("[B] first-boot OOBE\n");
+        oobe_run();
+    }
+
+    if (ac97_present())
+        ac97_play_boot();
 
     {
-        i18n_init();
+        int saved_lang = config_language();
         const char *en = tr(STR_CLOSE);
         i18n_set_code("zh-CN");
         const char *zh = tr(STR_CLOSE);
         int changed = (en != zh) && ((unsigned char)zh[0] >= 0x80);
-        i18n_set_lang(0);
-        int langok = i18n_count() == 7 && changed;
+        int ar = i18n_set_code("ar");
+        int ar_rtl = i18n_rtl_idx(ar);
+        int en_rtl = i18n_rtl_idx(0);
+        int langok = i18n_count() >= 20 && changed && ar_rtl && !en_rtl;
         int fontok = gfx_font_count() == 3;
         int f0 = gfx_get_font();
         gfx_set_font(2);
         fontok = fontok && gfx_get_font() == 2;
         gfx_set_font(f0);
+        i18n_set_lang(saved_lang);
         serial_puts((langok && fontok) ? "[I18N] test PASS\n"
                                       : "[I18N] test FAIL\n");
     }

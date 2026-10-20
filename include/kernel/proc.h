@@ -5,7 +5,7 @@
 #include <stddef.h>
 
 #define MAX_THREADS 64
-#define KSTACK_SIZE 16384
+#define KSTACK_SIZE 262144
 
 typedef enum {
     T_UNUSED = 0,

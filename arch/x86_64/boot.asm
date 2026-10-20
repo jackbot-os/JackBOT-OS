@@ -5,6 +5,16 @@ header_start:
     dd 0
     dd header_end - header_start
     dd 0x100000000 - (0xe85250d6 + 0 + (header_end - header_start))
+
+    align 8
+    dw 5
+    dw 1
+    dd 20
+    dd 1024
+    dd 768
+    dd 32
+
+    align 8
     dw 0
     dw 0
     dd 8
@@ -23,7 +33,7 @@ p2_table:
 p2_mmio:
     resb 4096
 stack_bottom:
-    resb 16384
+    resb 262144
 stack_top:
 
 section .rodata
@@ -143,6 +153,15 @@ long_mode_start:
     mov es, ax
     mov fs, ax
     mov gs, ax
+
+    mov rax, cr0
+    and ax, 0xFFFB
+    or  ax, 0x2
+    mov cr0, rax
+    mov rax, cr4
+    or  ax, 0x600
+    mov cr4, rax
+
     pop rsi
     pop rdi
     call kmain

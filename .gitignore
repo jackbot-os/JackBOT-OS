@@ -1,4 +1,14 @@
 build/
+build_assets/
 iso/boot/kernel
 *.o
 *.iso
+*.log
+*.bak
+build_apt.log
+build_err.txt
+build_fontcheck.txt
+build_iso.log
+build_make.log
+build_vbox.txt
+build_wsl_setup.log

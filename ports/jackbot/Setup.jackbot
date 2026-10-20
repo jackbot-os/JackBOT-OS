@@ -1,0 +1,15 @@
+# Static module list for the JackBOT CPython build (CPython Modules/Setup).
+# Stage 1 (M1): no dynamic loading, no platform C extension modules.
+# Everything below is either built into libpython by default or is a
+# pure-Python module loaded from frozen bytecode / Lib at later stages.
+
+# Always-available core builtins need no entry here (builtins, sys,
+# _io, marshal, posix-ish stubs are configured by the port config).
+
+# Explicitly disabled at M1 (enabled per PORTING.md):
+#   _socket  select  mmap  fcntl  termios  _ctypes  _thread
+#   readline  curses  dl  crypt  grp  pwd  spwd  resource
+#   multiprocessing C parts, subprocess (POSIX spawn absent)
+
+# M2 enables:  posix file ops-backed modules (io, os, stat, importlib file)
+# M4 enables:  _thread, _socket, select, mmap

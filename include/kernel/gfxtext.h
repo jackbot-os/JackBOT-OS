@@ -25,4 +25,13 @@ int gfx_draw_string(int x, int y, uint32_t fg, uint32_t bg, const char *s);
 int gfx_text_width(const char *s);
 int gfx_text_height(void);
 
+int gfx_draw_string_wide(int x, int y, uint32_t fg, uint32_t bg, const char *s);
+int gfx_text_width_wide(const char *s);
+
+/* RTL text (Arabic): basic bidi run reversal + Arabic letter shaping.
+   x is the RIGHT edge for draw; returns total advance width. */
+int gfx_draw_string_rtl(int right_x, int y, uint32_t fg, uint32_t bg,
+                        const char *s);
+int gfx_text_width_rtl(const char *s);
+
 #endif

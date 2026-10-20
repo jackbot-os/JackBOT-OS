@@ -1,0 +1,7 @@
+JACKBOT UPDATE PACKAGE
+target: JackBOT OS x86_64
+version: 0.5.1
+channel: stable
+contents: kernel + core apps refresh
+This is a demonstration update payload used to verify the
+sysupdate download and SHA256 verification flow end to end.

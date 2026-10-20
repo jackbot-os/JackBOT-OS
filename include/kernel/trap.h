@@ -28,6 +28,8 @@ struct trap_frame {
     uint64_t ss;
 };
 
+typedef void (*irq_handler_fn)(void *ctx);
+void irq_register(uint8_t irq, irq_handler_fn fn, void *ctx);
 void trap_dispatch(struct trap_frame *frame);
 
 #endif
