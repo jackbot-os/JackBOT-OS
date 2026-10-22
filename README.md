@@ -39,3 +39,4 @@ ready-to-use ISO and the project website; source code is not published here.
 
 This repository contains only the compiled release and website. All rights
 reserved by the JackBOT OS project. Source code is not distributed here.
+Lee
