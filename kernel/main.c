@@ -36,6 +36,11 @@
 #include <kernel/net.h>
 #include <kernel/selftest.h>
 #include <kernel/svga.h>
+#include <kernel/acpi.h>
+#include <kernel/usb.h>
+#include <kernel/recycle.h>
+#include <kernel/bluetooth.h>
+#include <kernel/voice.h>
 
 #define VGA_MEM ((volatile uint16_t *)0xb8000)
 #define VGA_W 80
@@ -151,8 +156,8 @@ void kmain(uint64_t magic, uint64_t mb_info)
     hal_early_init();
     vga_clear();
 
-    vga_puts("JackBOT OS 0.5.0\n");
-    serial_puts("JackBOT OS 0.5.0\n");
+    vga_puts("JackBOT OS 1.0.0\n");
+    serial_puts("JackBOT OS 1.0.0\n");
 
     hal_selftest();
 
@@ -179,6 +184,7 @@ void kmain(uint64_t magic, uint64_t mb_info)
 
     payload_collect(mb_info);
     int live_install = payload_live_mode();
+    int live_desktop = payload_live_desktop();
 
     serial_puts("[STEP] ata_init\n");
     ata_init();
@@ -209,7 +215,7 @@ void kmain(uint64_t magic, uint64_t mb_info)
         serial_puts(wok ? "[ATA] write PASS\n" : "[ATA] write FAIL\n");
     }
 
-    if (!live_install && boot_mount_system() == 0) {
+    if (!live_install && !live_desktop && boot_mount_system() == 0) {
         const char *msg = "JackBOT FAT32 test payload 0123456789";
         uint32_t slen = 0;
         while (msg[slen])
@@ -274,7 +280,7 @@ void kmain(uint64_t magic, uint64_t mb_info)
     serial_puts("[STEP] i18n_init\n");
     i18n_init();
     serial_puts("[STEP] i18n done\n");
-    if (!live_install) {
+    if (!live_install && !live_desktop) {
         persist_self_test();
         config_init();
         i18n_set_lang(config_language());
@@ -285,6 +291,7 @@ void kmain(uint64_t magic, uint64_t mb_info)
         py_self_test();
         jca_self_test();
     }
+    recycle_init();
 
     serial_puts("[STEP] fb scan\n");
     {
@@ -364,8 +371,20 @@ void kmain(uint64_t magic, uint64_t mb_info)
     serial_puts("[B] pci\n");
     pci_enumerate();
     svga_gpu_init();
+    serial_puts("[B] acpi\n");
+    acpi_init();
+    serial_puts("[B] usb\n");
+    usb_scan();
     serial_puts("[B] ac97\n");
     ac97_init();
+
+    serial_puts("[B] bluetooth\n");
+    bt_init();
+    bt_self_test();
+
+    serial_puts("[B] voice\n");
+    voice_init();
+    voice_self_test();
 
     serial_puts("[B] compat drivers\n");
     compat_register_drivers();
@@ -395,7 +414,7 @@ void kmain(uint64_t magic, uint64_t mb_info)
     desktop_init();
     serial_puts("[B] desktop done\n");
 
-    if (!config_oobe_done()) {
+    if (!live_desktop && !config_oobe_done()) {
         serial_puts("[B] first-boot OOBE\n");
         oobe_run();
     }

@@ -7,7 +7,7 @@
 static char kbuf[KBD_BUF];
 static int khead, ktail;
 
-static int shift, caps, e0;
+static int shift, caps, e0, ctrl_down;
 
 static int mx, my;
 static int left_prev;
@@ -119,10 +119,16 @@ void ps2_kbd_irq(void)
         uint8_t make = sc & 0x7f;
         if (make == 0x2a || make == 0x36)
             shift = 0;
+        if (make == 0x1d)
+            ctrl_down = 0;
         return;
     }
     if (sc == 0x2a || sc == 0x36) {
         shift = 1;
+        return;
+    }
+    if (sc == 0x1d) {
+        ctrl_down = 1;
         return;
     }
     if (sc == 0x3a) {
@@ -135,9 +141,13 @@ void ps2_kbd_irq(void)
     else if (map[sc])
         c = map[sc];
     if (c) {
-        int isletter = (c >= 'a' && c <= 'z');
-        if (isletter && ((caps && !shift) || (shift && !caps)))
-            c -= 32;
+        if (ctrl_down && c >= 'a' && c <= 'z')
+            c = (char)(c - 'a' + 1);
+        else {
+            int isletter = (c >= 'a' && c <= 'z');
+            if (isletter && ((caps && !shift) || (shift && !caps)))
+                c -= 32;
+        }
         enqueue(c);
     }
 }

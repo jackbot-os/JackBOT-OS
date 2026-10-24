@@ -33,6 +33,8 @@ static int nlines;
 static char hist[HISTN][180];
 static int hc, hp;
 static char curhost[80], curbase[180];
+static char page_title[128];
+static int last_status;
 
 static uint32_t c_text, c_title, c_link, c_dim, c_bg, c_panel;
 
@@ -103,9 +105,10 @@ static void entity(const char **p, uint32_t color, int link, const char *url)
 static void layout(const uint8_t *html, int hlen)
 {
     nlines = 0;
+    page_title[0] = 0;
     const char *p = (const char *)html;
     const char *end = p + hlen;
-    int inhead = 0, pre = 0;
+    int inhead = 0, pre = 0, intitle = 0;
     uint32_t col = c_text;
     int link = 0;
     char linkurl[180];
@@ -124,7 +127,10 @@ static void layout(const uint8_t *html, int hlen)
                 q++;
             int closing = tag[1] == '/';
 
-            if (tag_is(tag,"head")||tag_is(tag,"script")||tag_is(tag,"style")) {
+            if (tag_is(tag,"title")) {
+                intitle = closing ? 0 : 1;
+            } else if (tag_is(tag,"head")||tag_is(tag,"script")||
+                       tag_is(tag,"style")) {
                 inhead = closing ? 0 : 1;
             } else if (!inhead) {
                 if (!closing && (tag_is(tag,"h1")||tag_is(tag,"h2")||
@@ -172,6 +178,14 @@ static void layout(const uint8_t *html, int hlen)
                 else if (*p=='\t') put_char(' ',col,link,linkurl);
             } else {
                 put_char(*p, col, link, linkurl);
+            }
+        } else if (intitle) {
+            if (*p != '\n' && *p != '\r' && *p != '\t') {
+                int tl = (int)strlen(page_title);
+                if (tl < 127) {
+                    page_title[tl] = *p;
+                    page_title[tl + 1] = 0;
+                }
             }
         }
         p++;
@@ -232,7 +246,7 @@ void browser_open(void)
     c_text=fb_rgb(220,226,238); c_title=fb_rgb(255,214,120);
     c_link=fb_rgb(120,190,255); c_dim=fb_rgb(150,160,180);
     c_bg=fb_rgb(26,29,40); c_panel=fb_rgb(36,41,55);
-    state=B_IDLE; addr_focus=0; scroll=0;
+    state=B_IDLE; addr_focus=1; scroll=0;
     hc=0; hp=-1;
     addr[0]=0; addrlen=0;
     inited=1;
@@ -243,6 +257,13 @@ static void key_input(void)
 {
     char c;
     while (ps2_read_key(&c)) {
+        if (c == 0x0c) {
+            addr_focus = 1;
+            addr[0] = 0; addrlen = 0;
+            continue;
+        }
+        if (!addr_focus)
+            continue;
         if (c=='\r'||c=='\n') {
             if (addrlen) { char full[180]; resolve_url(addr,full);
                 load_url(full,1); addr_focus=0; }
@@ -259,7 +280,23 @@ int browser_frame(int mx, int my, int clicked)
     if (!inited)
         browser_open();
     int S = ui_scale();
-    if (ui_window(&W,"JBrowser",mx,my,clicked))
+    char wt[160];
+    if (page_title[0]) {
+        int wl = (int)strlen(page_title);
+        if (wl > 100) wl = 100;
+        int k = 0;
+        const char *pre = "JBrowser - ";
+        while (*pre && k < 150) wt[k++] = *pre++;
+        int q = 0;
+        while (q < wl && k < 158) wt[k++] = page_title[q++];
+        wt[k] = 0;
+    } else {
+        const char *t = "JBrowser";
+        int k = 0;
+        while (*t) wt[k++] = *t++;
+        wt[k] = 0;
+    }
+    if (ui_window(&W, wt, mx, my, clicked))
         return 1;
 
     {
@@ -269,13 +306,11 @@ int browser_frame(int mx, int my, int clicked)
             serial_puts(" http="); serial_putc('0'+http_state(1));
             serial_puts(" body="); serial_puthex(http_body_len(1));
             serial_puts(" nl="); serial_puthex(nlines);
-            serial_puts(" scr="); serial_puthex(scroll);
             serial_putc('\n'); ls = state;
         }
     }
 
-    if (addr_focus)
-        key_input();
+    key_input();
 
     int top = W.y + 40*S;
     int bx = W.x + 12*S;
@@ -287,8 +322,10 @@ int browser_frame(int mx, int my, int clicked)
         if (hp<hc-1) { hp++; load_url(hist[hp],0); }
     if (ui_button(bx+120*S, top, 64*S, 28*S,"Reload",0,mx,my,clicked))
         load_url(hist[hp],0);
+    if (ui_button(bx+190*S, top, 54*S, 28*S,"Home",0,mx,my,clicked))
+        load_url("http://10.0.2.2/",1);
 
-    int ax = bx + 192*S, aw = bw - 192*S - 44*S;
+    int ax = bx + 252*S, aw = bw - 252*S - 44*S;
     ui_rect(ax, top, aw, 28*S, fb_rgb(18,21,30));
     ui_border(ax, top, aw, 28*S, addr_focus?fb_rgb(120,180,255)
                                           :fb_rgb(90,100,130));
@@ -302,14 +339,46 @@ int browser_frame(int mx, int my, int clicked)
     else if (clicked)
         addr_focus=0;
 
-    int cy0 = top + 38*S;
+    /* status line */
+    int staty = top + 36*S;
+    int cy0 = top + 60*S;
     int content_h = W.y + W.h - 20*S - cy0;
+    if (state == B_LOADING) {
+        gfx_draw_string(bx, staty, c_dim, fb_rgb(24,27,38), "Loading...");
+    } else if (state == B_LOADED) {
+        char st[40];
+        int k = 0;
+        const char *a = "HTTP ";
+        while (*a) st[k++] = *a++;
+        int code = last_status;
+        if (code >= 100) {
+            st[k++] = '0' + code/100;
+            st[k++] = '0' + (code/10)%10;
+            st[k++] = '0' + code%10;
+        }
+        st[k++] = ' ';
+        const char *m = code==200 ? "OK" : code==404 ? "Not Found"
+                      : code==403 ? "Forbidden" : code==500 ? "Server Error"
+                      : code==301||code==302 ? "Redirected"
+                      : code==0 ? "OK" : "";
+        while (*m) st[k++] = *m++;
+        st[k] = 0;
+        gfx_draw_string(bx, staty,
+                        code==200||code==0 ? fb_rgb(120,220,150)
+                                           : fb_rgb(240,200,120),
+                        fb_rgb(24,27,38), st);
+    } else if (state == B_FAIL) {
+        gfx_draw_string(bx, staty, fb_rgb(240,150,120), fb_rgb(24,27,38),
+                        "Status: connection failed");
+    }
+
     ui_rect(bx, cy0, bw, content_h, c_bg);
 
     if (state == B_LOADING) {
         http_poll_client(1);
         gfx_draw_string(bx+12*S, cy0+10*S, c_dim, c_bg, "Loading...");
         if (http_ok(1)) {
+            last_status = http_status(1);
             layout(http_body(1), http_body_len(1));
             state = B_LOADED;
         } else if (http_failed(1)) {
@@ -347,8 +416,20 @@ int browser_frame(int mx, int my, int clicked)
             }
         }
     } else if (state == B_FAIL) {
-        gfx_draw_string(bx+12*S,cy0+10*S,fb_rgb(240,180,120),c_bg,
-            "Failed to load page. Check network / URL.");
+        int is_https = !strncmp(addr, "https://", 8);
+        gfx_draw_string(bx+12*S, cy0+10*S, c_title, c_bg,
+                        "This site can't be reached");
+        if (is_https) {
+            gfx_draw_string(bx+12*S, cy0+40*S, c_text, c_bg,
+                "HTTPS pages are not supported yet (TLS stack planned).");
+            gfx_draw_string(bx+12*S, cy0+64*S, c_dim, c_bg,
+                "Try an http:// address such as http://10.0.2.2/");
+        } else {
+            gfx_draw_string(bx+12*S, cy0+40*S, c_text, c_bg,
+                "Check network (DHCP), the URL and that the host is up.");
+            gfx_draw_string(bx+12*S, cy0+64*S, c_dim, c_bg,
+                "JackBOT Browser supports plain HTTP sites.");
+        }
     }
 
     int sx = bx + bw - 30*S;

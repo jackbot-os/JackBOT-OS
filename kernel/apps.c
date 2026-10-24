@@ -21,6 +21,13 @@ void notepad_open(void);  int notepad_frame(int, int, int);
 void monitor_open(void);  int monitor_frame(int, int, int);
 void python_open(void);   int python_frame(int, int, int);
 void jca_open(void);      int jca_frame(int, int, int);
+void usbdev_open(void);   int usbdev_frame(int, int, int);
+void battery_open(void);  int battery_frame(int, int, int);
+void recycleapp_open(void); int recycleapp_frame(int, int, int);
+void files_open(void);    int files_frame(int, int, int);
+void devices_open(void);  int devices_frame(int, int, int);
+void voice_open(void);    int voice_frame(int, int, int);
+void bluetooth_open(void); int bluetooth_frame(int, int, int);
 
 typedef void (*openfn)(void);
 typedef int (*framefn)(int, int, int);
@@ -61,6 +68,13 @@ static void setup(void)
     set(APP_MONITOR, "System Monitor", monitor_open, monitor_frame);
     set(APP_PYTHON, "Python", python_open, python_frame);
     set(APP_JCA, "JCA Studio", jca_open, jca_frame);
+    set(APP_USB, "USB Devices", usbdev_open, usbdev_frame);
+    set(APP_BATTERY, "Battery & Power", battery_open, battery_frame);
+    set(APP_RECYCLE, "Recycle Bin", recycleapp_open, recycleapp_frame);
+    set(APP_FILES, "File Explorer", files_open, files_frame);
+    set(APP_DEVICES, "Device Manager", devices_open, devices_frame);
+    set(APP_VOICE, "Jbot Voice", voice_open, voice_frame);
+    set(APP_BLUETOOTH, "Bluetooth", bluetooth_open, bluetooth_frame);
     done = 1;
 }
 
@@ -90,7 +104,9 @@ const char *app_name(int id)
 int app_persistent(int id)
 {
     return id == APP_DISKMGR || id == APP_ABOUT || id == APP_NOTEPAD
-        || id == APP_MONITOR || id == APP_PYTHON || id == APP_JCA;
+        || id == APP_MONITOR || id == APP_PYTHON || id == APP_JCA
+        || id == APP_USB || id == APP_BATTERY || id == APP_RECYCLE
+        || id == APP_FILES || id == APP_DEVICES;
 }
 
 int app_refresh_period(int id)

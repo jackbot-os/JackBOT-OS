@@ -28,6 +28,7 @@ struct payload_mod {
 void payload_collect(uint64_t mb_info);
 const struct payload_mod *payload_find(const char *name);
 int payload_live_mode(void);
+int payload_live_desktop(void);
 int payload_count(void);
 
 #endif

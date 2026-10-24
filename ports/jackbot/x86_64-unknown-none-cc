@@ -1,0 +1,5 @@
+#!/bin/sh
+# Cross compiler wrapper for the JackBOT x86_64-unknown-none target.
+# Hides the clang target/sysroot flags so autotools sees a single CC name
+# (no embedded spaces in $CC).
+exec clang --target=x86_64-unknown-none --sysroot=/root/sysroot "$@"

@@ -1,0 +1,33 @@
+# Meson cross file for building picolibc for the JackBOT x86_64 bare-metal kernel.
+# Used at CPython milestone M1 (see PORTING.md): the resulting libc.a provides
+# the hosted C runtime that the upstream CPython build expects; the actual
+# system calls live in jackbot_syscalls.c.
+#
+# Target: x86_64-unknown-none (no kernel, no ELF loader).
+#
+# SSE/SSE2 is part of the x86_64 baseline and the SysV psABI returns floats in
+# xmm0, so the user-space libc MUST keep SSE enabled (picoclibc's strtof/strtold
+# fail to compile with -mno-sse). The kernel runs with vector units disabled in
+# kernel context; the task that hosts CPython must enable CR4.OSFXSAVE and
+# save/restore FXSAVE around the user context (tracked in M2). We keep
+# -mno-red-zone so the code is interrupt-safe and freestanding with no stack
+# protector (no __stack_chk_fail on bare metal).
+
+[binaries]
+c = ['clang', '--target=x86_64-unknown-none', '-nostdlib', '-mno-red-zone', '-fno-stack-protector', '-ffreestanding']
+ar = 'llvm-ar'
+as = ['clang', '--target=x86_64-unknown-none', '-c']
+strip = 'llvm-strip'
+ranlib = 'llvm-ranlib'
+ld = 'ld.lld'
+
+[built-in options]
+c_args = []
+buildtype = 'release'
+default_library = 'static'
+
+[host_machine]
+system = 'unknown'
+cpu_family = 'x86_64'
+cpu = 'x86_64'
+endian = 'little'

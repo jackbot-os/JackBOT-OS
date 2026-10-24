@@ -294,3 +294,152 @@ void ac97_play_warn(void)
             kfree(d);
     }
 }
+
+/* ---------------- synthesized cue tones ---------------- */
+
+/* 256-entry integer sine table, amplitude 9000 (16-bit). */
+static const int16_t sine256[256] = {
+         0,    221,    442,    662,    882,   1102,   1321,   1539,
+      1756,   1972,   2187,   2400,   2613,   2823,   3032,   3239,
+      3444,   3647,   3848,   4047,   4243,   4436,   4627,   4815,
+      5000,   5182,   5361,   5537,   5710,   5879,   6044,   6206,
+      6364,   6518,   6669,   6815,   6957,   7095,   7229,   7358,
+      7483,   7604,   7720,   7831,   7937,   8039,   8136,   8228,
+      8315,   8397,   8474,   8546,   8612,   8674,   8730,   8781,
+      8827,   8867,   8903,   8932,   8957,   8976,   8989,   8997,
+      9000,   8997,   8989,   8976,   8957,   8932,   8903,   8867,
+      8827,   8781,   8730,   8674,   8612,   8546,   8474,   8397,
+      8315,   8228,   8136,   8039,   7937,   7831,   7720,   7604,
+      7483,   7358,   7229,   7095,   6957,   6815,   6669,   6518,
+      6364,   6206,   6044,   5879,   5710,   5537,   5361,   5182,
+      5000,   4815,   4627,   4436,   4243,   4047,   3848,   3647,
+      3444,   3239,   3032,   2823,   2613,   2400,   2187,   1972,
+      1756,   1539,   1321,   1102,    882,    662,    442,    221,
+         0,   -221,   -442,   -662,   -882,  -1102,  -1321,  -1539,
+     -1756,  -1972,  -2187,  -2400,  -2613,  -2823,  -3032,  -3239,
+     -3444,  -3647,  -3848,  -4047,  -4243,  -4436,  -4627,  -4815,
+     -5000,  -5182,  -5361,  -5537,  -5710,  -5879,  -6044,  -6206,
+     -6364,  -6518,  -6669,  -6815,  -6957,  -7095,  -7229,  -7358,
+     -7483,  -7604,  -7720,  -7831,  -7937,  -8039,  -8136,  -8228,
+     -8315,  -8397,  -8474,  -8546,  -8612,  -8674,  -8730,  -8781,
+     -8827,  -8867,  -8903,  -8932,  -8957,  -8976,  -8989,  -8997,
+     -9000,  -8997,  -8989,  -8976,  -8957,  -8932,  -8903,  -8867,
+     -8827,  -8781,  -8730,  -8674,  -8612,  -8546,  -8474,  -8397,
+     -8315,  -8228,  -8136,  -8039,  -7937,  -7831,  -7720,  -7604,
+     -7483,  -7358,  -7229,  -7095,  -6957,  -6815,  -6669,  -6518,
+     -6364,  -6206,  -6044,  -5879,  -5710,  -5537,  -5361,  -5182,
+     -5000,  -4815,  -4627,  -4436,  -4243,  -4047,  -3848,  -3647,
+     -3444,  -3239,  -3032,  -2823,  -2613,  -2400,  -2187,  -1972,
+     -1756,  -1539,  -1321,  -1102,   -882,   -662,   -442,   -221,
+};
+
+void ac97_tone(int freq_hz, int ms)
+{
+    if (!present || freq_hz < 40 || freq_hz > 8000 || ms <= 0)
+        return;
+    if (ms > 800)
+        ms = 800;
+    uint32_t n = (uint32_t)AC97_RATE * (uint32_t)ms / 1000;
+    int16_t *buf = kmalloc(n * 2);
+    if (!buf)
+        return;
+    /* phase increment in 16.16 fixed point per sample */
+    uint32_t step = (uint32_t)((uint64_t)freq_hz * 65536 / AC97_RATE);
+    uint32_t phase = 0;
+    uint32_t fade = AC97_RATE / 100;   /* 10 ms fade in/out */
+    for (uint32_t i = 0; i < n; i++) {
+        int s = sine256[(phase >> 16) & 255];
+        phase += step;
+        uint32_t g = 256;
+        if (i < fade)
+            g = i * 256 / fade;
+        else if (i > n - fade)
+            g = (n - i) * 256 / fade;
+        buf[i] = (int16_t)(s * (int)g / 256);
+    }
+    ac97_play_pcm(buf, n * 2);
+    kfree(buf);
+}
+
+/* ---------------- microphone capture (MC channel) ---------------- */
+
+static int mic_on;
+static uint32_t mic_bdl_phys;
+static uint32_t mic_buf_phys;
+static uint32_t mic_buf_bytes;
+
+int ac97_mic_running(void) { return mic_on; }
+
+int ac97_mic_init(void)
+{
+    if (!present)
+        return 0;
+    if (mic_on)
+        return 1;
+
+    /* mixer: select MIC as record source, unmute mic + gain */
+    codecw(0x1a, 0x0000);   /* record select: microphone */
+    codecw(0x1c, 0x0000);   /* record gain: max, unmuted */
+    codecw(0x0e, 0x0080);   /* mic volume: 0 dB gain, unmute (bit15=0) */
+
+    /* two contiguous pages for the ring buffer + a BDL page */
+    void *bdl = pmm_alloc_page_below(0x40000000ull);
+    void *pg0 = pmm_alloc_page_below(0x40000000ull);
+    void *pg1 = pmm_alloc_page_below(0x40000000ull);
+    if (!bdl || !pg0 || !pg1)
+        return 0;
+    memset(bdl, 0, PAGE);
+    memset(pg0, 0, PAGE);
+    memset(pg1, 0, PAGE);
+    mic_bdl_phys = (uint32_t)(uintptr_t)bdl;
+    mic_buf_phys = (uint32_t)(uintptr_t)pg0;
+    mic_buf_bytes = PAGE * 2;
+
+    struct bdl_entry *e = (void *)(uintptr_t)mic_bdl_phys;
+    e[0].addr = mic_buf_phys;
+    e[0].len = PAGE / 2;
+    e[0].flags = 0x8000;
+    e[1].addr = mic_buf_phys + PAGE;
+    e[1].len = PAGE / 2;
+    e[1].flags = 0x8000;
+
+    hal_outb(bm_base + 0x2b, 0x02);   /* MC reset */
+    ac_tick_wait(2);
+    hal_outb(bm_base + 0x2b, 0x00);
+    hal_outl(bm_base + 0x20, mic_bdl_phys);
+    hal_outb(bm_base + 0x25, 1);      /* last valid index = 1 */
+    hal_outb(bm_base + 0x2b, 0x0d);   /* run + interrupt enables */
+
+    mic_on = 1;
+    serial_puts("[AC97] mic capture started\n");
+    return 1;
+}
+
+int ac97_mic_level(void)
+{
+    if (!mic_on)
+        return -1;
+    /* read the current controller index to sample fresh data */
+    uint8_t civ = hal_inb(bm_base + 0x24);
+    uint32_t off = (uint32_t)civ * PAGE;
+    if (off >= mic_buf_bytes)
+        off = 0;
+    const int16_t *buf = (const void *)(uintptr_t)mic_buf_phys;
+    uint32_t sample_off = off / 2;
+    uint32_t total = 4096;
+    uint64_t acc = 0;
+    for (uint32_t i = 0; i < total; i++) {
+        int16_t v = buf[(sample_off + i) % (mic_buf_bytes / 2)];
+        acc += (uint32_t)(v * v);
+    }
+    int rms = (int)(acc / total);
+    /* rms is squared amplitude; sqrt by rough table-free approximation */
+    int s = 0;
+    while ((s + 1) * (s + 1) <= rms)
+        s++;
+    /* map ~300..12000 amplitude to 0..100 */
+    int lvl = (s - 300) * 100 / 11700;
+    if (lvl < 0) lvl = 0;
+    if (lvl > 100) lvl = 100;
+    return lvl;
+}

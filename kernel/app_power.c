@@ -3,6 +3,7 @@
 #include <kernel/fb.h>
 #include <kernel/gfxtext.h>
 #include <kernel/ui.h>
+#include <kernel/acpi.h>
 
 static struct ui_win W;
 static char msg[72];
@@ -10,10 +11,14 @@ static int inited;
 
 static void pwr_off(void)
 {
-    __asm__ volatile("mov $0x2000,%%ax; mov $0x604,%%dx; outw %%ax,%%dx"
-                     : : : "ax", "dx");
-    __asm__ volatile("mov $0x3400,%%ax; mov $0x4004,%%dx; outw %%ax,%%dx"
-                     : : : "ax", "dx");
+    /* 优先走真实 ACPI S5（FADT PM1 控制块）；失败再回退虚拟机端口。 */
+    if (acpi_poweroff() != 0) {
+        __asm__ volatile("mov $0x2000,%%ax; mov $0x604,%%dx; outw %%ax,%%dx"
+                         : : : "ax", "dx");
+        __asm__ volatile("mov $0x3400,%%ax; mov $0x4004,%%dx; outw %%ax,%%dx"
+                         : : : "ax", "dx");
+    }
+    __asm__ volatile("cli");
     for (;;)
         __asm__ volatile("hlt");
 }

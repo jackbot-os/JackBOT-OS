@@ -8,4 +8,4 @@ make clean
 make iso
 
 echo "=== result ==="
-ls -la build/JackBOT-0.5.0.iso
+ls -la build/JackBOT-1.0.0.iso

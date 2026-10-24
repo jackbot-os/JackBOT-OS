@@ -22,6 +22,13 @@ enum {
     APP_MONITOR,
     APP_PYTHON,
     APP_JCA,
+    APP_USB,
+    APP_BATTERY,
+    APP_RECYCLE,
+    APP_FILES,
+    APP_DEVICES,
+    APP_VOICE,
+    APP_BLUETOOTH,
     APP_LIMIT
 };
 

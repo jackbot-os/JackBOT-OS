@@ -43,6 +43,11 @@
 #define TCTL_COLD 0x00400000
 #define TIPG_VAL  0x0060200A
 
+#define CTRL_ASDE 0x00000020
+#define CTRL_SLU  0x00000040
+#define CTRL_FRCSPD 0x00000800
+#define CTRL_FRCDPLX 0x00001000
+
 #define RCTL_EN    0x00000002
 #define RCTL_BAM   0x00008000
 #define RCTL_SECRC 0x00000020
@@ -129,6 +134,15 @@ int e1000_init(void)
                      PTE_PRESENT | PTE_WRITABLE | PTE_PCD | PTE_PWT);
     mmio = (volatile uint8_t *)MMIO_VBASE;
 
+    {
+        uint32_t ctrl = rd(REG_CTRL);
+        ctrl &= ~(uint32_t)(CTRL_FRCSPD | CTRL_FRCDPLX);
+        ctrl |= CTRL_ASDE | CTRL_SLU;
+        wr(REG_CTRL, ctrl);
+        for (volatile int z = 0; z < 10000; z++)
+            ;
+    }
+
     wr(REG_IMC, 0xFFFFFFFF);
     (void)rd(REG_ICR);
 
@@ -204,6 +218,10 @@ int e1000_init(void)
         if (i < 5)
             serial_putc(':');
     }
+    serial_puts(" STATUS="); serial_puthex(rd(REG_STATUS));
+    serial_puts(" RCTL="); serial_puthex(rd(REG_RCTL));
+    serial_puts(" RDH="); serial_puthex(rd(REG_RDH));
+    serial_puts(" RDT="); serial_puthex(rd(REG_RDT));
     serial_putc('\n');
     return 1;
 }

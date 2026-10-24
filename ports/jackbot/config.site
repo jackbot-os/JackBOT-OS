@@ -1,0 +1,14 @@
+# config.site for cross-building CPython 3.12 for JackBOT (bare metal, picolibc).
+#
+# When cross compiling, autotools cannot execute target binaries, so the
+# checks that require running a program (or that depend on device files that
+# do not exist on bare metal) are answered here. Values are the correct
+# answers for a bare-metal kernel: no /dev/ptmx pseudo-terminals, no
+# getaddrinfo behaviour to probe, no timezone tzset path.
+#
+# This file is extended from the REAL configure errors, not speculatively.
+
+ac_cv_file__dev_ptmx=no
+ac_cv_file__dev_ptc=no
+ac_cv_buggy_getaddrinfo=no
+ac_cv_working_tzset=no

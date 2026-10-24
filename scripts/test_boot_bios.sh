@@ -11,7 +11,7 @@ rm -f "$LOG"
 timeout -s KILL 20 qemu-system-x86_64 \
     -machine pc \
     -m 512 \
-    -cdrom build/JackBOT-0.5.0.iso \
+    -cdrom build/JackBOT-1.0.0.iso \
     -display none \
     -serial file:"$LOG" || true
 

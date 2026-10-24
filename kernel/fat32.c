@@ -254,12 +254,23 @@ static int mkdir_in(uint32_t parent, const uint8_t nm[11])
     return (int)nc;
 }
 
+static char *next_sep(char *s)
+{
+    char *a = strchr(s, '/');
+    char *b = strchr(s, '\\');
+    if (!a)
+        return b;
+    if (!b)
+        return a;
+    return a < b ? a : b;
+}
+
 static int resolve_path(const char *path, uint8_t finalname[11],
                         uint32_t *dirc, int create)
 {
     if (!path)
         return -1;
-    if (!strchr(path, '/')) {
+    if (!next_sep((char *)path)) {
         fmt_name(path, finalname);
         *dirc = root_cluster;
         return 0;
@@ -275,7 +286,7 @@ static int resolve_path(const char *path, uint8_t finalname[11],
     uint32_t cur = root_cluster;
     char *p = work;
     for (;;) {
-        char *s = strchr(p, '/');
+        char *s = next_sep(p);
         if (!s) {
             fmt_name(p, finalname);
             *dirc = cur;
@@ -785,4 +796,193 @@ uint32_t fat_free_bytes(void)
         }
     }
     return freec * (uint32_t)spc * bps;
+}
+
+/* ================= 目录列举 / 文件移动 ================= */
+
+static const int lfn_offs[13] = {1, 3, 5, 7, 9, 14, 16, 18, 20, 22, 24, 28, 30};
+
+/* 由 32 字节目录项还原 8.3 短名（去掉空格填充，补回扩展名点号） */
+static void short_name_from_entry(const uint8_t *e, char out[13])
+{
+    int p = 0;
+    for (int i = 0; i < 8; i++) {
+        if (e[i] == ' ')
+            break;
+        unsigned char c = e[i];
+        if (i == 0 && c == 0x05)
+            c = 0xE5; /* FAT 约定：首字节 0x05 表示真实 0xE5 */
+        out[p++] = (char)c;
+    }
+    if (e[8] != ' ') {
+        out[p++] = '.';
+        for (int i = 8; i < 11; i++) {
+            if (e[i] == ' ')
+                break;
+            out[p++] = (char)e[i];
+        }
+    }
+    out[p] = 0;
+}
+
+/* 把目录路径解析为它自身的首簇号。"" / "/" 表示根目录。 */
+static int resolve_dir_cluster(const char *dir83, uint32_t *outc)
+{
+    if (!dir83 || !dir83[0] || (dir83[0] == '/' && !dir83[1])) {
+        *outc = root_cluster;
+        return 0;
+    }
+    uint8_t nm[11];
+    uint32_t parent;
+    if (resolve_path(dir83, nm, &parent, 0) < 0)
+        return -1;
+    dpos_t dp;
+    if (dir_find(parent, nm, 0, &dp) < 0)
+        return -1;
+    if (!(cbuf[dp.off + 11] & 0x10))
+        return -1; /* 不是目录 */
+    *outc = (uint32_t)rd16(cbuf + dp.off + 26) |
+            ((uint32_t)rd16(cbuf + dp.off + 20) << 16);
+    return 0;
+}
+
+int fat_list_dir(const char *dir83, struct fat_dirent *out, int max)
+{
+    if (!is_mounted || !out || max <= 0)
+        return -1;
+
+    uint32_t dirc;
+    if (resolve_dir_cluster(dir83, &dirc) < 0)
+        return -1;
+
+    uint16_t lfn[21][13];
+    uint8_t have[21];
+    uint8_t cksum = 0;
+    int anylfn = 0;
+    mymemset(have, 0, sizeof have);
+
+    int n = 0;
+    uint32_t csize = (uint32_t)spc * bps;
+    uint32_t c = dirc;
+    while (c >= 2 && c < EOC) {
+        if (read_cluster(c, cbuf) < 0)
+            return -1;
+        for (uint32_t o = 0; o < csize; o += 32) {
+            uint8_t *e = cbuf + o;
+            if (e[0] == 0x00)
+                return n; /* 目录结束 */
+            if (e[0] == 0xE5)
+                continue; /* 已删除槽 */
+
+            uint8_t attr = e[11];
+            if (attr == 0x0F) {
+                /* LFN 长名条目 */
+                uint8_t seq = e[0] & 0x3F;
+                if (e[0] & 0x40) {
+                    mymemset(have, 0, sizeof have);
+                    anylfn = 1;
+                    cksum = e[13];
+                }
+                if (seq >= 1 && seq <= 20) {
+                    for (int k = 0; k < 13; k++)
+                        lfn[seq][k] =
+                            (uint16_t)e[lfn_offs[k]] |
+                            ((uint16_t)e[lfn_offs[k] + 1] << 8);
+                    have[seq] = 1;
+                }
+                continue;
+            }
+
+            if (attr & 0x08) { /* 卷标 */
+                mymemset(have, 0, sizeof have);
+                anylfn = 0;
+                continue;
+            }
+
+            char sn[13];
+            short_name_from_entry(e, sn);
+            int is_dir = (attr & 0x10) != 0;
+
+            /* 跳过 "." 与 ".." */
+            if (is_dir && e[0] == '.') {
+                mymemset(have, 0, sizeof have);
+                anylfn = 0;
+                continue;
+            }
+
+            if (n >= max)
+                return n;
+
+            struct fat_dirent *de = &out[n];
+            de->name[0] = 0;
+            if (anylfn && lfn_checksum(e) == cksum) {
+                int p = 0;
+                for (int seq = 1; seq <= 20 && p < FAT_DENT_NAME_MAX - 1;
+                     seq++) {
+                    if (!have[seq])
+                        break;
+                    for (int k = 0; k < 13; k++) {
+                        uint16_t u = lfn[seq][k];
+                        if (u == 0x0000 || u == 0xFFFF)
+                            goto lfn_done;
+                        de->name[p++] = (char)(u & 0xFF);
+                    }
+                }
+            lfn_done:
+                de->name[p] = 0;
+            }
+            if (!de->name[0])
+                strcpy(de->name, sn);
+            strcpy(de->short83, sn);
+            de->is_dir = (uint8_t)is_dir;
+            de->size = rd32(e + 28);
+            de->cluster = (uint32_t)rd16(e + 26) |
+                          ((uint32_t)rd16(e + 20) << 16);
+            n++;
+
+            mymemset(have, 0, sizeof have);
+            anylfn = 0;
+        }
+        c = fat_get(c);
+    }
+    return n;
+}
+
+int fat_dir_exists(const char *path83)
+{
+    if (!is_mounted)
+        return 0;
+    uint32_t c;
+    return resolve_dir_cluster(path83, &c) == 0 ? 1 : 0;
+}
+
+#define FAT_MOVE_MAX (8u * 1024u * 1024u)
+
+int fat_move(const char *src83, const char *dst83)
+{
+    if (!is_mounted || !src83 || !dst83)
+        return -1;
+
+    uint32_t size = 0;
+    if (fat_file_size(src83, &size) != 0)
+        return -1;
+    if (size > FAT_MOVE_MAX)
+        return -2;
+
+    uint8_t *buf = kmalloc(size ? size : 1);
+    if (!buf)
+        return -3;
+
+    uint32_t got = 0;
+    int rc = -1;
+    if (fat_read_file(src83, buf, size ? size : 1, &got) != 0)
+        goto out;
+    if (fat_write_file(dst83, buf, got) != 0)
+        goto out;
+    if (fat_delete(src83) != 0)
+        goto out;
+    rc = 0;
+out:
+    kfree(buf);
+    return rc;
 }

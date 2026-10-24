@@ -69,7 +69,7 @@ static uint32_t wp_color(int idx, int x, int y, int w, int h)
     int v = (y * 255) / (h - 1);
     switch (idx) {
     case 0:
-        return lerp_c(fb_rgb(18, 42, 96), fb_rgb(70, 140, 220), v);
+        return lerp_c(fb_rgb(8, 18, 48), fb_rgb(38, 112, 205), v);
     case 1: {
         int t = (u + v) / 2;
         return lerp_c(fb_rgb(90, 30, 110), fb_rgb(240, 140, 70), t);
@@ -108,7 +108,7 @@ static void render_wallpaper(void)
                     wp_color(wp_index, x, y, w, h);
         for (int y = h; y < H; y++)
             for (int x = 0; x < w; x++)
-                wp_buf[(uint64_t)y * w + x] = fb_rgb(20, 22, 30);
+                wp_buf[(uint64_t)y * w + x] = fb_rgb(16, 18, 28);
         wp_dirty = 0;
     }
     fb_blit_full(wp_buf);
@@ -148,19 +148,23 @@ static int button2(int x, int y, int w, int h, const char *label, int sel,
                    int mx, int my, int clicked)
 {
     int hov = inside(mx, my, x, y, w, h);
-    uint32_t base;
-    if (sel)
-        base = fb_rgb(60, 120, 90);
-    else if (hov)
-        base = fb_rgb(70, 110, 190);
-    else
-        base = fb_rgb(48, 60, 92);
+    uint32_t base, edge;
+    if (sel) {
+        base = fb_rgb(38, 128, 96);
+        edge = fb_rgb(110, 220, 170);
+    } else if (hov) {
+        base = fb_rgb(52, 104, 190);
+        edge = fb_rgb(140, 180, 250);
+    } else {
+        base = fb_rgb(40, 72, 128);
+        edge = fb_rgb(100, 130, 185);
+    }
     draw_rect(x, y, w, h, base);
-    draw_border(x, y, w, h, fb_rgb(120, 140, 190));
+    draw_border(x, y, w, h, edge);
     int tw = gfx_text_width(label);
     gfx_draw_string(x + (w - tw) / 2,
                     y + (h - gfx_text_height()) / 2,
-                    fb_rgb(235, 240, 250), base, label);
+                    fb_rgb(240, 245, 255), base, label);
     return clicked && hov;
 }
 
@@ -182,12 +186,26 @@ static void draw_taskbar(int mx, int my, int clicked, int *start_click,
     if (wp_x < 112 * S + 110 * S) wp_x = 112 * S + 110 * S;
     set_x = wp_x + (128 * S);
     jb_x = set_x + (118 * S);
-    draw_rect(0, top, w, BAR, fb_rgb(24, 27, 36));
-    if (button2(10 * S, top + 4 * S, 90 * S, bh,
-                "Start", start_open, mx, my, clicked))
-        *start_click = 1;
-    gfx_draw_string(112 * S, top + 6 * S, fb_rgb(120, 200, 255),
-                    fb_rgb(24, 27, 36), "JackBOT OS");
+    draw_rect(0, top, w, BAR, fb_rgb(16, 18, 28));
+    /* accent line on the taskbar top edge */
+    draw_rect(0, top, w, 2 * S, fb_rgb(46, 110, 200));
+    /* Start: blue accent button */
+    {
+        int sx = 10 * S, sy = top + 4 * S, sw = 90 * S, sh = bh;
+        int shov = inside(mx, my, sx, sy, sw, sh);
+        uint32_t sb = start_open ? fb_rgb(60, 120, 210)
+                     : shov ? fb_rgb(50, 105, 195)
+                            : fb_rgb(28, 82, 168);
+        draw_rect(sx, sy, sw, sh, sb);
+        draw_border(sx, sy, sw, sh, fb_rgb(110, 170, 255));
+        int tw = gfx_text_width("Start");
+        gfx_draw_string(sx + (sw - tw) / 2, sy + (sh - gfx_text_height()) / 2,
+                        fb_rgb(255, 255, 255), sb, "Start");
+        if (clicked && shov)
+            *start_click = 1;
+    }
+    gfx_draw_string(112 * S, top + 6 * S, fb_rgb(90, 200, 255),
+                    fb_rgb(16, 18, 28), "JackBOT OS");
     if (button2(wp_x, top + 4 * S, 120 * S, bh,
                 tr(STR_WALLPAPER), 0, mx, my, clicked))
         *wp_click = 1;
@@ -205,8 +223,8 @@ static void draw_taskbar(int mx, int my, int clicked, int *start_click,
     clk[3] = d[mm / 10]; clk[4] = d[mm % 10]; clk[5] = ':';
     clk[6] = d[ss / 10]; clk[7] = d[ss % 10]; clk[8] = 0;
     int cw = gfx_text_width(clk);
-    gfx_draw_string(w - cw - 12 * S, top + 6 * S, fb_rgb(220, 225, 235),
-                    fb_rgb(24, 27, 36), clk);
+    gfx_draw_string(w - cw - 12 * S, top + 6 * S, fb_rgb(225, 232, 245),
+                    fb_rgb(16, 18, 28), clk);
 }
 
 static int pWX, pWY, pWW, pWH, CW, CH;
@@ -647,20 +665,28 @@ void desktop_run(void)
 
     if (start_open) {
         int mw = 240 * S;
-        int mh = (APP_LIMIT - APP_POWER) * 34 * S + 10 * S;
+        int titleh = 30 * S;
+        int mh = titleh + (APP_LIMIT - APP_POWER) * 34 * S + 8 * S;
         int bx = 10 * S, by = (int)fb_height() - BAR - mh - 4 * S;
+        int rad = 8 * S;
         mX = bx; mY = by; mW = mw; mH = mh;
-        draw_rect(bx, by, mw, mh, fb_rgb(34, 38, 52));
-        draw_border(bx, by, mw, mh, fb_rgb(110, 130, 170));
+        ui_round_rect(bx, by, mw, mh, rad, fb_rgb(30, 34, 48));
+        ui_round_border(bx, by, mw, mh, rad, fb_rgb(90, 140, 210));
+        /* blue title strip */
+        ui_rect(bx + rad, by, mw - 2 * rad, titleh, fb_rgb(30, 64, 122));
+        ui_rect(bx, by + rad, mw, titleh - rad, fb_rgb(30, 64, 122));
+        gfx_draw_string(bx + 14 * S, by + 8 * S, fb_rgb(235, 242, 255),
+                        fb_rgb(30, 64, 122), "JackBOT OS 1.0");
         for (int id = APP_POWER; id < APP_LIMIT; id++) {
             int i = id - APP_POWER;
-            int iy = by + 6 * S + i * 34 * S;
+            int iy = by + titleh + 2 * S + i * 34 * S;
             int hov = inside(mx, my, bx + 4, iy, mw - 8, 30 * S);
             int hl = hov || (start_open && i == menu_sel);
             if (hl)
-                draw_rect(bx + 4, iy, mw - 8, 30 * S, fb_rgb(58, 78, 120));
-            gfx_draw_string(bx + 16 * S, iy + 7 * S, fb_rgb(220, 228, 240),
-                            hl ? fb_rgb(58, 78, 120) : fb_rgb(34, 38, 52),
+                ui_round_rect(bx + 4, iy, mw - 8, 30 * S, 4 * S,
+                              fb_rgb(52, 92, 160));
+            gfx_draw_string(bx + 16 * S, iy + 7 * S, fb_rgb(224, 232, 246),
+                            hl ? fb_rgb(52, 92, 160) : fb_rgb(30, 34, 48),
                             app_name(id));
             if (clicked && hov) {
                 app_open(id);

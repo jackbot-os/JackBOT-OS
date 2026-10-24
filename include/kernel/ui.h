@@ -7,6 +7,8 @@ int ui_scale(void);
 
 void ui_rect(int x, int y, int w, int h, uint32_t c);
 void ui_border(int x, int y, int w, int h, uint32_t c);
+void ui_round_rect(int x, int y, int w, int h, int r, uint32_t c);
+void ui_round_border(int x, int y, int w, int h, int r, uint32_t c);
 int ui_inside(int px, int py, int x, int y, int w, int h);
 
 int ui_button(int x, int y, int w, int h, const char *label, int sel,

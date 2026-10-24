@@ -37,7 +37,7 @@ int about_frame(int mx, int my, int clicked)
     int y = W.y + 56 * S;
 
     gfx_draw_string_wide(x0, y, fb_rgb(90, 150, 255), bg,
-                         "JackBOT OS  v0.5.0");
+                         "JackBOT OS  v1.0.0");
     y += 40 * S;
     gfx_draw_string_wide(x0, y, fb_rgb(200, 210, 226), bg,
                          "自研 64 位操作系统  x86_64 架构");

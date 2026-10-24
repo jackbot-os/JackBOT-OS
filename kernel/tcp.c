@@ -248,11 +248,13 @@ int tcp_close(int s)
     struct tcp_sock *p = &socks[s];
     if (!p->used)
         return -1;
-    if (p->state == TS_ESTABLISHED) {
+    if (p->state == TS_ESTABLISHED || p->state == TS_CLOSE_WAIT ||
+        p->state == TS_FIN_WAIT) {
         send_seg(p, TCP_FIN | TCP_ACK, 0, 0, 0, 0, p->snd_nxt);
         p->snd_nxt++;
-        p->state = TS_FIN_WAIT;
     }
+    p->used = 0;
+    p->state = TS_CLOSED;
     return 0;
 }
 
