@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>JackBOT OS Official Website | v0.5.0 EastLake</title>
-    <meta name="description" content="JackBOT OS v0.5.0 EastLake — a from-scratch x86_64 hobby operating system with a graphical installer, 205-language UI, hardware-accelerated cursor and OOBE. Download the 64-bit ISO.">
+    <title>JackBOT OS Official Website | v1.0.0</title>
+    <meta name="description" content="JackBOT OS v1.0.0 — a from-scratch x86_64 hobby operating system with a graphical installer, 205-language UI, hardware-accelerated cursor and OOBE. Download the 64-bit ISO.">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -147,7 +147,7 @@
         <section class="hero">
             <div class="container hero-content">
                 <h1>JackBOT OS</h1>
-                <div class="version-badge">v0.5.0 "EastLake" — x86_64</div>
+                <div class="version-badge">v1.0.0 — x86_64</div>
                 <p>A from-scratch, 64-bit hobby operating system written in C and NASM. Multiboot2 + GRUB, a native graphical installer, a 205-language setup experience, and a GPU-composited hardware cursor &mdash; no Linux kernel underneath.</p>
                 <div class="hero-stats">
                     <div class="hero-stat"><div class="num">205</div><div class="lbl">Setup languages</div></div>
@@ -168,11 +168,16 @@
                     calls, user-space isolation), and ships its own graphical stack, file system drivers and
                     applications &mdash; it is <strong>not a Linux distribution</strong>.
                     <br><br>
-                    The v0.5.0 release adds a complete graphical installer (language &rarr; welcome &rarr; time
-                    zone &rarr; disk partitioning &rarr; install), a first-boot OOBE wizard, real TrueType
-                    anti-aliased text, full-screen adaptive layout, and a VMware SVGA&nbsp;II / VirtualBox
-                    VMSVGA driver that hands the scanout to the virtual GPU and composites the pointer in
-                    hardware, so there are no drag trails.
+                    The v1.0.0 release introduces a bootable Live Desktop mode (try the full desktop
+                    without installing), five new system-management applications (USB Devices,
+                    Battery &amp; Power, Recycle Bin, File Explorer and Device Manager), and real
+                    hardware enumeration: ACPI table/PM1-control-block parsing, USB host-controller
+                    and root-hub port reading, and a live PCI device tree. It also builds on the
+                    complete graphical installer (language &rarr; welcome &rarr; time zone &rarr; disk
+                    partitioning &rarr; install), a first-boot OOBE wizard, real TrueType
+                    anti-aliased text, full-screen adaptive layout, and a VMware SVGA&nbsp;II /
+                    VirtualBox VMSVGA driver that hands the scanout to the virtual GPU and composites
+                    the pointer in hardware, so there are no drag trails.
                     <br><br>
                     <strong>Important:</strong> Please test in a virtual machine (Oracle VirtualBox is the
                     recommended and most-tested target) before any physical-hardware use.
@@ -182,7 +187,7 @@
 
         <section class="section" id="features">
             <div class="container">
-                <h2>Key Features in v0.5.0</h2>
+                <h2>Key Features in v1.0.0</h2>
                 <div class="features-grid">
                     <div class="feature-card">
                         <h3>Graphical Installer</h3>
@@ -215,6 +220,14 @@
                     <div class="feature-card">
                         <h3>Networking &amp; Hardware Layer</h3>
                         <p>A PCI layer with IRQ registration, e1000/RTL-8139 NIC drivers, ARP/ICMP/DHCP/DNS/TCP/HTTP and an expanded hardware-compatibility database.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Live Desktop &amp; System Apps</h3>
+                        <p>Boot the ISO straight into the full desktop without installing, and manage the machine with USB Devices, Battery &amp; Power (ACPI), Recycle Bin, File Explorer and Device Manager.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Real Hardware Enumeration</h3>
+                        <p>ACPI RSDP/FADT parsing with the PM1 power-control block, USB UHCI/OHCI/EHCI/xHCI host-controller and root-hub port detection, and a live PCI device tree with vendor/device IDs and IRQs.</p>
                     </div>
                 </div>
             </div>
@@ -261,11 +274,11 @@
                 <h2>Download</h2>
                 <div class="download-box">
                     <div class="download-info">
-                        <h3>JackBOT OS v0.5.0 EastLake</h3>
-                        <p>Image file name: <strong>JackBOT-0.5.0.iso</strong></p>
+                        <h3>JackBOT OS v1.0.0</h3>
+                        <p>Image file name: <strong>JackBOT-1.0.0.iso</strong></p>
                         <p>64-bit hybrid ISO (BIOS + UEFI). Recommended VM: Oracle VirtualBox, 2048 MB RAM, VMSVGA graphics, PS/2 mouse.</p>
                     </div>
-                    <a class="download-btn" href="JackBOT-0.5.0.iso" download="JackBOT-0.5.0.iso">Download 64-bit ISO</a>
+                    <a class="download-btn" href="JackBOT-1.0.0.iso" download="JackBOT-1.0.0.iso">Download 64-bit ISO</a>
                 </div>
                 <div class="note">
                     <strong>Honest scope notes (please read):</strong>
@@ -283,8 +296,15 @@
 
         <section class="section" id="changelog">
             <div class="container">
-                <h2>Changelog v0.5.0 EastLake</h2>
+                <h2>Changelog v1.0.0</h2>
                 <ul class="changelog-list">
+                    <li><strong>v1.0.0 &mdash; real networked browser (verified in VirtualBox):</strong> the e1000/82540EM driver now brings the link up (DHCP bound), the TCP stack loads pages over plain HTTP, and JBrowser renders real HTTP&nbsp;200 pages with relative-URL navigation and automatic 302-redirect following. Keyboard-only browsing is supported (Ctrl+L focuses the address bar). HTTPS/TLS is not implemented yet.</li>
+                    <li><strong>v1.0.0 &mdash; AC97 audio and boot chime:</strong> an Intel AC97/STAC9700 driver plays a PCM boot sound through the VirtualBox sound card.</li>
+                    <li><strong>v1.0.0 &mdash; voice assistant and Bluetooth/LED panels:</strong> Jbot Voice (mic-level UI) and a Bluetooth &amp; Lamps control panel (adapter detection, color/brightness lamp UI). These are interface/control skeletons: on-device speech-to-text and the full L2CAP/GATT pairing stack are clearly marked as next-stage work.</li>
+                    <li><strong>v1.0.0 &mdash; new Live Desktop boot mode:</strong> select "Try JackBOT OS 1.0 (Live Desktop)" in GRUB to boot the full desktop with no disk and no install.</li>
+                    <li><strong>v1.0.0 &mdash; five new system-management apps:</strong> USB Devices, Battery &amp; Power (ACPI), Recycle Bin, File Explorer and Device Manager.</li>
+                    <li><strong>v1.0.0 &mdash; real hardware enumeration, verified in VirtualBox:</strong> ACPI RSDP/FADT parsing (PM1 control block, AC-adapter detection), USB host-controller and root-hub port enumeration (OHCI/UHCI/EHCI/xHCI), and a PCI device tree showing vendor/device IDs, BDF and IRQs.</li>
+                    <li><strong>v1.0.0 &mdash; FAT32 directory listing and file move</strong> backing the Recycle Bin (\RECYCLED) and File Explorer (delete, restore, empty).</li>
                     <li>New native graphical installer: language, welcome, time-zone/region, automatic or custom disk partitioning, progress and completion pages.</li>
                     <li>Setup language list expanded to 205 languages with native names and English fallback; real TrueType fonts (Latin/CJK/Korean/Arabic/Thai/Devanagari).</li>
                     <li>First-boot OOBE wizard (language, keyboard layout, time zone), persisted to JBOT.CFG.</li>
