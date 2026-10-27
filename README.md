@@ -1,4 +1,4 @@
-# JackBOT OS v1.0.0
+# JackBOT OS v1.0.0 东湖版 (EastLake)
 
 A hobby x86_64 operating system with a graphical installer, first-boot setup
 wizard, a desktop environment, and a real networked browser — built from
