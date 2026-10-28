@@ -507,9 +507,11 @@ void net_poll(void)
             continue;
         const struct eth_hdr *e = (const void *)rbuf;
         uint16_t et = ntohs16(e->ethertype);
-        if (et == ETH_P_ARP)
+        if (et == ETH_P_ARP) {
+            if (n < (int)(sizeof(struct eth_hdr) + sizeof(struct arp_pkt)))
+                continue;
             arp_handle(rbuf);
-        else if (et == ETH_P_IP)
+        } else if (et == ETH_P_IP)
             ip_handle(rbuf, (uint16_t)n);
     }
     dhcp_tick();
