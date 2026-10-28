@@ -34,8 +34,19 @@
 #define PxCI    0x38
 
 #define PxCMD_ST    0x00000001u
+#define PxCMD_SUD   0x00000002u
 #define PxCMD_FRE   0x00000010u
+#define PxCMD_FR    0x00000040u
 #define PxCMD_ICC   0x10000000u
+
+#define TFD_BSY 0x80u
+#define TFD_DRDY 0x40u
+#define TFD_DRQ 0x08u
+#define TFD_ERR 0x01u
+
+#define IS_TFES 0x00000080u
+#define IS_HBF  0x40000000u
+#define IS_HBDS 0x80000000u
 
 #define SSTS_DE_MASK 0x0000000Fu
 #define SSTS_DE_ONLINE 0x00000003u
@@ -52,10 +63,18 @@ struct ahci_cmd_hdr {
     uint32_t reserved2[2];
 } __attribute__((packed));
 
+struct ahci_prd {
+    uint32_t dba_l;
+    uint32_t dba_h;
+    uint32_t reserved;
+    uint32_t dw3;
+} __attribute__((packed));
+
 struct ahci_cmd_table {
     uint8_t fis[64];
     uint8_t atapi[16];
     uint8_t reserved[48];
+    struct ahci_prd prd[1];
 } __attribute__((packed));
 
 static volatile uint8_t *hba;
@@ -101,46 +120,85 @@ static int identify_port(int n)
 {
     uint32_t clb = alloc_page();
     uint32_t ct  = alloc_page();
-    uint32_t fis = alloc_page();
-    if (!clb || !ct || !fis) {
+    uint32_t recv = alloc_page();
+    if (!clb || !ct || !recv) {
         serial_puts("[AHCI] dma alloc failed\n");
         return -1;
     }
 
     memset((void *)(uintptr_t)clb, 0, 4096);
     memset((void *)(uintptr_t)ct, 0, 4096);
-    memset((void *)(uintptr_t)fis, 0, 256);
+    memset((void *)(uintptr_t)recv, 0, 512);
 
-    port_wr(n, PxFB, fis);
+    uint32_t cmd = port_rd(n, PxCMD);
+    cmd &= ~PxCMD_ST;
+    port_wr(n, PxCMD, cmd);
+    for (uint32_t i = 0; i < 100000u; i++) {
+        if ((port_rd(n, PxCMD) & PxCMD_ST) == 0)
+            break;
+    }
+
+    int idle = 0;
+    for (uint32_t i = 0; i < 100000u; i++) {
+        uint8_t tfd = (uint8_t)(port_rd(n, PxTFD) & 0xFFu);
+        if (!(tfd & TFD_BSY)) {
+            idle = 1;
+            break;
+        }
+    }
+    if (!idle) {
+        serial_puts("[AHCI] port "); serial_puthex((uint32_t)n);
+        serial_puts(" busy\n");
+        return -1;
+    }
+
+    port_wr(n, PxFB, recv);
     port_wr(n, PxFBU, 0);
     port_wr(n, PxCLB, clb);
     port_wr(n, PxCLBU, 0);
+    port_wr(n, PxIS, 0xFFFFFFFFu);
+
+    cmd = port_rd(n, PxCMD);
+    cmd |= PxCMD_FRE;
+    port_wr(n, PxCMD, cmd);
+    for (uint32_t i = 0; i < 100000u; i++) {
+        if (port_rd(n, PxCMD) & PxCMD_FR)
+            break;
+    }
 
     struct ahci_cmd_hdr *h = (struct ahci_cmd_hdr *)(uintptr_t)clb;
     struct ahci_cmd_table *t = (struct ahci_cmd_table *)(uintptr_t)ct;
 
     t->fis[0]  = 0x27;
     t->fis[1]  = 0x80;
+    t->fis[2]  = 0x00;
     t->fis[3]  = 0x01;
+    t->fis[4]  = 0x00;
+    t->fis[5]  = 0x00;
+    t->fis[6]  = 0x00;
     t->fis[7]  = 0xA0;
     t->fis[16] = CMD_IDENTIFY;
 
-    h->dw0    = (5u & 0x1F) | (1u << 15);
-    h->prdtl  = 0;
+    h->dw0    = 5u;
+    h->prdtl  = 1;
     h->prdbc  = 0;
     h->ctba_l = ct;
     h->ctba_h = 0;
 
-    port_wr(n, PxIS, 0xFFFFFFFFu);
-    uint32_t cmd = port_rd(n, PxCMD);
-    cmd |= PxCMD_FRE | PxCMD_ST | PxCMD_ICC;
+    t->prd[0].dba_l = recv;
+    t->prd[0].dba_h = 0;
+    t->prd[0].reserved = 0;
+    t->prd[0].dw3 = (512u - 1u) | 0x80000000u;
+
+    cmd = port_rd(n, PxCMD);
+    cmd |= PxCMD_ST | PxCMD_ICC;
     port_wr(n, PxCMD, cmd);
 
     port_wr(n, PxCI, 1u);
 
     int done = 0;
     for (uint32_t i = 0; i < 1000000u; i++) {
-        if ((port_rd(n, PxCI) & 1u) == 0 && (port_rd(n, PxSACT) & 1u) == 0) {
+        if ((port_rd(n, PxCI) & 1u) == 0) {
             done = 1;
             break;
         }
@@ -150,17 +208,25 @@ static int identify_port(int n)
     port_wr(n, PxIS, is);
 
     if (!done) {
-        serial_puts("[AHCI] port identify timeout\n");
+        serial_puts("[AHCI] port "); serial_puthex((uint32_t)n);
+        serial_puts(" identify timeout IS="); serial_puthex(is);
+        serial_puts(" TFD="); serial_puthex(port_rd(n, PxTFD));
+        serial_puts(" CMD="); serial_puthex(port_rd(n, PxCMD));
+        serial_putc('\n');
         return -1;
     }
-    if (is & 0x00000100u) {
-        serial_puts("[AHCI] port identify error\n");
+    if (is & (IS_TFES | IS_HBF | IS_HBDS)) {
+        serial_puts("[AHCI] port "); serial_puthex((uint32_t)n);
+        serial_puts(" identify error IS="); serial_puthex(is);
+        serial_putc('\n');
         return -1;
     }
 
     serial_puts("[AHCI] port ");
     serial_puthex((uint32_t)n);
-    serial_puts(" identify OK\n");
+    serial_puts(" identify OK bytes=");
+    serial_puthex(h->prdbc);
+    serial_putc('\n');
     return 0;
 }
 
@@ -169,11 +235,36 @@ int ahci_init(struct pci_dev *d)
     if (!d)
         return -1;
 
-    uint32_t bar = pci_bar_mem(d, 0);
-    if (bar == 0 || (d->bar[0] & 1u)) {
-        serial_puts("[AHCI] BAR0 not memory mapped\n");
+    serial_puts("[AHCI] BAR dump:");
+    for (int b = 0; b < 6; b++) {
+        serial_puts(" [");
+        serial_puthex((uint32_t)b);
+        serial_puts("]=");
+        serial_puthex(d->bar[b]);
+    }
+    serial_putc('\n');
+
+    int bar_idx = -1;
+    uint32_t bar = 0;
+    for (int b = 0; b < 6; b++) {
+        uint32_t raw = d->bar[b];
+        if (raw != 0 && !(raw & 1u)) {
+            bar = raw & 0xFFFFFFF0u;
+            bar_idx = b;
+            if ((raw & 6u) == 4u)
+                b++;
+        }
+    }
+    if (bar_idx < 0) {
+        serial_puts("[AHCI] no memory BAR found\n");
         return -1;
     }
+
+    serial_puts("[AHCI] using BAR");
+    serial_puthex((uint32_t)bar_idx);
+    serial_puts(" addr=");
+    serial_puthex(bar);
+    serial_putc('\n');
 
     pci_enable_bus_master(d);
 
@@ -210,7 +301,8 @@ int ahci_init(struct pci_dev *d)
     serial_putc('\n');
 
     g_online = 0;
-    int first = -1;
+    int online_list[32];
+    int n_online = 0;
     for (uint32_t n = 0; n < nports && n < 32u; n++) {
         if (!(g_pi & (1u << n)))
             continue;
@@ -218,15 +310,14 @@ int ahci_init(struct pci_dev *d)
         port_wr(n, PxIE, 0);
         if (port_online((int)n)) {
             g_online++;
-            if (first < 0)
-                first = (int)n;
+            online_list[n_online++] = (int)n;
         }
     }
 
     serial_puts("[AHCI] online="); serial_puthex((uint32_t)g_online); serial_putc('\n');
 
-    if (first >= 0)
-        identify_port(first);
+    for (int i = 0; i < n_online; i++)
+        identify_port(online_list[i]);
 
     g_present = 1;
     return 0;

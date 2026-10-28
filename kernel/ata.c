@@ -50,7 +50,7 @@ static uint64_t total_sectors;
 static uint8_t wait_not_bsy(void)
 {
     uint8_t s;
-    for (uint32_t i = 0; i < 1000000; i++) {
+    for (uint32_t i = 0; i < 100000; i++) {
         s = inb(REG_STATUS);
         if (!(s & ST_BSY))
             return s;
@@ -60,7 +60,7 @@ static uint8_t wait_not_bsy(void)
 
 static int wait_drq(void)
 {
-    for (uint32_t i = 0; i < 1000000; i++) {
+    for (uint32_t i = 0; i < 100000; i++) {
         uint8_t s = inb(REG_STATUS);
         if ((s & ST_ERR) || (s & ST_DF))
             return -1;
@@ -77,11 +77,29 @@ static void select_master(void)
         inb(REG_ALTSTATUS);
 }
 
+static int ide_controller_present(void)
+{
+    int ff = 0;
+    for (uint32_t i = 0; i < 64; i++) {
+        uint8_t s = inb(REG_STATUS);
+        if (s == 0xFF)
+            ff++;
+        inb(REG_ALTSTATUS);
+    }
+    return ff < 64;
+}
+
 int ata_init(void)
 {
     uint16_t ident[256];
 
     select_master();
+
+    if (!ide_controller_present()) {
+        serial_puts("[ATA] no IDE controller (AHCI-only), skip PIO\n");
+        return -1;
+    }
+
     outb(REG_SECCNT, 0);
     outb(REG_LBALOW, 0);
     outb(REG_LBAMID, 0);
