@@ -335,18 +335,25 @@ static void ip_handle(const uint8_t *frame, uint16_t flen)
     }
 }
 
-static uint8_t *dhcp_opt(struct dhcp_pkt *p, uint8_t code)
+static int g_last_opt_len = 0;
+
+static uint8_t *dhcp_opt(struct dhcp_pkt *p, uint8_t code, int avail)
 {
     uint8_t *o = p->options;
     int i = 0;
-    while (i < (int)sizeof(p->options)) {
+    g_last_opt_len = 0;
+    while (i + 1 < avail) {
         uint8_t c = o[i];
         if (c == 255)
             break;
         if (c == 0) { i++; continue; }
         uint8_t l = o[i + 1];
-        if (c == code)
+        if (c == code) {
+            if (i + 2 + l > avail)
+                return 0;
+            g_last_opt_len = l;
             return &o[i + 2];
+        }
         i += 2 + l;
     }
     return 0;
@@ -367,32 +374,36 @@ static void dhcp_handler(uint32_t src, uint16_t sport,
                          const uint8_t *data, uint16_t len)
 {
     (void)src; (void)sport;
-    if (len < (int)sizeof(struct dhcp_pkt) - 312)
+    int head = (int)sizeof(struct dhcp_pkt) - 312;
+    if ((int)len < head)
+        return;
+    int avail = (int)len - head;
+    if (avail <= 0)
         return;
     const struct dhcp_pkt *p = (const void *)data;
     if (p->xid != htons32(xid))
         return;
-    uint8_t *t = dhcp_opt((struct dhcp_pkt *)p, 53);
-    if (!t)
+    uint8_t *t = dhcp_opt((struct dhcp_pkt *)p, 53, avail);
+    if (!t || g_last_opt_len < 1)
         return;
     uint8_t type = *t;
 
     if (type == 2 && dhcp_state == D_DISCOVER) {
         memcpy(offered, &p->yiaddr, 4);
-        uint8_t *sid = dhcp_opt((struct dhcp_pkt *)p, 54);
-        if (sid)
+        uint8_t *sid = dhcp_opt((struct dhcp_pkt *)p, 54, avail);
+        if (sid && g_last_opt_len >= 4)
             memcpy(serverid, sid, 4);
         dhcp_state = D_REQUEST;
         dhcp_t0 = timer_get_ticks();
         dhcp_tries = 0;
     } else if (type == 5 && dhcp_state == D_REQUEST) {
         memcpy(S.ip, offered, 4);
-        uint8_t *nm = dhcp_opt((struct dhcp_pkt *)p, 1);
-        uint8_t *gw = dhcp_opt((struct dhcp_pkt *)p, 3);
-        uint8_t *dns = dhcp_opt((struct dhcp_pkt *)p, 6);
-        if (nm) memcpy(S.mask, nm, 4); else net_fmt_ip(0xFFFFFF00,S.mask);
-        if (gw) memcpy(S.gw, gw, 4); else net_fmt_ip(0x0A000202,S.gw);
-        if (dns) memcpy(S.dns, dns, 4); else net_fmt_ip(0x0A000203,S.dns);
+        uint8_t *nm = dhcp_opt((struct dhcp_pkt *)p, 1, avail);
+        uint8_t *gw = dhcp_opt((struct dhcp_pkt *)p, 3, avail);
+        uint8_t *dns = dhcp_opt((struct dhcp_pkt *)p, 6, avail);
+        if (nm && g_last_opt_len >= 4) memcpy(S.mask, nm, 4); else net_fmt_ip(0xFFFFFF00,S.mask);
+        if (gw && g_last_opt_len >= 4) memcpy(S.gw, gw, 4); else net_fmt_ip(0x0A000202,S.gw);
+        if (dns && g_last_opt_len >= 4) memcpy(S.dns, dns, 4); else net_fmt_ip(0x0A000203,S.dns);
         S.up = 1;
         dhcp_state = D_DONE;
         serial_puts("[DHCP] bound\n");
