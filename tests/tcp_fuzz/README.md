@@ -52,10 +52,16 @@ Run from the repository root so the kernel headers resolve via `-Iinclude`:
 - Deterministic harness: 14/14 PASS.
 - ASAN random fuzz: 40 000 segments, no crash, no out-of-bounds access.
 - Real-machine regression on jb10live: DHCP bound, SYN|ACK handshake and
-  HTTP GET version.json still succeed; normal path unaffected.
+  HTTP GET version.json still succeed; desktop, playback and I18N self-tests
+  pass; normal path unaffected after the ARP and DHCP guards were added.
 
 ## Inbound surfaces reviewed statically (not covered by this harness)
 
+- `net.c` `net_poll` ARP dispatch: frames shorter than `eth_hdr + arp_pkt`
+  are dropped before the ARP body is parsed.
+- `net.c` `dhcp_handler` / `dhcp_opt`: option walk is bounded by the actual
+  received options length; each option's declared length is checked before a
+  4-byte mask/gateway/DNS/server-id copy.
 - `net.c` `ip_handle`: IP header/ihl/total length bounds checked before
   dispatch; `plen = total - ihl` cannot underflow.
 - `net.c` `udp_handle`: only uses IP payload length minus 8; the UDP header
