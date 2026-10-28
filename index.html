@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>JackBOT OS Official Website | v1.0.0 东湖版</title>
-    <meta name="description" content="JackBOT OS v1.0.0 — a from-scratch x86_64 hobby operating system with a graphical installer, 205-language UI, hardware-accelerated cursor and OOBE. Download the 64-bit ISO.">
+    <title>JackBOT OS Official Website | v1.0.1 EastLake</title>
+    <meta name="description" content="JackBOT OS v1.0.1 — a from-scratch x86_64 hobby operating system with a graphical installer, 205-language UI, hardware-accelerated cursor and OOBE. Download the 64-bit ISO.">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -147,7 +147,7 @@
         <section class="hero">
             <div class="container hero-content">
                 <h1>JackBOT OS</h1>
-                <div class="version-badge">v1.0.0 东湖版 EastLake — x86_64</div>
+                <div class="version-badge">v1.0.1 EastLake — x86_64</div>
                 <p>A from-scratch, 64-bit hobby operating system written in C and NASM. Multiboot2 + GRUB, a native graphical installer, a 205-language setup experience, and a GPU-composited hardware cursor &mdash; no Linux kernel underneath.</p>
                 <div class="hero-stats">
                     <div class="hero-stat"><div class="num">205</div><div class="lbl">Setup languages</div></div>
@@ -168,7 +168,8 @@
                     calls, user-space isolation), and ships its own graphical stack, file system drivers and
                     applications &mdash; it is <strong>not a Linux distribution</strong>.
                     <br><br>
-                    The v1.0.0 release introduces a bootable Live Desktop mode (try the full desktop
+                    The v1.0.1 release extends the compatibility database with more common PCI
+                    network, storage and audio device IDs, keeps the bootable Live Desktop mode (try the full desktop
                     without installing), five new system-management applications (USB Devices,
                     Battery &amp; Power, Recycle Bin, File Explorer and Device Manager), and real
                     hardware enumeration: ACPI table/PM1-control-block parsing, USB host-controller
@@ -187,7 +188,7 @@
 
         <section class="section" id="features">
             <div class="container">
-                <h2>Key Features in v1.0.0</h2>
+                <h2>Key Features in v1.0.1</h2>
                 <div class="features-grid">
                     <div class="feature-card">
                         <h3>Graphical Installer</h3>
@@ -274,13 +275,13 @@
                 <h2>Download</h2>
                 <div class="download-box">
                     <div class="download-info">
-                        <h3>JackBOT OS v1.0.0</h3>
-                        <p>Image file name: <strong>JackBOT-1.0.0.iso</strong></p>
+                        <h3>JackBOT OS v1.0.1</h3>
+                        <p>Image file name: <strong>JackBOT-1.0.1.iso</strong></p>
                         <p>64-bit hybrid ISO (BIOS + UEFI). Recommended VM: Oracle VirtualBox, 2048 MB RAM, VMSVGA graphics, PS/2 mouse.</p>
                         <p style="margin-top:10px;font-size:13px;color:#6b7280;">Size: 22.54 MB &middot; Verify with SHA-256:</p>
-                        <p style="font-family:monospace;font-size:12px;color:#374151;background:#f3f4f6;padding:8px 10px;border-radius:6px;word-break:break-all;">ee765a660020ff8ea26023e3126efe09eee1c8c6b8f722ed9a39bbfce3fa720e</p>
+                        <p style="font-family:monospace;font-size:12px;color:#374151;background:#f3f4f6;padding:8px 10px;border-radius:6px;word-break:break-all;">9b257eca7faa60759172edbfd7535bdfde1799bbbf2169eaf80a585c852be8ef</p>
                     </div>
-                    <a class="download-btn" href="JackBOT-1.0.0.iso" download="JackBOT-1.0.0.iso">Download 64-bit ISO</a>
+                    <a class="download-btn" href="JackBOT-1.0.1.iso" download="JackBOT-1.0.1.iso">Download 64-bit ISO</a>
                 </div>
                 <div class="note">
                     <strong>Honest scope notes (please read):</strong>
@@ -298,8 +299,10 @@
 
         <section class="section" id="changelog">
             <div class="container">
-                <h2>Changelog v1.0.0</h2>
+                <h2>Changelog v1.0.1</h2>
                 <ul class="changelog-list">
+                    <li><strong>v1.0.1 &mdash; expanded PCI compatibility database:</strong> more common Intel PRO/1000 and Realtek Ethernet IDs, additional Intel/AMD/ASMedia AHCI SATA controllers, and more Intel/AMD/NVIDIA HD Audio controllers are now recognized during PCI enumeration. Newer Intel I218/I219/I211 adapters are matched to the generic Ethernet probe rather than the legacy e1000 driver. These are detection/probe entries; full functional drivers for AHCI, NVMe and e1000e remain next-stage work.</li>
+                    <li><strong>v1.0.1 &mdash; version consistency:</strong> boot banner, About panel, System Update, installer marker, Start menu and HTTP User-Agent all report 1.0.1; the build no longer depends on the optional disk-image target for ISO production.</li>
                     <li><strong>v1.0.0 &mdash; real networked browser (verified in VirtualBox):</strong> the e1000/82540EM driver now brings the link up (DHCP bound), the TCP stack loads pages over plain HTTP, and JBrowser renders real HTTP&nbsp;200 pages with relative-URL navigation and automatic 302-redirect following. Keyboard-only browsing is supported (Ctrl+L focuses the address bar). HTTPS/TLS is not implemented yet.</li>
                     <li><strong>v1.0.0 &mdash; AC97 audio and boot chime:</strong> an Intel AC97/STAC9700 driver plays a PCM boot sound through the VirtualBox sound card.</li>
                     <li><strong>v1.0.0 &mdash; voice assistant and Bluetooth/LED panels:</strong> Jbot Voice (mic-level UI) and a Bluetooth &amp; Lamps control panel (adapter detection, color/brightness lamp UI). These are interface/control skeletons: on-device speech-to-text and the full L2CAP/GATT pairing stack are clearly marked as next-stage work.</li>
