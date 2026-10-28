@@ -72,16 +72,25 @@ static void mymemcpy(void *dst, const void *src, uint32_t n)
         d[i] = s[i];
 }
 
+static int cluster_valid(uint32_t c)
+{
+    return c >= 2 && c < cluster_count + 2;
+}
+
 static uint32_t cluster_lba(uint32_t c)
 {
     return part_offset + data_start + (c - 2) * spc;
 }
 static int read_cluster(uint32_t c, uint8_t *buf)
 {
+    if (!cluster_valid(c))
+        return -1;
     return ata_read(cluster_lba(c), spc, buf);
 }
 static int write_cluster(uint32_t c, const uint8_t *buf)
 {
+    if (!cluster_valid(c))
+        return -1;
     return ata_write(cluster_lba(c), spc, buf);
 }
 
@@ -94,6 +103,8 @@ static void fache_load(uint32_t sec)
 }
 static uint32_t fat_get(uint32_t c)
 {
+    if (!cluster_valid(c))
+        return EOC;
     uint32_t off = (c * 4) % bps;
     uint32_t sec = fat_start + (c * 4) / bps;
     fache_load(sec);
@@ -101,6 +112,8 @@ static uint32_t fat_get(uint32_t c)
 }
 static void fat_set(uint32_t c, uint32_t v)
 {
+    if (!cluster_valid(c))
+        return;
     uint32_t off = (c * 4) % bps;
     uint32_t rel = (c * 4) / bps;
     fache_load(fat_start + rel);
@@ -140,7 +153,8 @@ static uint32_t alloc_chain(uint32_t prev, uint32_t count)
 }
 static void free_chain(uint32_t c)
 {
-    while (c >= 2 && c < EOC) {
+    uint32_t guard = cluster_count + 2;
+    while (cluster_valid(c) && guard--) {
         uint32_t n = fat_get(c);
         fat_set(c, 0);
         c = n;
@@ -179,7 +193,8 @@ static int dir_find(uint32_t dirc, const uint8_t nm[11], int want_free,
 {
     uint32_t c = dirc;
     uint32_t csize = (uint32_t)spc * bps;
-    while (c >= 2 && c < EOC) {
+    uint32_t guard = cluster_count + 2;
+    while (cluster_valid(c) && guard--) {
         if (read_cluster(c, cbuf) < 0)
             return -1;
         for (uint32_t o = 0; o < csize; o += 32) {
@@ -301,6 +316,8 @@ static int resolve_path(const char *path, uint8_t finalname[11],
                 return -1;
             cur = (uint32_t)rd16(cbuf + dp.off + 26) |
                   ((uint32_t)rd16(cbuf + dp.off + 20) << 16);
+            if (!cluster_valid(cur))
+                return -1;
         } else {
             if (!create)
                 return -1;
@@ -330,7 +347,13 @@ static int mount_common(void)
 
     fat_start = reserved;
     data_start = reserved + (uint32_t)nfats * fat_size;
+    if (data_start >= total_sectors)
+        return -1;
     cluster_count = (total_sectors - data_start) / spc;
+    if (!cluster_count)
+        return -1;
+    if (!cluster_valid(root_cluster))
+        return -1;
 
     cbuf = kmalloc((uint32_t)spc * bps);
     dbuf = kmalloc((uint32_t)spc * bps);
@@ -652,7 +675,16 @@ int fat_read_file(const char *name83, void *buf, uint32_t max,
     uint32_t remain = size;
     uint32_t copied = 0;
 
-    while (c >= 2 && c < EOC) {
+    if (!size) {
+        if (outlen)
+            *outlen = 0;
+        return 0;
+    }
+    if (!cluster_valid(c))
+        return -1;
+
+    uint32_t guard = cluster_count + 2;
+    while (cluster_valid(c) && guard--) {
         if (read_cluster(c, dbuf) < 0)
             return -1;
         uint32_t n = remain > csize ? csize : remain;
@@ -843,6 +875,8 @@ static int resolve_dir_cluster(const char *dir83, uint32_t *outc)
         return -1; /* 不是目录 */
     *outc = (uint32_t)rd16(cbuf + dp.off + 26) |
             ((uint32_t)rd16(cbuf + dp.off + 20) << 16);
+    if (!cluster_valid(*outc))
+        return -1;
     return 0;
 }
 
@@ -864,9 +898,10 @@ int fat_list_dir(const char *dir83, struct fat_dirent *out, int max)
     int n = 0;
     uint32_t csize = (uint32_t)spc * bps;
     uint32_t c = dirc;
-    while (c >= 2 && c < EOC) {
+    uint32_t guard = cluster_count + 2;
+    while (cluster_valid(c) && guard--) {
         if (read_cluster(c, cbuf) < 0)
-            return -1;
+            return n;
         for (uint32_t o = 0; o < csize; o += 32) {
             uint8_t *e = cbuf + o;
             if (e[0] == 0x00)
@@ -936,8 +971,9 @@ int fat_list_dir(const char *dir83, struct fat_dirent *out, int max)
             strcpy(de->short83, sn);
             de->is_dir = (uint8_t)is_dir;
             de->size = rd32(e + 28);
-            de->cluster = (uint32_t)rd16(e + 26) |
+            uint32_t fc = (uint32_t)rd16(e + 26) |
                           ((uint32_t)rd16(e + 20) << 16);
+            de->cluster = cluster_valid(fc) ? fc : 0;
             n++;
 
             mymemset(have, 0, sizeof have);
