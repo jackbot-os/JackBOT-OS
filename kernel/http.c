@@ -203,7 +203,7 @@ static int build_request(struct http_client *c, char *req)
     a = c->path; while(*a) req[i++]=*a++;
     a = " HTTP/1.1\r\nHost: "; while(*a) req[i++]=*a++;
     a = c->host; while(*a) req[i++]=*a++;
-    a = "\r\nUser-Agent: JackBOT-OS/1.0\r\n"
+    a = "\r\nUser-Agent: JackBOT-OS/1.0.1\r\n"
         "Accept: text/html,text/plain\r\nConnection: close\r\n\r\n";
     while(*a) req[i++]=*a++;
     return i;

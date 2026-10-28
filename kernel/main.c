@@ -156,8 +156,8 @@ void kmain(uint64_t magic, uint64_t mb_info)
     hal_early_init();
     vga_clear();
 
-    vga_puts("JackBOT OS 1.0.0\n");
-    serial_puts("JackBOT OS 1.0.0\n");
+    vga_puts("JackBOT OS 1.0.1\n");
+    serial_puts("JackBOT OS 1.0.1\n");
 
     hal_selftest();
 

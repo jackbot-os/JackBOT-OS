@@ -17,7 +17,7 @@ OBJS := $(addprefix $(BUILD)/,$(addsuffix .o,$(KERN_SRCS))) \
 DEPS := $(OBJS:.o=.d)
 -include $(DEPS)
 KERNEL := iso/boot/kernel
-ISO := $(BUILD)/JackBOT-1.0.0.iso
+ISO := $(BUILD)/JackBOT-1.0.1.iso
 DISK := $(BUILD)/disk.img
 USER_BIN := $(BUILD)/ustest.bin
 USER_H := $(BUILD)/ustest.h
@@ -85,7 +85,9 @@ $(BUILD)/%.o: arch/x86_64/%.asm | $(BUILD)
 $(KERNEL): $(OBJS) arch/x86_64/linker.ld
 	ld $(LDFLAGS) -o $@ $(OBJS)
 
-iso: $(ISO) $(DISK)
+iso: $(ISO)
+
+disk: $(DISK)
 
 BOOT_PCM := iso/boot/BOOT.PCM
 WARN_PCM := iso/boot/WARN.PCM

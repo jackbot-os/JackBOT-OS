@@ -676,7 +676,7 @@ void desktop_run(void)
         ui_rect(bx + rad, by, mw - 2 * rad, titleh, fb_rgb(30, 64, 122));
         ui_rect(bx, by + rad, mw, titleh - rad, fb_rgb(30, 64, 122));
         gfx_draw_string(bx + 14 * S, by + 8 * S, fb_rgb(235, 242, 255),
-                        fb_rgb(30, 64, 122), "JackBOT OS 1.0");
+                        fb_rgb(30, 64, 122), "JackBOT OS 1.0.1");
         for (int id = APP_POWER; id < APP_LIMIT; id++) {
             int i = id - APP_POWER;
             int iy = by + titleh + 2 * S + i * 34 * S;

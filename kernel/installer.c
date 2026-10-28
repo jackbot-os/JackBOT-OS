@@ -291,7 +291,7 @@ int installer_install(int mode, install_progress_fn progress)
         }
     }
 
-    const char *mark = "JackBOT OS 1.0.0\n";
+    const char *mark = "JackBOT OS 1.0.1\n";
     if (fat_write_file(INSTALL_MARKER, mark, slen(mark)) != 0)
         rc = -1;
 

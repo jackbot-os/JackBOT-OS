@@ -246,8 +246,17 @@ void compat_register_drivers(void)
         { "net-e1000", DEV_CLASS_NET, 0, 0x8086, 0x10DE, drv_net_e1000 },
         { "net-e1000", DEV_CLASS_NET, 0, 0x8086, 0x10EA, drv_net_e1000 },
         { "net-e1000", DEV_CLASS_NET, 0, 0x8086, 0x1229, drv_net_e1000 },
+        { "net-e1000", DEV_CLASS_NET, 0, 0x8086, 0x1019, drv_net_e1000 },
+        { "net-e1000", DEV_CLASS_NET, 0, 0x8086, 0x107c, drv_net_e1000 },
+        { "net-e1000", DEV_CLASS_NET, 0, 0x8086, 0x107d, drv_net_e1000 },
+        { "net-e1000", DEV_CLASS_NET, 0, 0x8086, 0x10e5, drv_net_e1000 },
+        { "net-e1000", DEV_CLASS_NET, 0, 0x8086, 0x108e, drv_net_e1000 },
+        { "net-e1000", DEV_CLASS_NET, 0, 0x8086, 0x10fc, drv_net_e1000 },
+        { "net-e1000", DEV_CLASS_NET, 0, 0x8086, 0x1502, drv_net_e1000 },
         /* Realtek */
         { "net-rtl8139", DEV_CLASS_NET, 0, 0x10ec, 0x8139, drv_net_rtl8139 },
+        { "net-rtl8139", DEV_CLASS_NET, 0, 0x10ec, 0x8136, drv_net_rtl8139 },
+        { "net-rtl8139", DEV_CLASS_NET, 0, 0x10ec, 0x8129, drv_net_rtl8139 },
         { "net-rtl8169", DEV_CLASS_NET, 0, 0x10ec, 0x8168, drv_net_rtl8139 },
         { "net-rtl8169", DEV_CLASS_NET, 0, 0x10ec, 0x8169, drv_net_rtl8139 },
         { "net-ne2000", DEV_CLASS_NET, 0, 0x10ec, 0x8029, drv_net_ne2000 },
@@ -256,6 +265,11 @@ void compat_register_drivers(void)
         /* virtio-net */
         { "net-virtio", DEV_CLASS_NET, 0, 0x1af4, 0x1000, drv_net_virtio },
         { "net-virtio", DEV_CLASS_NET, 0, 0x1af4, 0x1041, drv_net_virtio },
+        /* 较新 Intel I218/I219/I211：只做以太网类识别，不挂旧 e1000 真驱动 */
+        { "net-generic", DEV_CLASS_NET, 0, 0x8086, 0x15b8, drv_net_generic },
+        { "net-generic", DEV_CLASS_NET, 0, 0x8086, 0x1533, drv_net_generic },
+        { "net-generic", DEV_CLASS_NET, 0, 0x8086, 0x15d8, drv_net_generic },
+        { "net-generic", DEV_CLASS_NET, 0, 0x8086, 0x1a11, drv_net_generic },
         /* 任意以太网控制器兜底 */
         { "net-generic", DEV_CLASS_NET, 0x00, 0, 0, drv_net_generic },
 
@@ -273,6 +287,13 @@ void compat_register_drivers(void)
         { "storage-ahci", DEV_CLASS_STORAGE, 0, 0x8086, 0x8d62, drv_storage_ahci },
         { "storage-ahci", DEV_CLASS_STORAGE, 0, 0x1022, 0x7800, drv_storage_ahci },
         { "storage-ahci", DEV_CLASS_STORAGE, 0, 0x1022, 0x7901, drv_storage_ahci },
+        { "storage-ahci", DEV_CLASS_STORAGE, 0, 0x1022, 0x7902, drv_storage_ahci },
+        { "storage-ahci", DEV_CLASS_STORAGE, 0, 0x1b21, 0x0611, drv_storage_ahci },
+        { "storage-ahci", DEV_CLASS_STORAGE, 0, 0x1b21, 0x0612, drv_storage_ahci },
+        { "storage-ahci", DEV_CLASS_STORAGE, 0, 0x8086, 0xa282, drv_storage_ahci },
+        { "storage-ahci", DEV_CLASS_STORAGE, 0, 0x8086, 0xa283, drv_storage_ahci },
+        { "storage-ahci", DEV_CLASS_STORAGE, 0, 0x8086, 0x9d03, drv_storage_ahci },
+        { "storage-ahci", DEV_CLASS_STORAGE, 0, 0x8086, 0x5ae3, drv_storage_ahci },
         /* virtio-blk */
         { "storage-virtio", DEV_CLASS_STORAGE, 0, 0x1af4, 0x1001, drv_storage_virtio },
         { "storage-virtio", DEV_CLASS_STORAGE, 0, 0x1af4, 0x1042, drv_storage_virtio },
@@ -299,6 +320,12 @@ void compat_register_drivers(void)
         { "audio-hda", DEV_CLASS_AUDIO, 0, 0x8086, 0x9c20, drv_audio_hda },
         { "audio-hda", DEV_CLASS_AUDIO, 0, 0x8086, 0x9d70, drv_audio_hda },
         { "audio-hda", DEV_CLASS_AUDIO, 0, 0x8086, 0xa170, drv_audio_hda },
+        { "audio-hda", DEV_CLASS_AUDIO, 0, 0x8086, 0xa171, drv_audio_hda },
+        { "audio-hda", DEV_CLASS_AUDIO, 0, 0x8086, 0x9d71, drv_audio_hda },
+        { "audio-hda", DEV_CLASS_AUDIO, 0, 0x8086, 0x3ea0, drv_audio_hda },
+        { "audio-hda", DEV_CLASS_AUDIO, 0, 0x8086, 0x0f08, drv_audio_hda },
+        { "audio-hda", DEV_CLASS_AUDIO, 0, 0x1022, 0x157a, drv_audio_hda },
+        { "audio-hda", DEV_CLASS_AUDIO, 0, 0x10de, 0x0fb9, drv_audio_hda },
         { "audio-sb16", DEV_CLASS_AUDIO, 0, 0x1274, 0x1371, drv_audio_sb16 },
         /* 任意多媒体设备兜底 */
         { "audio-generic", DEV_CLASS_AUDIO, 0, 0, 0, drv_audio_generic },
