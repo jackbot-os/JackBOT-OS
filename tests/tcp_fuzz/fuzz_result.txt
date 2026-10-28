@@ -1,0 +1,20 @@
+=== targeted harness ===
+PASS: connect allocates socket
+PASS: socket not connected yet (SYN_SENT)
+PASS: truncated segment dropped
+PASS: oversized segment dropped
+PASS: doff > len dropped
+PASS: zero doff dropped
+PASS: bare SYN rejected (need SYN|ACK)
+PASS: SYN|ACK completes handshake
+PASS: RST marks socket failed
+PASS: second connection handshake
+PASS: out-of-order segment not buffered
+PASS: in-order data delivered
+PASS: wrong-sequence FIN ignored
+PASS: correct FIN marks peer closed
+
+=== ALL PASS ===
+=== ASAN random fuzz ===
+FUZZ OK: 40000 segments processed, no crash under ASAN
+[exit=0]
