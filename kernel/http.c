@@ -33,6 +33,8 @@ struct http_client {
     uint16_t resp_len;
     int status;
     int hdr_len;
+    int content_len;
+    int cl_overflow;
     int tls;
     uint64_t t0;
     int tries;
@@ -99,25 +101,31 @@ static int dns_skip(const uint8_t *b, int len, int pos)
         if (l == 0)
             return pos + 1;
         if ((l & 0xC0) == 0xC0)
-            return pos + 2;
+            return pos + 2 <= len ? pos + 2 : len;
         pos += 1 + l;
+        if (pos > len)
+            return len;
     }
-    return pos;
+    return len;
 }
 
 static void dns_handler(uint32_t src, uint16_t sport,
                         const uint8_t *data, uint16_t len)
 {
     (void)src; (void)sport;
+    if (len < 12)
+        return;
     const struct dns_hdr *h = (const void *)data;
     if (ntohs16(h->id) != dns.id)
         return;
     int qd = ntohs16(h->qd);
     int an = ntohs16(h->an);
+    if (qd > 100 || an > 100) { dns.fail = 1; dns.busy = 0; return; }
     int pos = 12;
     for (int i = 0; i < qd; i++) {
         pos = dns_skip(data, len, pos);
         pos += 4;
+        if (pos > len) { dns.fail = 1; dns.busy = 0; return; }
     }
     int found = 0;
     for (int i = 0; i < an; i++) {
@@ -127,6 +135,8 @@ static void dns_handler(uint32_t src, uint16_t sport,
         int type = (data[pos] << 8) | data[pos + 1];
         int rdlen = (data[pos + 8] << 8) | data[pos + 9];
         pos += 10;
+        if (rdlen < 0 || pos + rdlen > len)
+            break;
         if (type == 1 && rdlen == 4 && pos + 4 <= len) {
             dns.ip = net_ipv4(data + pos);
             found = 1;
@@ -182,25 +192,84 @@ static int literal_ip(const char *host, uint32_t *out)
     return 1;
 }
 
+static int find_header(const struct http_client *c, const char *name,
+                       char *out, int osz);
+
+static int find_seq(const uint8_t *buf, int len, const char *seq, int slen)
+{
+    if (len < slen)
+        return -1;
+    for (int i = 0; i <= len - slen; i++) {
+        if (!memcmp(buf + i, seq, slen))
+            return i;
+    }
+    return -1;
+}
+
 static void parse_response(struct http_client *c)
 {
     c->status = 0;
     c->hdr_len = 0;
+    c->content_len = -1;
+    c->cl_overflow = 0;
     const uint8_t *r = c->resp;
-    const char *sp = strstr((const char *)r, " ");
-    if (sp)
-        c->status = atoi(sp + 1);
-    const char *end = strstr((const char *)r, "\r\n\r\n");
-    if (end)
-        c->hdr_len = (int)(end - (const char *)r) + 4;
-    else
-        c->hdr_len = c->resp_len;
+    int n = c->resp_len;
+
+    if (n >= 5 && memcmp(r, "HTTP/", 5) == 0) {
+        int sp = -1;
+        for (int i = 5; i < n && i < 40; i++) {
+            if (r[i] == ' ') { sp = i; break; }
+        }
+        if (sp >= 0) {
+            int j = sp + 1;
+            while (j < n && r[j] == ' ')
+                j++;
+            if (j + 3 <= n && r[j] >= '1' && r[j] <= '5' &&
+                r[j + 1] >= '0' && r[j + 1] <= '9' &&
+                r[j + 2] >= '0' && r[j + 2] <= '9') {
+                c->status = atoi((const char *)r + j);
+            }
+        }
+    }
+
+    int end = find_seq(r, n, "\r\n\r\n", 4);
+    if (end >= 0) {
+        c->hdr_len = end + 4;
+    } else {
+        c->hdr_len = n;
+        return;
+    }
+
+    char cl[24];
+    if (find_header(c, "Content-Length:", cl, sizeof cl) > 0) {
+        long v = 0;
+        int ok = 1;
+        for (const char *p = cl; *p; p++) {
+            if (*p < '0' || *p > '9') { ok = 0; break; }
+            v = v * 10 + (*p - '0');
+            if (v > RESPCAP) { ok = 0; break; }
+        }
+        if (ok) {
+            c->content_len = (int)v;
+            if (c->hdr_len + c->content_len > RESPCAP)
+                c->cl_overflow = 1;
+        }
+    }
 }
+
+#define REQCAP 600
 
 static int build_request(struct http_client *c, char *req)
 {
     int i = 0;
     const char *a;
+    int pathlen = (int)strlen(c->path);
+    int hostlen = (int)strlen(c->host);
+    if (pathlen <= 0 || pathlen > 140 || hostlen <= 0 || hostlen > 79)
+        return -1;
+    int total = 4 + pathlen + 10 + hostlen + 78;
+    if (total >= REQCAP)
+        return -1;
     a = "GET "; while(*a) req[i++]=*a++;
     a = c->path; while(*a) req[i++]=*a++;
     a = " HTTP/1.1\r\nHost: "; while(*a) req[i++]=*a++;
@@ -222,7 +291,9 @@ static int find_header(const struct http_client *c, const char *name,
         while (eol < c->hdr_len && c->resp[eol] != '\n')
             eol++;
         int match = 1;
-        for (int k = 0; k < nl; k++) {
+        if (i + nl > c->hdr_len)
+            match = 0;
+        for (int k = 0; match && k < nl; k++) {
             char a = c->resp[i + k];
             char b = name[k];
             if (a >= 'A' && a <= 'Z') a += 32;
@@ -245,9 +316,46 @@ static int find_header(const struct http_client *c, const char *name,
     return 0;
 }
 
+static void begin_request(struct http_client *p, const char *host,
+                          const char *path, uint16_t port, int secure);
+static int resolve_location(const char *loc, struct http_client *base,
+                            char *host, int hsz, char *path, int psz,
+                            uint16_t *port);
+
 static int is_redirect_status(int st)
 {
     return st == 301 || st == 302 || st == 303 || st == 307 || st == 308;
+}
+
+/* Handle a fully received response: follow redirects when applicable.
+   Returns 1 if state was switched (redirect or FAIL), 0 to mark DONE. */
+static int finish_response(struct http_client *p, int c)
+{
+    if (is_redirect_status(p->status)) {
+        char loc[256];
+        if (p->redirects < MAX_REDIRECTS &&
+            find_header(p, "Location:", loc, sizeof loc)) {
+            char nhost[80], npath[140];
+            uint16_t nport = 80;
+            if (!resolve_location(loc, p, nhost, sizeof nhost,
+                                  npath, sizeof npath, &nport)) {
+                serial_puts("[HTTP] redirect to https unsupported\n");
+                p->state = H_FAIL;
+            } else {
+                serial_puts("[HTTP] redirect -> ");
+                serial_puts(nhost);
+                serial_puts(npath);
+                serial_putc('\n');
+                begin_request(p, nhost, npath, nport, 0);
+                p->redirects++;
+                p->dnsid = (uint16_t)(0x2000 + c * 0x100 +
+                                      (timer_get_ticks() & 0xFF));
+            }
+            return 1;
+        }
+        serial_puts("[HTTP] redirect without Location/limit\n");
+    }
+    return 0;
 }
 
 /* Parse an absolute URL into host/path/port.
@@ -267,13 +375,17 @@ static int parse_abs_url(const char *url, char *host, int hsz,
     while (*p && *p != '/' && *p != ':' && hi < hsz - 1)
         host[hi++] = *p++;
     host[hi] = 0;
+    if (hi == 0)
+        return 0;
 
     *port = secure ? TLS_DEFAULT_PORT : 80;
     if (*p == ':') {
         p++;
         int v = 0;
-        while (*p >= '0' && *p <= '9')
+        while (*p >= '0' && *p <= '9') {
             v = v * 10 + (*p++ - '0');
+            if (v > 65535) { v = 65535; break; }
+        }
         if (v)
             *port = (uint16_t)v;
     }
@@ -287,6 +399,56 @@ static int parse_abs_url(const char *url, char *host, int hsz,
         path[1] = 0;
     }
     return secure ? 2 : 1;
+}
+
+/* Collapse ".", ".." and duplicate slashes in an absolute request path. */
+static void normalize_path(char *s, int cap)
+{
+    static char seg[32][96];
+    int nseg = 0;
+    char tmp[200];
+    strncpy(tmp, s, sizeof tmp - 1);
+    tmp[sizeof tmp - 1] = 0;
+
+    char *tok = tmp;
+    while (*tok) {
+        while (*tok == '/')
+            tok++;
+        if (!*tok)
+            break;
+        char *next = tok;
+        while (*next && *next != '/')
+            next++;
+        int l = (int)(next - tok);
+        if (l == 1 && tok[0] == '.') {
+            tok = next;
+            continue;
+        }
+        if (l == 2 && tok[0] == '.' && tok[1] == '.') {
+            if (nseg > 0)
+                nseg--;
+            tok = next;
+            continue;
+        }
+        if (nseg < 32 && l < 96) {
+            memcpy(seg[nseg], tok, l);
+            seg[nseg][l] = 0;
+            nseg++;
+        }
+        tok = next;
+    }
+
+    int k = 0;
+    for (int i = 0; i < nseg; i++) {
+        if (k >= cap - 2)
+            break;
+        s[k++] = '/';
+        for (int j = 0; seg[i][j] && k < cap - 1; j++)
+            s[k++] = seg[i][j];
+    }
+    if (k == 0)
+        s[k++] = '/';
+    s[k] = 0;
 }
 
 /* Turn a Location header (absolute, absolute-path or relative) into a new
@@ -311,6 +473,7 @@ static int resolve_location(const char *loc, struct http_client *base,
             k++;
         }
         path[k] = 0;
+        normalize_path(path, psz);
         return 1;
     }
 
@@ -329,6 +492,7 @@ static int resolve_location(const char *loc, struct http_client *base,
     while (loc[m] && k < psz - 1)
         path[k++] = loc[m++];
     path[k] = 0;
+    normalize_path(path, psz);
     return 1;
 }
 
@@ -341,11 +505,12 @@ static void begin_request(struct http_client *p, const char *host,
     memset(p, 0, sizeof(*p));
     p->redirects = red;
     p->tls = secure || keep_tls;
+    p->content_len = -1;
+    p->sock = -1;
     strncpy(p->host, host, sizeof p->host - 1);
     strncpy(p->path, path, sizeof p->path - 1);
     p->port = port ? port : (p->tls ? TLS_DEFAULT_PORT : 80);
     p->state = H_DNS;
-    p->sock = -1;
     p->tries = 0;
     if (sock_keep >= 0)
         tcp_close(sock_keep);
@@ -430,8 +595,13 @@ void http_poll_client(int c)
     }
     case H_CONNECT:
         if (tcp_connected(p->sock)) {
-            static char req[600];
+            static char req[REQCAP];
             int n = build_request(p, req);
+            if (n < 0) {
+                serial_puts("[HTTP] malformed request target, abort\n");
+                p->state = H_FAIL;
+                break;
+            }
             tcp_send(p->sock, req, (uint16_t)n);
             p->state = H_RECV;
             p->t0 = now;
@@ -442,39 +612,39 @@ void http_poll_client(int c)
     case H_RECV: {
         static uint8_t tmp[1500];
         int n = tcp_recv(p->sock, tmp, sizeof tmp);
-        if (n > 0 && p->resp_len + n <= RESPCAP) {
+        if (n > 0) {
+            if (p->resp_len + n > RESPCAP) {
+                serial_puts("[HTTP] response exceeds buffer, abort\n");
+                p->state = H_FAIL;
+                break;
+            }
             memcpy(p->resp + p->resp_len, tmp, n);
             p->resp_len += (uint16_t)n;
             p->t0 = now;
         }
-        if (tcp_peer_closed(p->sock)) {
+
+        int hdr_seen = p->hdr_len > 0;
+        if (!hdr_seen && find_seq(p->resp, p->resp_len, "\r\n\r\n", 4) >= 0)
             parse_response(p);
-            /* follow redirects automatically */
-            if (is_redirect_status(p->status)) {
-                char loc[256];
-                if (p->redirects < MAX_REDIRECTS &&
-                    find_header(p, "Location:", loc, sizeof loc)) {
-                    char nhost[80], npath[140];
-                    uint16_t nport = 80;
-                    if (!resolve_location(loc, p, nhost, sizeof nhost,
-                                          npath, sizeof npath, &nport)) {
-                        serial_puts("[HTTP] redirect to https unsupported\n");
-                        p->state = H_FAIL;
-                    } else {
-                        serial_puts("[HTTP] redirect -> ");
-                        serial_puts(nhost);
-                        serial_puts(npath);
-                        serial_putc('\n');
-                        begin_request(p, nhost, npath, nport, 0);
-                        p->redirects++;
-                        p->dnsid = (uint16_t)(0x2000 + c * 0x100 +
-                                              (timer_get_ticks() & 0xFF));
-                    }
-                    break;
-                }
-                serial_puts("[HTTP] redirect without Location/limit\n");
-            }
-            p->state = H_DONE;
+
+        if (p->cl_overflow) {
+            serial_puts("[HTTP] Content-Length exceeds buffer, abort\n");
+            p->state = H_FAIL;
+            break;
+        }
+
+        int body_ready = 0;
+        if (p->content_len >= 0 && p->hdr_len > 0)
+            body_ready = p->resp_len >= p->hdr_len + p->content_len;
+
+        if (body_ready) {
+            if (!finish_response(p, c))
+                p->state = H_DONE;
+        } else if (tcp_peer_closed(p->sock)) {
+            if (!hdr_seen)
+                parse_response(p);
+            if (!finish_response(p, c))
+                p->state = H_DONE;
         } else if (now - p->t0 > 500) {
             p->state = H_FAIL;
         }
@@ -523,7 +693,8 @@ int http_body_len(int c)
 {
     if (c < 0 || c >= HCLIENTS)
         return 0;
-    return (int)cl[c].resp_len - cl[c].hdr_len;
+    int n = (int)cl[c].resp_len - cl[c].hdr_len;
+    return n > 0 ? n : 0;
 }
 
 int http_is_tls(int c)
