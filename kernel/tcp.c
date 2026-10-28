@@ -67,6 +67,12 @@ static int send_seg(struct tcp_sock *s, uint8_t flags,
     struct tcp_hdr *t = (void *)seg;
     uint8_t words = (uint8_t)(5 + optlen / 4);
 
+    if (optlen > 40)
+        optlen = 40;
+    uint16_t max_data = (uint16_t)(1500 - 20 - optlen);
+    if (dlen > max_data)
+        dlen = max_data;
+
     t->sport = htons16(s->lport);
     t->dport = htons16(s->rport);
     t->seq = htons32(use_seq);
@@ -137,7 +143,7 @@ static struct tcp_sock *find_sock(struct ip_hdr *ip, struct tcp_hdr *t)
 
 void tcp_in(struct ip_hdr *ip, const uint8_t *payload, uint16_t len)
 {
-    if (len < 20)
+    if (len < 20 || len > 1500)
         return;
     struct tcp_hdr *t = (struct tcp_hdr *)payload;
     uint8_t doff = (uint8_t)((t->data_off >> 4) * 4);
@@ -160,15 +166,14 @@ void tcp_in(struct ip_hdr *ip, const uint8_t *payload, uint16_t len)
         return;
     }
 
-    if (s->state == TS_SYN_SENT && (flags & TCP_SYN)) {
+    if (s->state == TS_SYN_SENT) {
+        /* Three-way handshake: peer reply must be SYN|ACK; SYN carries no data. */
+        if ((flags & (TCP_SYN | TCP_ACK)) != (TCP_SYN | TCP_ACK))
+            return;
         s->rcv_nxt = seq + 1;
         s->snd_nxt = s->iss + 1;
         s->state = TS_ESTABLISHED;
         send_ack(s);
-        if (dlen) {
-            rx_push(s, data, dlen);
-            s->rcv_nxt += dlen;
-        }
         return;
     }
 
