@@ -4,6 +4,7 @@
 #include <kernel/net.h>
 #include <kernel/tcp.h>
 #include <kernel/http.h>
+#include <kernel/tls.h>
 #include <kernel/serial.h>
 
 uint64_t timer_get_ticks(void);
@@ -32,6 +33,7 @@ struct http_client {
     uint16_t resp_len;
     int status;
     int hdr_len;
+    int tls;
     uint64_t t0;
     int tries;
     int redirects;
@@ -248,21 +250,25 @@ static int is_redirect_status(int st)
     return st == 301 || st == 302 || st == 303 || st == 307 || st == 308;
 }
 
-/* Parse an absolute http:// URL into host/path/port. Returns 0 on https. */
+/* Parse an absolute URL into host/path/port.
+   Returns 0 on failure, 1 for http://, 2 for https://. */
 static int parse_abs_url(const char *url, char *host, int hsz,
                          char *path, int psz, uint16_t *port)
 {
     const char *p = url;
-    if (!strncmp(p, "https://", 8))
-        return 0;
-    if (!strncmp(p, "http://", 7))
+    int secure = 0;
+    if (!strncmp(p, "https://", 8)) {
+        secure = 1;
+        p += 8;
+    } else if (!strncmp(p, "http://", 7)) {
         p += 7;
+    }
     int hi = 0;
     while (*p && *p != '/' && *p != ':' && hi < hsz - 1)
         host[hi++] = *p++;
     host[hi] = 0;
 
-    *port = 80;
+    *port = secure ? TLS_DEFAULT_PORT : 80;
     if (*p == ':') {
         p++;
         int v = 0;
@@ -280,7 +286,7 @@ static int parse_abs_url(const char *url, char *host, int hsz,
         path[0] = '/';
         path[1] = 0;
     }
-    return 1;
+    return secure ? 2 : 1;
 }
 
 /* Turn a Location header (absolute, absolute-path or relative) into a new
@@ -327,15 +333,17 @@ static int resolve_location(const char *loc, struct http_client *base,
 }
 
 static void begin_request(struct http_client *p, const char *host,
-                          const char *path, uint16_t port)
+                          const char *path, uint16_t port, int secure)
 {
     int red = p->redirects;
+    int keep_tls = p->tls;
     int sock_keep = p->sock;
     memset(p, 0, sizeof(*p));
     p->redirects = red;
+    p->tls = secure || keep_tls;
     strncpy(p->host, host, sizeof p->host - 1);
     strncpy(p->path, path, sizeof p->path - 1);
-    p->port = port ? port : 80;
+    p->port = port ? port : (p->tls ? TLS_DEFAULT_PORT : 80);
     p->state = H_DNS;
     p->sock = -1;
     p->tries = 0;
@@ -353,7 +361,7 @@ int http_get(int c, const char *host, const char *path, uint16_t port)
     if (c < 0 || c >= HCLIENTS)
         return -1;
     struct http_client *p = &cl[c];
-    begin_request(p, host, path, port);
+    begin_request(p, host, path, port, 0);
     p->dnsid = (uint16_t)(0x1000 + c * 0x100 +
                           (timer_get_ticks() & 0xFF));
     return 0;
@@ -363,21 +371,20 @@ int http_get_url(int c, const char *url)
 {
     if (c < 0 || c >= HCLIENTS)
         return -1;
-    if (!strncmp(url, "https://", 8)) {
-        struct http_client *p = &cl[c];
-        memset(p, 0, sizeof(*p));
-        p->state = H_FAIL;
-        serial_puts("[HTTP] https not supported (no TLS)\n");
-        return -1;
-    }
     char host[80];
     char pathbuf[140];
     uint16_t port = 80;
-    if (!parse_abs_url(url, host, sizeof host, pathbuf, sizeof pathbuf,
-                       &port))
+    int secure = parse_abs_url(url, host, sizeof host, pathbuf, sizeof pathbuf,
+                               &port);
+    if (!secure)
         return -1;
-    int rc = http_get(c, host, pathbuf, port);
-    return rc;
+    struct http_client *p = &cl[c];
+    begin_request(p, host, pathbuf, port, secure == 2);
+    p->dnsid = (uint16_t)(0x1000 + c * 0x100 +
+                          (timer_get_ticks() & 0xFF));
+    if (p->tls)
+        serial_puts("[HTTP] https target recorded on port 443 (TLS engine off)\n");
+    return 0;
 }
 
 void http_poll_client(int c)
@@ -390,6 +397,11 @@ void http_poll_client(int c)
 
     switch (p->state) {
     case H_DNS: {
+        if (p->tls && !tls_engine_ready()) {
+            serial_puts("[HTTP] HTTPS unavailable: TLS engine not implemented\n");
+            p->state = H_FAIL;
+            break;
+        }
         uint32_t ip;
         if (literal_ip(p->host, &ip)) {
             p->sock = tcp_connect(ip, p->port);
@@ -453,7 +465,7 @@ void http_poll_client(int c)
                         serial_puts(nhost);
                         serial_puts(npath);
                         serial_putc('\n');
-                        begin_request(p, nhost, npath, nport);
+                        begin_request(p, nhost, npath, nport, 0);
                         p->redirects++;
                         p->dnsid = (uint16_t)(0x2000 + c * 0x100 +
                                               (timer_get_ticks() & 0xFF));
@@ -512,4 +524,9 @@ int http_body_len(int c)
     if (c < 0 || c >= HCLIENTS)
         return 0;
     return (int)cl[c].resp_len - cl[c].hdr_len;
+}
+
+int http_is_tls(int c)
+{
+    return (c >= 0 && c < HCLIENTS) && cl[c].tls;
 }

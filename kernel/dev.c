@@ -4,7 +4,7 @@
 #include <kernel/serial.h>
 #include <kernel/kstring.h>
 
-#define MAX_DRIVERS 160
+#define MAX_DRIVERS 256
 
 static const struct dev_driver *g_drivers[MAX_DRIVERS];
 static int g_ndrv;

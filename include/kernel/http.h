@@ -23,6 +23,7 @@ int http_state(int c);
 int http_ok(int c);
 int http_failed(int c);
 int http_status(int c);
+int http_is_tls(int c);
 const uint8_t *http_body(int c);
 int http_body_len(int c);
 void http_close_client(int c);

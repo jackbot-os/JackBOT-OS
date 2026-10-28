@@ -215,7 +215,9 @@ static void load_url(const char *url, int addhist)
         hc++;
         if (hc >= HISTN) hc = HISTN - 1;
     }
-    const char *p = url + 7;
+    const char *p = url;
+    if (!strncmp(p, "https://", 8)) p += 8;
+    else if (!strncmp(p, "http://", 7)) p += 7;
     int hi = 0;
     curhost[0]=0;
     while (*p && *p != '/' && hi < 79)

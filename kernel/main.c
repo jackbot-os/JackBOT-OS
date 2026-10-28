@@ -41,6 +41,7 @@
 #include <kernel/recycle.h>
 #include <kernel/bluetooth.h>
 #include <kernel/voice.h>
+#include <kernel/hmac_sha256.h>
 
 #define VGA_MEM ((volatile uint16_t *)0xb8000)
 #define VGA_W 80
@@ -381,6 +382,8 @@ void kmain(uint64_t magic, uint64_t mb_info)
     serial_puts("[B] bluetooth\n");
     bt_init();
     bt_self_test();
+
+    hmac_sha256_selftest();
 
     serial_puts("[B] voice\n");
     voice_init();
