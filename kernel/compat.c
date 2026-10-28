@@ -11,6 +11,7 @@
 #include <kernel/serial.h>
 #include <kernel/fb.h>
 #include <kernel/ata.h>
+#include <kernel/ahci.h>
 #include <kernel/e1000.h>
 #include <kernel/nic.h>
 #include <kernel/ps2.h>
@@ -106,12 +107,7 @@ static int drv_storage_ata(struct pci_dev *d)
 
 static int drv_storage_ahci(struct pci_dev *d)
 {
-    /* AHCI/SATA：读 CAP 寄存器（BAR5 MMIO offset 0）验证 */
-    uint32_t bar = pci_bar_mem(d, 5);
-    serial_puts("[COMPAT] storage AHCI/SATA bar5=");
-    serial_puthex(bar);
-    serial_putc('\n');
-    return 0;
+    return ahci_init(d);
 }
 
 static int drv_storage_nvme(struct pci_dev *d)
