@@ -1,4 +1,4 @@
-# JackBOT OS v1.0.1 EastLake
+# JackBOT OS v1.0.2 EastLake
 
 A hobby x86_64 operating system with a graphical installer, first-boot setup
 wizard, a desktop environment, and a real networked browser — built from
@@ -9,14 +9,21 @@ ready-to-use ISO and the project website; source code is not published here.
 
 ## Download
 
-- **64-bit ISO**: [JackBOT-1.0.1.iso](JackBOT-1.0.1.iso) (~22 MB)
+- **64-bit ISO**: [JackBOT-1.0.2.iso](JackBOT-1.0.2.iso) (~22.55 MB)
 - Project website: [index.html](index.html)
 
 ## Features in this release
 
-- **Expanded PCI compatibility database**: more Intel/Realtek Ethernet,
-  Intel/AMD/ASMedia AHCI and HD Audio device IDs are recognized at boot
-  (detection/probe level; AHCI/NVMe/e1000e functional drivers are next-stage work)
+- **Expanded PCI compatibility database (231 recognized IDs)**: more Intel/Realtek/
+  Broadcom/Atheros/Mellanox Ethernet, Intel/AMD/ASMedia/Marvell/VIA AHCI, NVMe,
+  HD Audio and USB host-controller device IDs are recognized at boot
+  (detection/probe level; AHCI/NVMe/e1000e functional command-layer drivers are
+  next-stage work)
+- **HTTPS-aware HTTP client + HMAC-SHA256**: `https://` URLs and port 443 are
+  recognized; an HMAC-SHA256 primitive passes RFC 4231 test vectors at boot.
+  The TLS handshake, certificate validation and encryption are **not implemented
+  yet**; HTTPS requests are stopped with an explicit unavailable state rather
+  than sent in plaintext.
 - **Live Desktop mode**: boot the full desktop without installing
 - **Real networked browser**: DHCP/TCP/HTTP over the e1000 NIC, real HTTP 200
   pages, relative-URL navigation and automatic 302-redirect following
@@ -49,8 +56,8 @@ ready-to-use ISO and the project website; source code is not published here.
 1. Create a 64-bit "Other Linux" VM with 2 GB RAM and a virtual hard disk.
 2. Set networking to NAT with the Intel PRO/1000/82540EM adapter type to use
    the browser.
-3. Attach `JackBOT-1.0.1.iso` to the optical drive and boot from it.
-4. Pick "Try JackBOT OS 1.0.1 (Live Desktop)" to explore without installing, or
+3. Attach `JackBOT-1.0.2.iso` to the optical drive and boot from it.
+4. Pick "Try JackBOT OS 1.0.2 (Live Desktop)" to explore without installing, or
    run the graphical installer, remove the disc and reboot.
 5. After an install, complete the first-boot setup and you reach the desktop.
 

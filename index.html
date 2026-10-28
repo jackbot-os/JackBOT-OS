@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>JackBOT OS Official Website | v1.0.1 EastLake</title>
-    <meta name="description" content="JackBOT OS v1.0.1 — a from-scratch x86_64 hobby operating system with a graphical installer, 205-language UI, hardware-accelerated cursor and OOBE. Download the 64-bit ISO.">
+    <title>JackBOT OS Official Website | v1.0.2 EastLake</title>
+    <meta name="description" content="JackBOT OS v1.0.2 — a from-scratch x86_64 hobby operating system with a graphical installer, 205-language UI, hardware-accelerated cursor, an expanded PCI compatibility database, HMAC-SHA256 and an HTTPS-aware HTTP client. Download the 64-bit ISO.">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -147,7 +147,7 @@
         <section class="hero">
             <div class="container hero-content">
                 <h1>JackBOT OS</h1>
-                <div class="version-badge">v1.0.1 EastLake — x86_64</div>
+                <div class="version-badge">v1.0.2 EastLake — x86_64</div>
                 <p>A from-scratch, 64-bit hobby operating system written in C and NASM. Multiboot2 + GRUB, a native graphical installer, a 205-language setup experience, and a GPU-composited hardware cursor &mdash; no Linux kernel underneath.</p>
                 <div class="hero-stats">
                     <div class="hero-stat"><div class="num">205</div><div class="lbl">Setup languages</div></div>
@@ -168,10 +168,15 @@
                     calls, user-space isolation), and ships its own graphical stack, file system drivers and
                     applications &mdash; it is <strong>not a Linux distribution</strong>.
                     <br><br>
-                    The v1.0.1 release extends the compatibility database with more common PCI
-                    network, storage and audio device IDs, keeps the bootable Live Desktop mode (try the full desktop
-                    without installing), five new system-management applications (USB Devices,
-                    Battery &amp; Power, Recycle Bin, File Explorer and Device Manager), and real
+                    The v1.0.2 release grows the PCI compatibility database to 231 recognized
+                    device IDs across display, Ethernet, storage, audio and USB classes, adds an
+                    HTTPS-aware HTTP client that parses <code>https://</code> URLs and port 443, and ships an
+                    HMAC-SHA256 primitive self-verified against RFC 4231 test vectors. A TLS state-machine
+                    stub is in place; <strong>the TLS handshake, certificate validation and encrypted
+                    record layer are not implemented yet</strong>, so HTTPS pages are reported as unavailable
+                    rather than opened as plaintext. The release keeps the bootable Live Desktop mode
+                    (try the full desktop without installing), five system-management applications (USB
+                    Devices, Battery &amp; Power, Recycle Bin, File Explorer and Device Manager), and real
                     hardware enumeration: ACPI table/PM1-control-block parsing, USB host-controller
                     and root-hub port reading, and a live PCI device tree. It also builds on the
                     complete graphical installer (language &rarr; welcome &rarr; time zone &rarr; disk
@@ -188,7 +193,7 @@
 
         <section class="section" id="features">
             <div class="container">
-                <h2>Key Features in v1.0.1</h2>
+                <h2>Key Features in v1.0.2</h2>
                 <div class="features-grid">
                     <div class="feature-card">
                         <h3>Graphical Installer</h3>
@@ -275,13 +280,13 @@
                 <h2>Download</h2>
                 <div class="download-box">
                     <div class="download-info">
-                        <h3>JackBOT OS v1.0.1</h3>
-                        <p>Image file name: <strong>JackBOT-1.0.1.iso</strong></p>
+                        <h3>JackBOT OS v1.0.2</h3>
+                        <p>Image file name: <strong>JackBOT-1.0.2.iso</strong></p>
                         <p>64-bit hybrid ISO (BIOS + UEFI). Recommended VM: Oracle VirtualBox, 2048 MB RAM, VMSVGA graphics, PS/2 mouse.</p>
-                        <p style="margin-top:10px;font-size:13px;color:#6b7280;">Size: 22.54 MB &middot; Verify with SHA-256:</p>
-                        <p style="font-family:monospace;font-size:12px;color:#374151;background:#f3f4f6;padding:8px 10px;border-radius:6px;word-break:break-all;">9b257eca7faa60759172edbfd7535bdfde1799bbbf2169eaf80a585c852be8ef</p>
+                        <p style="margin-top:10px;font-size:13px;color:#6b7280;">Size: 22.55 MB &middot; Verify with SHA-256:</p>
+                        <p style="font-family:monospace;font-size:12px;color:#374151;background:#f3f4f6;padding:8px 10px;border-radius:6px;word-break:break-all;">d96eff7afbc45ce001b66e8bc743c579a6045d0b6047fa4c13cca8d3ebb61c11</p>
                     </div>
-                    <a class="download-btn" href="JackBOT-1.0.1.iso" download="JackBOT-1.0.1.iso">Download 64-bit ISO</a>
+                    <a class="download-btn" href="JackBOT-1.0.2.iso" download="JackBOT-1.0.2.iso">Download 64-bit ISO</a>
                 </div>
                 <div class="note">
                     <strong>Honest scope notes (please read):</strong>
@@ -291,7 +296,13 @@
                     built-in interpreter exist). Graphics on physical GPUs use a software 3D rasterizer; the
                     hardware-accelerated path targets the virtual VMware SVGA&nbsp;II / VMSVGA adapter, not
                     physical graphics cards. Many compatibility-database entries are device-detection probes
-                    rather than full functional drivers, and OOBE keyboard selection stores the layout but does
+                    rather than full functional drivers; in particular AHCI/SATA, NVMe and e1000e
+                    adapters are only recognized and logged, their register command queues are not
+                    driven. The browser works over plain HTTP only: TLS 1.2/1.3 handshake, X.509
+                    certificate validation, key exchange and encrypted record layer are not implemented,
+                    and an <code>https://</code> URL fails with an explicit unavailable state instead of
+                    being opened in plaintext. Bluetooth pairing/L2CAP/GATT and on-device speech-to-text
+                    remain skeletons. OOBE keyboard selection stores the layout but does
                     not yet remap every physical key.
                 </div>
             </div>
@@ -299,8 +310,10 @@
 
         <section class="section" id="changelog">
             <div class="container">
-                <h2>Changelog v1.0.1</h2>
+                <h2>Changelog v1.0.2</h2>
                 <ul class="changelog-list">
+                    <li><strong>v1.0.2 &mdash; PCI compatibility database expanded to 231 recognized IDs:</strong> the detection table now covers additional NVIDIA/AMD/Intel display adapters, Intel I350/I217/I219 and Realtek 8125/8137/8138/8127 and Broadcom/Atheros/Mellanox Ethernet, more Intel/AMD/ASMedia/Marvell/VIA AHCI controllers, Intel/Samsung/WD/Kingston/Micron/Crucial/Phison NVMe IDs, Realtek/AMD/NVIDIA/Intel/VIA HDA and Creative SB X-Fi/Audigy audio, and extra EHCI/OHCI/xHCI USB host controllers. These remain detection/probe entries that log a serial line and return success; full functional command-layer drivers for AHCI/SATA, NVMe and e1000e are still next-stage work and are not claimed as working.</li>
+                    <li><strong>v1.0.2 &mdash; HTTPS-aware HTTP client, HMAC-SHA256 primitive and TLS stub:</strong> the URL parser recognizes <code>https://</code> and defaults to port 443; a built-in HMAC-SHA256 primitive passes the RFC 4231 Test Case 1 and Test Case 2 vectors at boot, and a TLS state-machine/constant skeleton is in place. <strong>Honest boundary:</strong> the TLS handshake, ServerHello/Certificate parsing, X.509 chain validation, key exchange and symmetric record encryption are not implemented; an HTTPS request is stopped before DNS with an explicit "TLS engine unavailable" state instead of being sent in plaintext.</li>
                     <li><strong>v1.0.1 &mdash; expanded PCI compatibility database:</strong> more common Intel PRO/1000 and Realtek Ethernet IDs, additional Intel/AMD/ASMedia AHCI SATA controllers, and more Intel/AMD/NVIDIA HD Audio controllers are now recognized during PCI enumeration. Newer Intel I218/I219/I211 adapters are matched to the generic Ethernet probe rather than the legacy e1000 driver. These are detection/probe entries; full functional drivers for AHCI, NVMe and e1000e remain next-stage work.</li>
                     <li><strong>v1.0.1 &mdash; version consistency:</strong> boot banner, About panel, System Update, installer marker, Start menu and HTTP User-Agent all report 1.0.1; the build no longer depends on the optional disk-image target for ISO production.</li>
                     <li><strong>v1.0.0 &mdash; real networked browser (verified in VirtualBox):</strong> the e1000/82540EM driver now brings the link up (DHCP bound), the TCP stack loads pages over plain HTTP, and JBrowser renders real HTTP&nbsp;200 pages with relative-URL navigation and automatic 302-redirect following. Keyboard-only browsing is supported (Ctrl+L focuses the address bar). HTTPS/TLS is not implemented yet.</li>
