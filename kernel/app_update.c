@@ -10,7 +10,7 @@
 #include <kernel/serial.h>
 
 #define UPDATE_SRC "http://10.0.2.2/version.json"
-#define CURRENT_VER "1.0.1"
+#define CURRENT_VER "1.0.2"
 
 enum {
     U_IDLE, U_CHECKING, U_CURRENT, U_AVAILABLE,
@@ -110,8 +110,11 @@ int update_frame(int mx, int my, int clicked)
     int x = W.x + 28 * S, y = W.y + 48 * S;
     int bw = W.w - 56 * S;
 
+    char verline[40];
+    strcpy(verline, "Installed version: ");
+    strcat(verline, CURRENT_VER);
     gfx_draw_string(x, y, fb_rgb(150,210,255), fb_rgb(30,34,46),
-                    "Installed version: 1.0.1");
+                    verline);
 
     int py = y + 34 * S;
     if (state == U_IDLE || state == U_FAIL) {

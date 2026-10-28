@@ -17,7 +17,7 @@ OBJS := $(addprefix $(BUILD)/,$(addsuffix .o,$(KERN_SRCS))) \
 DEPS := $(OBJS:.o=.d)
 -include $(DEPS)
 KERNEL := iso/boot/kernel
-ISO := $(BUILD)/JackBOT-1.0.1.iso
+ISO := $(BUILD)/JackBOT-1.0.2.iso
 DISK := $(BUILD)/disk.img
 USER_BIN := $(BUILD)/ustest.bin
 USER_H := $(BUILD)/ustest.h
