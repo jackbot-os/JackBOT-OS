@@ -9,6 +9,25 @@
 #define FB_VBASE 0xffff800080000000ull
 #define ADDR_MASK 0x000ffffffffff000ull
 
+/* Highest mode this build accepts. Anything the firmware/bootloader reports
+   beyond these bounds is clamped here so a bogus huge framebuffer cannot blow
+   the kernel heap or over-map the FB window. 4K = 3840x2160. */
+#define FB_MAX_W     3840u
+#define FB_MAX_H     2160u
+#define FB_MAX_PIX   ((uint64_t)FB_MAX_W * FB_MAX_H)
+
+static void fb_clamp_mode(uint32_t *w, uint32_t *h)
+{
+    if (*w > FB_MAX_W)
+        *w = FB_MAX_W;
+    if (*h > FB_MAX_H)
+        *h = FB_MAX_H;
+    if ((uint64_t)*w * (uint64_t)*h > FB_MAX_PIX) {
+        *h = FB_MAX_H;
+        *w = FB_MAX_W;
+    }
+}
+
 #define PCI_CONFIG_ADDR 0xcf8
 #define PCI_CONFIG_DATA 0xcfc
 #define VBE_DISPI_IOPORT_INDEX 0x1ce
@@ -148,6 +167,7 @@ int fb_rebind_gpu(uint64_t phys, uint32_t width, uint32_t height,
 {
     if (!g_fb.present || phys == 0 || width == 0 || height == 0)
         return 0;
+    fb_clamp_mode(&width, &height);
 
     g_fb.width = width;
     g_fb.height = height;
@@ -248,6 +268,7 @@ static uint32_t mask_val(uint8_t size)
 
 int fb_bochs_init(uint32_t width, uint32_t height)
 {
+    fb_clamp_mode(&width, &height);
     int found = 0;
     int is_vmsvga = 0;
     uint8_t bus = 0, dev = 0, func = 0;
@@ -337,6 +358,7 @@ int fb_linear_init(uint64_t phys, uint32_t width, uint32_t height,
 {
     if (phys == 0 || width == 0 || height == 0 || bpp < 16)
         return 0;
+    fb_clamp_mode(&width, &height);
 
     g_fb.width = width;
     g_fb.height = height;
