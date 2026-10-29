@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <kernel/jbot.h>
 #include <kernel/serial.h>
+#include <kernel/pmm.h>
 
 /*
  * JackBOT free AI - rule + tiny fixed-point neural net hybrid.
@@ -161,6 +162,25 @@ static int putu32(char *out, int n, int p, uint32_t v)
     return p;
 }
 
+static int putu64(char *out, int n, int p, uint64_t v)
+{
+    (void)n;
+    char tmp[24];
+    int t = 0;
+    if (v == 0) {
+        tmp[t++] = '0';
+    } else {
+        while (v && t < 23) {
+            tmp[t++] = (char)('0' + (v % 10));
+            v /= 10;
+        }
+    }
+    while (t > 0)
+        out[p++] = tmp[--t];
+    out[p] = 0;
+    return p;
+}
+
 /* ---------------- cmos time (duplicate minimal, kernel-internal) ---------------- */static uint8_t cmos(int r)
 {
     uint8_t v;
@@ -169,6 +189,21 @@ static int putu32(char *out, int n, int p, uint32_t v)
     return v;
 }
 static int bcdv(uint8_t v) { return (v & 15) + ((v >> 4) * 10); }
+
+/* Offline system info: report real physical RAM total and free in MiB.
+   Pure local read, no network, no external model. */
+static int build_system_reply(char *out, int outsz)
+{
+    uint64_t total_mb = pmm_total_bytes() / (1024u * 1024u);
+    uint64_t free_mb = pmm_free_bytes() / (1024u * 1024u);
+    int p = 0;
+    p = putstr(out, outsz, p, "RAM total ");
+    p = putu64(out, outsz, p, total_mb);
+    p = putstr(out, outsz, p, " MB, free ");
+    p = putu64(out, outsz, p, free_mb);
+    p = putstr(out, outsz, p, " MB");
+    return p > 0;
+}
 
 /* ---------------- compute: simple integer expression ---------------- */
 /* supports: "N op N" with + - * / (single operator, two operands) */
@@ -248,6 +283,14 @@ int jbot_reply(const char *input, char *out, int outsz)
         return putstr(out, outsz, p, b) > 0;
     }
 
+    /* 2b. offline system info: report real physical RAM total/free (MiB) */
+    if (has(input, "system") || has(input, "info") || has(input, "cpu") ||
+        has(input, "mem") || has(input, "内存") || has(input, "系统")) {
+        char sb[96];
+        if (build_system_reply(sb, sizeof(sb)))
+            return putstr(out, outsz, p, sb) > 0;
+    }
+
     /* 3. build features */
     int32_t feats[NF];
     for (int i = 0; i < NF; i++) {
@@ -289,8 +332,12 @@ int jbot_reply(const char *input, char *out, int outsz)
         return putstr(out, outsz, p,
             "Say e.g. 'calc 12*8' or '5+9' and I'll compute it.") > 0;
     case INT_SYSTEM:
-        return putstr(out, outsz, p,
-            "System info needs a paid model in this build.") > 0;
+    {
+        char sb[96];
+        if (build_system_reply(sb, sizeof(sb)))
+            return putstr(out, outsz, p, sb) > 0;
+        return putstr(out, outsz, p, "System RAM: see monitor app.") > 0;
+    }
     case INT_WEATHER:
         return putstr(out, outsz, p,
             "Weather needs a network connection and paid model.") > 0;
@@ -325,6 +372,10 @@ void jbot_self_test(void)
 
     /* rule: greeting */
     if (!jbot_reply("hello", b, sizeof(b))) ok = 0;
+
+    /* offline system info: must report real RAM total/free in MB */
+    if (!jbot_reply("system info", b, sizeof(b)) || b[0] == 0) ok = 0;
+    if (has(b, "MB") == 0) ok = 0;
 
     /* neural: greeting via net */
     jbot_reply("hi", b, sizeof(b));
