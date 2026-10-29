@@ -322,6 +322,20 @@ int jbot_reply(const char *input, char *out, int outsz)
         return putstr(out, outsz, p, db) > 0;
     }
 
+    /* 2f. offline identity / status / goodbye rules */
+    if (has(input, "who are you") || has(input, "你是谁"))
+        return putstr(out, outsz, p,
+            "I am JackBOT, the offline assistant built into JackBOT OS. "
+            "Ask me for time, math, system info or disk space.") > 0;
+
+    if (has(input, "how are you") || has(input, "你好吗") || has(input, "近况"))
+        return putstr(out, outsz, p,
+            "I am running fine offline, no network needed. Ready for time, "
+            "math, system info or disk space.") > 0;
+
+    if (has(input, "goodbye") || has(input, "bye") || has(input, "再见"))
+        return putstr(out, outsz, p, "Goodbye! Have a nice day.") > 0;
+
     /* 3. build features */
     int32_t feats[NF];
     for (int i = 0; i < NF; i++) {
@@ -419,6 +433,18 @@ void jbot_self_test(void)
     /* disk rule: reports free space in MB */
     if (!jbot_reply("disk free", b, sizeof(b)) || b[0] == 0) ok = 0;
     if (has(b, "MB") == 0) ok = 0;
+
+    /* identity rule: identifies JackBOT offline assistant */
+    if (!jbot_reply("who are you", b, sizeof(b)) || b[0] == 0) ok = 0;
+    if (has(b, "JackBOT") == 0) ok = 0;
+
+    /* status rule: reports running fine offline */
+    if (!jbot_reply("how are you", b, sizeof(b)) || b[0] == 0) ok = 0;
+    if (has(b, "offline") == 0) ok = 0;
+
+    /* goodbye rule: offline farewell reply */
+    if (!jbot_reply("goodbye", b, sizeof(b)) || b[0] == 0) ok = 0;
+    if (has(b, "Goodbye") == 0) ok = 0;
 
     /* neural: greeting via net */
     jbot_reply("hi", b, sizeof(b));
