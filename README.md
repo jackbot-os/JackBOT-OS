@@ -1,4 +1,4 @@
-# JackBOT OS v1.0.2 EastLake
+# JackBOT OS v1.0.3 EastLake
 
 A hobby x86_64 operating system with a graphical installer, first-boot setup
 wizard, a desktop environment, and a real networked browser — built from
@@ -9,7 +9,7 @@ ready-to-use ISO and the project website; source code is not published here.
 
 ## Download
 
-- **64-bit ISO**: [JackBOT-1.0.2.iso](JackBOT-1.0.2.iso) (~22.55 MB)
+- **64-bit ISO**: [JackBOT-1.0.3.iso](JackBOT-1.0.3.iso) (~22.55 MB)
 - Project website: [index.html](index.html)
 
 ## Features in this release
@@ -56,7 +56,7 @@ ready-to-use ISO and the project website; source code is not published here.
 1. Create a 64-bit "Other Linux" VM with 2 GB RAM and a virtual hard disk.
 2. Set networking to NAT with the Intel PRO/1000/82540EM adapter type to use
    the browser.
-3. Attach `JackBOT-1.0.2.iso` to the optical drive and boot from it.
+3. Attach `JackBOT-1.0.3.iso` to the optical drive and boot from it.
 4. Pick "Try JackBOT OS 1.0.2 (Live Desktop)" to explore without installing, or
    run the graphical installer, remove the disc and reboot.
 5. After an install, complete the first-boot setup and you reach the desktop.
