@@ -20,12 +20,15 @@ static char viewbuf[4096];
 static int viewing;
 static char viewname[FAT_DENT_NAME_MAX];
 
-static void append(char *s, const char *a)
+static void append(char *s, int osz, const char *a)
 {
+    if (osz <= 1)
+        return;
     int p = 0;
     while (s[p]) p++;
-    while (*a) s[p++] = *a++;
-    s[p] = 0;
+    int q = 0;
+    while (a[q] && p + q < osz - 1) { s[p + q] = a[q]; q++; }
+    s[p + q] = 0;
 }
 
 static void u2dec(uint32_t v, char *out)
@@ -43,13 +46,13 @@ static void fmt_size(uint32_t b, char *out)
 {
     if (b < 1024u) {
         u2dec(b, out);
-        append(out, " B");
+        append(out, 20, " B");
     } else if (b < 1024u * 1024u) {
         u2dec(b / 1024u, out);
-        append(out, " KB");
+        append(out, 20, " KB");
     } else {
         u2dec(b / (1024u * 1024u), out);
-        append(out, " MB");
+        append(out, 20, " MB");
     }
 }
 
@@ -60,14 +63,15 @@ static void setmsg(const char *m)
     msg[p] = 0;
 }
 
-static void full_path(const char *shortname, char *out)
+static void full_path(const char *shortname, char *out, int osz)
 {
+    out[0] = 0;
     if (cwd[0]) {
-        strcpy(out, cwd);
-        strcat(out, "\\");
-        strcat(out, shortname);
+        append(out, osz, cwd);
+        append(out, osz, "\\");
+        append(out, osz, shortname);
     } else {
-        strcpy(out, shortname);
+        append(out, osz, shortname);
     }
 }
 
@@ -114,7 +118,7 @@ static void open_entry(int idx)
         return;
     if (dent[idx].is_dir) {
         char np[128];
-        full_path(dent[idx].short83, np);
+        full_path(dent[idx].short83, np, sizeof np);
         if (strlen(np) >= sizeof(cwd) - 1)
             return;
         strcpy(cwd, np);
@@ -124,7 +128,7 @@ static void open_entry(int idx)
     }
     if (text_ext(dent[idx].short83)) {
         char fp[160];
-        full_path(dent[idx].short83, fp);
+        full_path(dent[idx].short83, fp, sizeof fp);
         uint32_t got = 0;
         if (fat_read_file(fp, viewbuf, sizeof(viewbuf) - 1, &got) == 0) {
             viewbuf[got] = 0;
@@ -223,7 +227,7 @@ int files_frame(int mx, int my, int clicked)
             setmsg("回收站只处理文件，暂不支持删除文件夹");
         } else {
             char fp[160];
-            full_path(dent[sel].short83, fp);
+            full_path(dent[sel].short83, fp, sizeof fp);
             int rc = recycle_delete(fp);
             if (rc == 0)
                 setmsg("已移入回收站");
@@ -238,8 +242,8 @@ int files_frame(int mx, int my, int clicked)
     int y = W.y + 84 * S;
     char path[140];
     path[0] = 0;
-    append(path, "位置：");
-    append(path, cwd[0] ? cwd : "\\ 根目录");
+    append(path, sizeof path, "位置：");
+    append(path, sizeof path, cwd[0] ? cwd : "\\ 根目录");
     gfx_draw_string_wide(x0, y, fb_rgb(150, 210, 255), bg, path);
     y += 24 * S;
 
