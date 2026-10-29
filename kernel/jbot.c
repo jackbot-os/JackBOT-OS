@@ -2,6 +2,7 @@
 #include <kernel/jbot.h>
 #include <kernel/serial.h>
 #include <kernel/pmm.h>
+#include <kernel/fat32.h>
 
 /*
  * JackBOT free AI - rule + tiny fixed-point neural net hybrid.
@@ -291,6 +292,36 @@ int jbot_reply(const char *input, char *out, int outsz)
             return putstr(out, outsz, p, sb) > 0;
     }
 
+    /* 2c. date: CMOS year/month/day, offline local read */
+    if (has(input, "date") || has(input, "日期") || has(input, "today")) {
+        int y = bcdv(cmos(9)), m = bcdv(cmos(8)), d = bcdv(cmos(7));
+        char db[48];
+        int q = putstr(db, sizeof(db), 0, "Today: ");
+        q = putu32(db, sizeof(db), q, (uint32_t)y + 2000);
+        q = putstr(db, sizeof(db), q, "-");
+        if (m < 10) q = putstr(db, sizeof(db), q, "0");
+        q = putu32(db, sizeof(db), q, (uint32_t)m);
+        q = putstr(db, sizeof(db), q, "-");
+        if (d < 10) q = putstr(db, sizeof(db), q, "0");
+        q = putu32(db, sizeof(db), q, (uint32_t)d);
+        return putstr(out, outsz, p, db) > 0;
+    }
+
+    /* 2d. installed version */
+    if (has(input, "version") || has(input, "版本"))
+        return putstr(out, outsz, p, "JackBOT OS 1.0.2") > 0;
+
+    /* 2e. free disk space (MiB) from FAT32 */
+    if (has(input, "disk") || has(input, "storage") || has(input, "磁盘") ||
+        has(input, "space")) {
+        uint32_t free_mb = fat_free_bytes() / (1024u * 1024u);
+        char db[64];
+        int q = putstr(db, sizeof(db), 0, "Disk free ");
+        q = putu32(db, sizeof(db), q, free_mb);
+        q = putstr(db, sizeof(db), q, " MB");
+        return putstr(out, outsz, p, db) > 0;
+    }
+
     /* 3. build features */
     int32_t feats[NF];
     for (int i = 0; i < NF; i++) {
@@ -375,6 +406,18 @@ void jbot_self_test(void)
 
     /* offline system info: must report real RAM total/free in MB */
     if (!jbot_reply("system info", b, sizeof(b)) || b[0] == 0) ok = 0;
+    if (has(b, "MB") == 0) ok = 0;
+
+    /* date rule: non-empty and carries a dash date stamp */
+    if (!jbot_reply("date", b, sizeof(b)) || b[0] == 0) ok = 0;
+    if (has(b, "-") == 0) ok = 0;
+
+    /* version rule: reports installed build version */
+    if (!jbot_reply("version", b, sizeof(b)) || b[0] == 0) ok = 0;
+    if (has(b, "1.0.2") == 0) ok = 0;
+
+    /* disk rule: reports free space in MB */
+    if (!jbot_reply("disk free", b, sizeof(b)) || b[0] == 0) ok = 0;
     if (has(b, "MB") == 0) ok = 0;
 
     /* neural: greeting via net */
