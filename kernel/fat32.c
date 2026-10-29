@@ -134,13 +134,17 @@ static uint32_t alloc_one(void)
     }
     return 0;
 }
+static void free_chain(uint32_t c);
 static uint32_t alloc_chain(uint32_t prev, uint32_t count)
 {
     uint32_t first = 0, last = 0;
     for (uint32_t i = 0; i < count; i++) {
         uint32_t nc = alloc_one();
-        if (!nc)
-            break;
+        if (!nc) {
+            if (first)
+                free_chain(first);
+            return 0;
+        }
         if (!first)
             first = nc;
         if (last)
@@ -285,6 +289,8 @@ static int resolve_path(const char *path, uint8_t finalname[11],
 {
     if (!path)
         return -1;
+    if (strlen(path) >= MAX_PATH)
+        return -1;
     if (!next_sep((char *)path)) {
         fmt_name(path, finalname);
         *dirc = root_cluster;
@@ -344,21 +350,33 @@ static int mount_common(void)
 
     if (bps != 512 || !spc || !nfats || !fat_size)
         return -1;
-
-    fat_start = reserved;
-    data_start = reserved + (uint32_t)nfats * fat_size;
-    if (data_start >= total_sectors)
+    if ((spc & (spc - 1)) != 0 || nfats > 8 || reserved == 0)
         return -1;
+
+    uint64_t ds = (uint64_t)reserved + (uint64_t)nfats * fat_size;
+    if (ds >= total_sectors)
+        return -1;
+    fat_start = reserved;
+    data_start = (uint32_t)ds;
     cluster_count = (total_sectors - data_start) / spc;
     if (!cluster_count)
+        return -1;
+
+    uint32_t fat_entries = fat_size * (bps / 4);
+    if (cluster_count + 2 > fat_entries)
         return -1;
     if (!cluster_valid(root_cluster))
         return -1;
 
     cbuf = kmalloc((uint32_t)spc * bps);
     dbuf = kmalloc((uint32_t)spc * bps);
-    if (!cbuf || !dbuf)
+    if (!cbuf || !dbuf) {
+        kfree(cbuf);
+        kfree(dbuf);
+        cbuf = 0;
+        dbuf = 0;
         return -1;
+    }
 
     fache_sec = 0xFFFFFFFFu;
     is_mounted = 1;
@@ -449,17 +467,15 @@ int fat_write_file(const char *name83, const void *data, uint32_t len)
     if (resolve_path(name83, nm, &dirc, 1) < 0)
         return -1;
     dpos_t dp;
-
-    if (dir_find(dirc, nm, 0, &dp) == 0) {
+    int existed = dir_find(dirc, nm, 0, &dp) == 0;
+    if (existed) {
         uint8_t *old = cbuf + dp.off;
         uint32_t fc = (uint32_t)rd16(old + 26) |
                       ((uint32_t)rd16(old + 20) << 16);
-        write_cluster(dp.cluster, cbuf);
         free_chain(fc);
-    }
-
-    if (dir_find(dirc, nm, 1, &dp) < 0)
+    } else if (dir_find(dirc, nm, 1, &dp) < 0) {
         return -1;
+    }
 
     uint32_t csize = (uint32_t)spc * bps;
     uint32_t need = len ? (len + csize - 1) / csize : 1;
@@ -567,25 +583,30 @@ static void fill_lfn(uint8_t *e, int seq, const char *full, int flen,
     }
 }
 
-/* 在目录首簇内找连续 n 个空闲槽（新模块目录空间充足） */
+/* 在目录簇链内找连续 n 个空闲槽 */
 static int dir_find_run(uint32_t dirc, int n, dpos_t *dp)
 {
-    if (read_cluster(dirc, cbuf) < 0)
-        return -1;
-    uint32_t csize = (uint32_t)spc * bps;
-    int run = 0;
-    for (uint32_t o = 0; o < csize; o += 32) {
-        uint8_t *e = cbuf + o;
-        if (e[0] == 0x00 || e[0] == 0xE5) {
-            if (run == 0) {
-                dp->cluster = dirc;
-                dp->off = o;
+    uint32_t c = dirc;
+    uint32_t guard = cluster_count + 2;
+    while (cluster_valid(c) && guard--) {
+        if (read_cluster(c, cbuf) < 0)
+            return -1;
+        uint32_t csize = (uint32_t)spc * bps;
+        int run = 0;
+        for (uint32_t o = 0; o < csize; o += 32) {
+            uint8_t *e = cbuf + o;
+            if (e[0] == 0x00 || e[0] == 0xE5) {
+                if (run == 0) {
+                    dp->cluster = c;
+                    dp->off = o;
+                }
+                if (++run >= n)
+                    return 0;
+            } else {
+                run = 0;
             }
-            if (++run >= n)
-                return 0;
-        } else {
-            run = 0;
         }
+        c = fat_get(c);
     }
     return -1;
 }
@@ -613,6 +634,8 @@ int fat_write_file_lfn(const char *dir83, const char *base,
     int nlfn = make_short_lfn(base, sn, &flen);
     dpos_t dp;
     if (dir_find_run(dirc, nlfn + 1, &dp) < 0)
+        return -1;
+    if (protect_check(base, ACT_WRITE) != 0)
         return -1;
 
     uint32_t csize = (uint32_t)spc * bps;
@@ -694,6 +717,8 @@ int fat_read_file(const char *name83, void *buf, uint32_t max,
             mymemcpy(dst, dbuf, n);
         dst += n;
         copied += n;
+        if (copied >= max)
+            break;
         remain -= (remain > csize ? csize : remain);
         if (!remain)
             break;
