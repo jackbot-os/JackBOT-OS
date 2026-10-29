@@ -13,6 +13,7 @@
 #include <kernel/ata.h>
 #include <kernel/fat32.h>
 #include <kernel/part.h>
+#include <kernel/mkfat.h>
 #include <kernel/payload.h>
 #include <kernel/installer.h>
 #include <kernel/installer_gui.h>
@@ -23,6 +24,7 @@
 #include <kernel/jbot.h>
 #include <kernel/py.h>
 #include <kernel/jca.h>
+#include <kernel/honeypot.h>
 #include <kernel/i18n.h>
 #include "i18n_data.h"
 #include <kernel/ps2.h>
@@ -148,6 +150,108 @@ static int boot_mount_system(void)
     return fat_mount_part(s, n);
 }
 
+/* Headless real-disk FAT32 regression: partitions, formats, mounts the
+   attached ATA disk, then exercises write/readback/overwrite/delete/permissions.
+   Driven only by the jb.fattest=1 command-line token; does not touch desktop. */
+static void fat_disk_selftest(void)
+{
+    int pass = 1;
+    if (!ata_present()) {
+        serial_puts("[FAT-TEST] FAIL: no ATA disk\n");
+        return;
+    }
+
+    uint64_t total = ata_sector_count();
+    serial_puts("[FAT-TEST] sectors="); serial_puthex((uint32_t)total); serial_putc('\n');
+
+    struct part_layout pl;
+    if (part_plan(total, &pl) != 0) {
+        serial_puts("[FAT-TEST] FAIL: part_plan\n");
+        return;
+    }
+    if (part_write_mbr(0, &pl) != 0) {
+        serial_puts("[FAT-TEST] FAIL: write MBR\n");
+        return;
+    }
+    serial_puts("[FAT-TEST] MBR written, partitions=");
+    serial_puthex((uint32_t)pl.count); serial_putc('\n');
+
+    uint32_t s = pl.e[PART_SYS].start_lba;
+    uint32_t n = pl.e[PART_SYS].num_sectors;
+    if (mkfat_format(s, n, "JBOTTEST") != 0) {
+        serial_puts("[FAT-TEST] FAIL: mkfat_format\n");
+        return;
+    }
+    if (fat_mount_part(s, n) != 0) {
+        serial_puts("[FAT-TEST] FAIL: mount\n");
+        return;
+    }
+    serial_puts("[FAT-TEST] mounted; free=");
+    serial_puthex(fat_free_bytes()); serial_putc('\n');
+
+    static uint8_t buf[512];
+    uint32_t rl = 0;
+
+    const char *m1 = "fat32 real disk payload alpha 0123456789";
+    uint32_t l1 = 0; while (m1[l1]) l1++;
+    int rb = 0;
+    if (fat_write_file("TEST.TXT", m1, l1) == 0 &&
+        fat_read_file("TEST.TXT", buf, sizeof buf, &rl) == 0 && rl == l1) {
+        rb = 1;
+        for (uint32_t i = 0; i < l1; i++)
+            if (buf[i] != (uint8_t)m1[i]) rb = 0;
+    }
+    serial_puts(rb ? "[FAT-TEST] write/readback PASS\n"
+                   : "[FAT-TEST] write/readback FAIL\n");
+    if (!rb) pass = 0;
+
+    const char *m2 = "overwrite beta content longer than first";
+    uint32_t l2 = 0; while (m2[l2]) l2++;
+    int ov = 0;
+    if (fat_write_file("TEST.TXT", m2, l2) == 0 &&
+        fat_read_file("TEST.TXT", buf, sizeof buf, &rl) == 0 && rl == l2) {
+        ov = 1;
+        for (uint32_t i = 0; i < l2; i++)
+            if (buf[i] != (uint8_t)m2[i]) ov = 0;
+    }
+    serial_puts(ov ? "[FAT-TEST] overwrite reuse PASS\n"
+                   : "[FAT-TEST] overwrite reuse FAIL\n");
+    if (!ov) pass = 0;
+
+    int multi = fat_write_file("OVR.TXT", "second file", 11) == 0 &&
+                fat_exists("TEST.TXT") && fat_exists("OVR.TXT");
+    serial_puts(multi ? "[FAT-TEST] multi-file PASS\n"
+                      : "[FAT-TEST] multi-file FAIL\n");
+    if (!multi) pass = 0;
+
+    int del = fat_delete("TEST.TXT") == 0 && fat_delete("OVR.TXT") == 0 &&
+              !fat_exists("TEST.TXT") && !fat_exists("OVR.TXT");
+    serial_puts(del ? "[FAT-TEST] delete PASS\n" : "[FAT-TEST] delete FAIL\n");
+    if (!del) pass = 0;
+
+    int a0 = protect_set_actor(ACTOR_ADMIN);
+    if (!fat_exists("SYSTEM.IMG"))
+        fat_write_file("SYSTEM.IMG", "system image body", 17);
+    protect_set_actor(a0);
+
+    protect_set_actor(ACTOR_USER);
+    int u_del = (fat_delete("SYSTEM.IMG") != 0) && fat_exists("SYSTEM.IMG");
+    int u_wr  = fat_write_file("SYSTEM.IMG", "x", 1) != 0;
+    protect_set_actor(ACTOR_JBOT);
+    int j_del = (fat_delete("SYSTEM.IMG") != 0) && fat_exists("SYSTEM.IMG");
+    int j_rd  = fat_read_file("SYSTEM.IMG", buf, sizeof buf, &rl) == 0 && rl > 0;
+    protect_set_actor(ACTOR_USER);
+    int ncr = fat_write_file("USER.TXT", "hi", 2) == 0 &&
+              fat_delete("USER.TXT") == 0;
+    int prot = u_del && u_wr && j_del && j_rd && ncr;
+    serial_puts(prot ? "[FAT-TEST] permissions PASS\n"
+                     : "[FAT-TEST] permissions FAIL\n");
+    if (!prot) pass = 0;
+
+    serial_puts(pass ? "[FAT-TEST] RESULT: ALL PASS\n"
+                     : "[FAT-TEST] RESULT: FAIL\n");
+}
+
 void kmain(uint64_t magic, uint64_t mb_info)
 {
     (void)magic;
@@ -214,6 +318,14 @@ void kmain(uint64_t magic, uint64_t mb_info)
             if (rb2[i] != wb[i])
                 wok = 0;
         serial_puts(wok ? "[ATA] write PASS\n" : "[ATA] write FAIL\n");
+    }
+
+    if (payload_fattest()) {
+        serial_puts("[B] FAT disk headless regression\n");
+        fat_disk_selftest();
+        serial_puts("[FAT-TEST] halt\n");
+        for (;;)
+            __asm__ volatile("hlt");
     }
 
     if (!live_install && !live_desktop && boot_mount_system() == 0) {
@@ -286,6 +398,8 @@ void kmain(uint64_t magic, uint64_t mb_info)
         config_init();
         i18n_set_lang(config_language());
         config_self_test();
+        honeypot_init();
+        honeypot_self_test();
         jbot_init();
         jbot_self_test();
         py_init();

@@ -192,17 +192,39 @@ static void layout(const uint8_t *html, int hlen)
     }
 }
 
-static void resolve_url(const char *rel, char *out)
+static void bcat(char *dst, int osz, const char *src)
 {
-    if (!strncmp(rel,"http://",7)) { strcpy(out,rel); return; }
-    if (rel[0] == '/') {
-        strcpy(out,"http://");
-        strcat(out,curhost);
-        strcat(out,rel);
+    if (osz <= 1)
+        return;
+    int dlen = (int)strlen(dst);
+    int slen = (int)strlen(src);
+    if (dlen + slen >= osz)
+        slen = osz - 1 - dlen;
+    if (slen <= 0)
+        return;
+    memcpy(dst + dlen, src, slen);
+    dst[dlen + slen] = 0;
+}
+
+static void resolve_url(const char *rel, char *out, int osz)
+{
+    if (osz <= 1)
+        return;
+    out[0] = 0;
+    if (!strncmp(rel,"http://",7)) {
+        strncpy(out, rel, (size_t)osz - 1);
+        out[osz - 1] = 0;
         return;
     }
-    strcpy(out,curbase);
-    strcat(out,rel);
+    if (rel[0] == '/') {
+        strncpy(out, "http://", (size_t)osz - 1);
+        out[osz - 1] = 0;
+        bcat(out, osz, curhost);
+        bcat(out, osz, rel);
+        return;
+    }
+    bcat(out, osz, curbase);
+    bcat(out, osz, rel);
 }
 
 static void load_url(const char *url, int addhist)
@@ -223,16 +245,19 @@ static void load_url(const char *url, int addhist)
     while (*p && *p != '/' && hi < 79)
         curhost[hi++] = *p++;
     curhost[hi]=0;
-    strcpy(curbase,"http://");
-    strcat(curbase,curhost);
+    strncpy(curbase, "http://", sizeof curbase - 1);
+    curbase[sizeof curbase - 1] = 0;
+    bcat(curbase, (int)sizeof curbase, curhost);
     const char *slash = strrchr(p,'/');
     if (slash) {
         char dir[160];
         int dl=(int)(slash-p)+1;
-        strncpy(dir,p,dl); dir[dl]=0;
-        strcat(curbase,dir);
+        if (dl > (int)sizeof dir - 1)
+            dl = (int)sizeof dir - 1;
+        strncpy(dir,p,(size_t)dl); dir[dl]=0;
+        bcat(curbase, (int)sizeof curbase, dir);
     } else {
-        strcat(curbase,"/");
+        bcat(curbase, (int)sizeof curbase, "/");
     }
 
     http_close_client(1);
@@ -267,7 +292,7 @@ static void key_input(void)
         if (!addr_focus)
             continue;
         if (c=='\r'||c=='\n') {
-            if (addrlen) { char full[180]; resolve_url(addr,full);
+            if (addrlen) { char full[180]; resolve_url(addr,full,sizeof full);
                 load_url(full,1); addr_focus=0; }
         } else if (c=='\b'||c==0x7f) {
             if (addrlen>0) addr[--addrlen]=0;
@@ -413,7 +438,7 @@ int browser_frame(int mx, int my, int clicked)
             if (l->link && clicked &&
                 ui_inside(mx,my,bx+14*S,ry,bw-40*S,lineh)) {
                 char full[180];
-                resolve_url(l->linkurl,full);
+                resolve_url(l->linkurl,full,sizeof full);
                 load_url(full,1);
             }
         }

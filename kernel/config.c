@@ -9,6 +9,7 @@ static int tz;
 static int fw;
 static int oobe;
 static int kb;
+static int hp;
 
 static int contains(const char *h, const char *n)
 {
@@ -73,6 +74,8 @@ static void parse(const char *b)
             oobe = b[i + 2] - '0';
         if (b[i] == 'K' && b[i + 1] == '=' && b[i + 2] >= '0')
             num_after(b, i, &kb);
+        if (b[i] == 'H' && b[i + 1] == '=' && b[i + 2] >= '0')
+            num_after(b, i, &hp);
     }
 }
 
@@ -84,6 +87,7 @@ void config_init(void)
     fw = 1;
     oobe = 0;
     kb = 0;
+    hp = 0;
     if (fat_exists("JBOT.CFG")) {
         char b[256];
         uint32_t n = 0;
@@ -102,6 +106,7 @@ int config_tz(void) { return tz; }
 int config_fw(void) { return fw; }
 int config_oobe_done(void) { return oobe; }
 int config_keyboard(void) { return kb; }
+int config_honeypot(void) { return hp; }
 
 void config_set_language(int l) { lang = l; }
 void config_set_font(int f) { font = f; }
@@ -109,6 +114,7 @@ void config_set_tz(int v) { tz = v; }
 void config_set_fw(int v) { fw = v; }
 void config_set_oobe_done(int v) { oobe = v; }
 void config_set_keyboard(int v) { kb = v; }
+void config_set_honeypot(int v) { hp = v ? 1 : 0; }
 
 void config_save(void)
 {
@@ -120,6 +126,7 @@ void config_save(void)
     b[p++] = 'W'; b[p++] = '='; p += u2s(fw, b + p); b[p++] = '\n';
     b[p++] = 'O'; b[p++] = '='; b[p++] = oobe ? '1' : '0'; b[p++] = '\n';
     b[p++] = 'K'; b[p++] = '='; p += u2s(kb, b + p); b[p++] = '\n';
+    b[p++] = 'H'; b[p++] = '='; b[p++] = hp ? '1' : '0'; b[p++] = '\n';
     fat_write_file("JBOT.CFG", b, p);
 }
 

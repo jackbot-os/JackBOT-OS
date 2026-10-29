@@ -165,17 +165,23 @@ static V vlist(int n)
     V v; v.t = T_LIST; v.i = 0; v.s = 0; v.n = n;
     v.dk = 0; v.dv = 0; v.dn = 0;
     v.a = n ? (V *)kmalloc((size_t)n * sizeof(V)) : 0;
+    if (n && !v.a) { fail("out of memory"); v.t = T_NONE; v.n = 0; return v; }
     for (int i = 0; i < n; i++)
         v.a[i] = vnone();
-    if (n && !v.a) fail("out of memory");
     return v;
 }
 static V vdict(int n)
 {
     V v; v.t = T_DICT; v.i = 0; v.s = 0; v.a = 0; v.n = 0;
-    v.dn = n;
     v.dk = n ? (V *)kmalloc((size_t)n * sizeof(V)) : 0;
     v.dv = n ? (V *)kmalloc((size_t)n * sizeof(V)) : 0;
+    if (n && (!v.dk || !v.dv)) {
+        if (v.dk) kfree(v.dk);
+        if (v.dv) kfree(v.dv);
+        v.dk = 0; v.dv = 0;
+        fail("out of memory"); v.t = T_NONE; v.dn = 0; return v;
+    }
+    v.dn = n;
     for (int i = 0; i < n; i++) { v.dk[i] = vnone(); v.dv[i] = vnone(); }
     return v;
 }
@@ -590,6 +596,11 @@ static V method_call(Lex *L, V recv, const char *m)
             const char *a = args[0].s, *b = args[1].s;
             int la = slen(a);
             char *out = (char *)kmalloc(MAX_STR);
+            if (!out) {
+                fail("out of memory");
+                for (int i = 0; i < ac; i++) vfree(&args[i]);
+                return vnone();
+            }
             int oi = 0;
             for (int i = 0; s[i] && oi < MAX_STR - 2; ) {
                 int match = 1;
@@ -616,7 +627,10 @@ static V method_call(Lex *L, V recv, const char *m)
                         ti = 0; started = 0;
                     }
                     if (s[i] == 0) break;
-                } else { tok[ti++] = s[i]; started = 1; }
+                } else {
+                    if (ti < MAX_STR - 1) tok[ti++] = s[i];
+                    started = 1;
+                }
             }
             V trimmed = vlist(pi);
             for (int i = 0; i < pi; i++) { vfree(&trimmed.a[i]); trimmed.a[i] = vcopy(lst.a[i]); }
@@ -1175,8 +1189,9 @@ static V call_builtin(Lex *L, const char *fn, V args[], int ac)
         int cap = 0;
         if (step > 0) { cap = (int)((hi - lo + step - 1) / step); if (cap < 0) cap = 0; }
         else { cap = (int)((lo - hi - step - 1) / (-step)); if (cap < 0) cap = 0; }
-        if (cap > 100000) cap = 100000;
+        if (cap > MAX_LISTE) cap = MAX_LISTE;
         V r = vlist(cap);
+        if (g_err) return r;
         int64_t x = lo;
         int k = 0;
         while (k < cap && ((step > 0 && x < hi) || (step < 0 && x > hi))) {

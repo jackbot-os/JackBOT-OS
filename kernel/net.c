@@ -5,6 +5,7 @@
 #include <kernel/e1000.h>
 #include <kernel/nic.h>
 #include <kernel/serial.h>
+#include <kernel/honeypot.h>
 
 uint64_t timer_get_ticks(void);
 void tcp_in(struct ip_hdr *ip, const uint8_t *payload, uint16_t len);
@@ -283,6 +284,7 @@ static void icmp_handle(struct ip_hdr *ip, uint8_t *payload, uint16_t len)
 {
     struct icmp_hdr *ic = (void *)payload;
     if (ic->type == ICMP_ECHOREQ && len >= 8) {
+        honeypot_observe_icmp(net_ipv4(ip->src), ic->type);
         ic->type = 0;
         ic->code = 0;
         ic->csum = 0;
@@ -301,9 +303,13 @@ static void udp_handle(struct ip_hdr *ip, const uint8_t *payload, uint16_t len)
     uint32_t src = net_ipv4(ip->src);
     const uint8_t *data = payload + 8;
     uint16_t dlen = (uint16_t)(len - 8);
+    int claimed = 0;
     for (int i = 0; i < UDP_SLOTS; i++)
-        if (udp_tbl[i].used && udp_tbl[i].port == dport && udp_tbl[i].h)
+        if (udp_tbl[i].used && udp_tbl[i].port == dport && udp_tbl[i].h) {
+            claimed = 1;
             udp_tbl[i].h(src, sport, data, dlen);
+        }
+    honeypot_observe_udp(src, sport, dport, claimed);
 }
 
 static void ip_handle(const uint8_t *frame, uint16_t flen)
@@ -330,6 +336,7 @@ static void ip_handle(const uint8_t *frame, uint16_t flen)
         udp_handle((struct ip_hdr *)ip, payload, plen);
         break;
     case IP_PROTO_TCP:
+        honeypot_observe_tcp(ip, payload, plen);
         tcp_in((struct ip_hdr *)ip, payload, plen);
         break;
     }

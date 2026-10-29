@@ -12,6 +12,7 @@ static char names[MAX_MODS][NAME_MAX];
 static int nmods;
 static int live;
 static int live2;
+static int fattest;
 
 static int streq(const char *a, const char *b)
 {
@@ -57,6 +58,7 @@ void payload_collect(uint64_t mb_info)
     nmods = 0;
     live = 0;
     live2 = 0;
+    fattest = 0;
     struct mb2_info *mi = (struct mb2_info *)(uintptr_t)mb_info;
     struct mb2_tag *t = mb2_first_tag(mi);
     while (t->type != MB2_TAG_END) {
@@ -66,6 +68,8 @@ void payload_collect(uint64_t mb_info)
                 live = 1;
             if (contains(c->string, "jb.live=2"))
                 live2 = 1;
+            if (contains(c->string, "jb.fattest=1"))
+                fattest = 1;
         } else if (t->type == MB2_TAG_MODULE && nmods < MAX_MODS) {
             struct mb2_tag_module *m = (struct mb2_tag_module *)t;
             first_token(names[nmods], m->cmdline);
@@ -93,4 +97,5 @@ const struct payload_mod *payload_find(const char *name)
 
 int payload_live_mode(void) { return live; }
 int payload_live_desktop(void) { return live2; }
+int payload_fattest(void) { return fattest; }
 int payload_count(void) { return nmods; }

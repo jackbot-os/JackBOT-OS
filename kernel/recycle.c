@@ -47,17 +47,32 @@ static void uint_to_dec(char *o, uint32_t v)
     o[i] = 0;
 }
 
-static int build_line(char *line, const char *store, const char *orig,
+static void rcat(char *dst, int lsz, const char *src)
+{
+    if (lsz <= 1)
+        return;
+    int dl = (int)strlen(dst);
+    int sl = (int)strlen(src);
+    if (dl + sl >= lsz)
+        sl = lsz - 1 - dl;
+    if (sl <= 0)
+        return;
+    memcpy(dst + dl, src, sl);
+    dst[dl + sl] = 0;
+}
+
+static int build_line(char *line, int lsz, const char *store, const char *orig,
                       uint32_t size)
 {
     char num[16];
-    strcpy(line, store);
-    strcat(line, "|");
-    strcat(line, orig);
-    strcat(line, "|");
+    line[0] = 0;
+    rcat(line, lsz, store);
+    rcat(line, lsz, "|");
+    rcat(line, lsz, orig);
+    rcat(line, lsz, "|");
     uint_to_dec(num, size);
-    strcat(line, num);
-    strcat(line, "\n");
+    rcat(line, lsz, num);
+    rcat(line, lsz, "\n");
     return (int)strlen(line);
 }
 
@@ -111,7 +126,7 @@ static int rewrite_all(void)
     idx[0] = 0;
     for (int i = 0; i < cache_n; i++) {
         char line[128];
-        int n = build_line(line, cache[i].store, cache[i].orig,
+        int n = build_line(line, sizeof line, cache[i].store, cache[i].orig,
                            cache[i].size);
         if (len + (uint32_t)n >= sizeof(idx))
             return -1;
@@ -208,7 +223,7 @@ int recycle_delete(const char *path)
 
     uint32_t len = load_index();
     char line[128];
-    int n = build_line(line, store, path, size);
+    int n = build_line(line, sizeof line, store, path, size);
     if (len + (uint32_t)n >= sizeof(idx))
         return -3;
     memcpy(idx + len, line, n);

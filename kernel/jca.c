@@ -736,15 +736,22 @@ int jca_run(struct jca_program *p, char *out, int outsz)
         switch (op) {
         case OP_HALT: goto done;
         case OP_PUSHI: push(jv_int(rd32(p->code + ip))); ip += 4; break;
-        case OP_PUSHS: push(jv_str(p->strs[rd32(p->code + ip)])); ip += 4; break;
+        case OP_PUSHS: {
+            int si = rd32(p->code + ip); ip += 4;
+            if (si < 0 || si >= p->nstrs) { cfail("bad string index"); break; }
+            push(jv_str(p->strs[si]));
+            break;
+        }
         case OP_PUSHNIL: push(jv_nil()); break;
         case OP_LOAD: {
             int slot = rd32(p->code + ip); ip += 4;
+            if (slot < 0 || slot >= 24) { cfail("bad local slot"); break; }
             push(frm[fc - 1].loc[slot]);
             break;
         }
         case OP_STORE: {
             int slot = rd32(p->code + ip); ip += 4;
+            if (slot < 0 || slot >= 24) { cfail("bad local slot"); break; }
             frm[fc - 1].loc[slot] = pop();
             break;
         }
@@ -771,22 +778,35 @@ int jca_run(struct jca_program *p, char *out, int outsz)
         case OP_AND: { JV b = pop(), a = pop(); push(jv_int(truthy(a) && truthy(b))); break; }
         case OP_OR: { JV b = pop(), a = pop(); push(jv_int(truthy(a) || truthy(b))); break; }
         case OP_NOT: { JV a = pop(); push(jv_int(!truthy(a))); break; }
-        case OP_JMP: ip = rd32(p->code + ip); break;
+        case OP_JMP: {
+            int32_t t = rd32(p->code + ip); ip += 4;
+            if (t < 0 || t >= p->clen) { cfail("jump out of range"); break; }
+            ip = t;
+            break;
+        }
         case OP_JZ: {
             int32_t t = rd32(p->code + ip); ip += 4;
             JV c = pop();
-            if (!truthy(c)) ip = t;
+            if (!truthy(c)) {
+                if (t < 0 || t >= p->clen) { cfail("jump out of range"); break; }
+                ip = t;
+            }
             break;
         }
         case OP_JNZ: {
             int32_t t = rd32(p->code + ip); ip += 4;
             JV c = pop();
-            if (truthy(c)) ip = t;
+            if (truthy(c)) {
+                if (t < 0 || t >= p->clen) { cfail("jump out of range"); break; }
+                ip = t;
+            }
             break;
         }
         case OP_CALL: {
             int fi = rd32(p->code + ip); ip += 4;
             int argc = rd32(p->code + ip); ip += 4;
+            if (fi < 0 || fi >= p->nfuncs) { cfail("bad function index"); break; }
+            if (argc < 0 || argc > 24 || argc > sp) { cfail("bad call argc"); break; }
             if (fc >= 64) { cfail("call depth overflow"); break; }
             Frame *fr = &frm[fc++];
             fr->ret = ip;
@@ -808,6 +828,7 @@ int jca_run(struct jca_program *p, char *out, int outsz)
         }
         case OP_BPRINT: {
             int argc = rd32(p->code + ip); ip += 4;
+            if (argc < 0 || argc > sp) { cfail("bad print argc"); break; }
             for (int k = 0; k < argc; k++) {
                 if (k) outchar(' ');
                 print_val(stk[sp - argc + k]);

@@ -9,12 +9,14 @@ int config_tz(void);
 int config_fw(void);
 int config_oobe_done(void);
 int config_keyboard(void);
+int config_honeypot(void);
 void config_set_language(int l);
 void config_set_font(int f);
 void config_set_tz(int v);
 void config_set_fw(int v);
 void config_set_oobe_done(int v);
 void config_set_keyboard(int v);
+void config_set_honeypot(int v);
 void config_save(void);
 void config_self_test(void);
 
