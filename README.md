@@ -1,4 +1,4 @@
-# JackBOT OS v1.0.4 EastLake
+﻿# JackBOT OS v1.0.4 EastLake
 
 A from-scratch x86_64 hobby operating system (C + assembly kernel, custom GUI,
 FAT32, own program format) with a graphical installer, a first-boot setup
@@ -13,44 +13,44 @@ is not published here.
 
 - **64-bit ISO**: [JackBOT-1.0.4.iso](JackBOT-1.0.4.iso) (34.92 MB)
 - SHA-256:
-  `331e3777a6184820db3baa7beb0055879401ab1d5378776804dd21cb2bb41a08`
-- MD5: `346ff29af635b987387922cfe141545f`
+  `46e6f7d5e6ec675c930e743940fd030564882aad9ae69131fb4a6fd56535f836`
+- MD5: `2caf00c9d0841c38f016fb770ada2f17`
 - Project website: [index.html](index.html)
 - User manual: [MANUAL.md](MANUAL.md)
 
 ## Build environment (reproducible)
 
-- **Debian 13 (Trixie) inside VirtualBox** — the only build environment used
+- **Debian 13 (Trixie) inside VirtualBox** 鈥?the only build environment used
   (no WSL, no QEMU, no VMware).
 - gcc 14.2.0 (freestanding, C11), NASM 2.16.03, GNU ld, GRUB 2 / grub-mkrescue,
   xorriso.
-- Build: `make iso` → `build/JackBOT-1.0.4.iso`.
+- Build: `make iso` 鈫?`build/JackBOT-1.0.4.iso`.
 - Result of the shipped build: full clean rebuild, `BUILD_RC=0`, one pre-existing
   linker warning remains (`ld: warning: iso/boot/kernel has a LOAD segment with
   RWX permissions`).
 
 ## What is new in v1.0.4
 
-- **Real HTTPS in the built-in browser** — a self-written TLS 1.2 client
+- **Real HTTPS in the built-in browser** 鈥?a self-written TLS 1.2 client
   (ECDHE with X25519, AES-128-GCM record layer, SHA-256 PRF, Finished
   verification) is integrated into the HTTP client and loads encrypted pages.
-- **AMD PCnet NIC driver** (PCnet-PCI II / FAST III 79C970A/973/975) — the
+- **AMD PCnet NIC driver** (PCnet-PCI II / FAST III 79C970A/973/975) 鈥?the
   VirtualBox default adapter now works: DHCP, DNS, TCP, HTTP and HTTPS all run
   over it (verified: DHCP bound, `https://example.com` 584-byte page fetched
   through TLS).
-- **Kernel memory-safety fixes** — user-process address-space activation race
+- **Kernel memory-safety fixes** 鈥?user-process address-space activation race
   fixed (the boot self-test process no longer faults at USER_BASE); heap rejects
   size wrap-around, guards `calloc` overflow, validates header magic on
   `realloc`, poisons headers on free (double-free detection); page-table
   allocation failures no longer dereference NULL; wallpaper-buffer allocation
   failure falls back to a solid background.
-- **F2 settings-panel crash fixed** — the `wp_color` divide-by-zero
+- **F2 settings-panel crash fixed** 鈥?the `wp_color` divide-by-zero
   (`w - 1 == 0` for a 1-pixel-wide thumbnail) is guarded; the settings panel
   opens and renders normally (verified in VirtualBox, 0 crashes, 0 panics).
-- **Python subset hardening** — container allocation, `range` cap, `split`
+- **Python subset hardening** 鈥?container allocation, `range` cap, `split`
   token bound and `str.replace` error path hardened; offline harness passes
   52/52 cases plus the built-in self-test.
-- **Passive honeypot audit trail** — still off by default, still never sends a
+- **Passive honeypot audit trail** 鈥?still off by default, still never sends a
   packet; now writes one serial audit line per newly observed probe (unclaimed
   UDP, TCP SYN, ICMP echo).
 
@@ -81,7 +81,7 @@ USB/ACPI enumeration.
 
 - **HTTPS certificate validation is NOT implemented.** The TLS 1.2 handshake and
   record encryption are real and verified against OpenSSL, but the server
-  certificate chain is only parsed structurally — it is not validated against a
+  certificate chain is only parsed structurally 鈥?it is not validated against a
   trust store, so a man-in-the-middle cannot be detected. TLS 1.3 is not
   supported; servers that refuse TLS 1.2 will fail.
 - One TLS session at a time (the browser opens one page at a time).
@@ -118,3 +118,4 @@ here.
 ## Name
 
 Lee
+
