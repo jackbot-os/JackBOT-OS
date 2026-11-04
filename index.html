@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>JackBOT OS Official Website | v1.0.3 EastLake</title>
-    <meta name="description" content="JackBOT OS v1.0.3 — a from-scratch x86_64 hobby operating system with a graphical installer, 205-language UI, hardware-accelerated cursor, an expanded PCI compatibility database, HMAC-SHA256 and an HTTPS-aware HTTP client. Download the 64-bit ISO.">
+    <title>JackBOT OS Official Website | v1.0.4 EastLake</title>
+    <meta name="description" content="JackBOT OS v1.0.4 鈥?a from-scratch x86_64 hobby operating system with a graphical installer, 205-language UI, hardware-accelerated cursor, an expanded PCI compatibility database, HMAC-SHA256 and an HTTPS-aware HTTP client. Download the 64-bit ISO.">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -147,7 +147,7 @@
         <section class="hero">
             <div class="container hero-content">
                 <h1>JackBOT OS</h1>
-                <div class="version-badge">v1.0.3 EastLake — x86_64</div>
+                <div class="version-badge">v1.0.4 EastLake 鈥?x86_64</div>
                 <p>A from-scratch, 64-bit hobby operating system written in C and NASM. Multiboot2 + GRUB, a native graphical installer, a 205-language setup experience, and a GPU-composited hardware cursor &mdash; no Linux kernel underneath.</p>
                 <div class="hero-stats">
                     <div class="hero-stat"><div class="num">205</div><div class="lbl">Setup languages</div></div>
@@ -193,7 +193,7 @@
 
         <section class="section" id="features">
             <div class="container">
-                <h2>Key Features in v1.0.3</h2>
+                <h2>Key Features in v1.0.4</h2>
                 <div class="features-grid">
                     <div class="feature-card">
                         <h3>Graphical Installer</h3>
@@ -225,7 +225,7 @@
                     </div>
                     <div class="feature-card">
                         <h3>Networking &amp; Hardware Layer</h3>
-                        <p>A PCI layer with IRQ registration, e1000/RTL-8139 NIC drivers, ARP/ICMP/DHCP/DNS/TCP/HTTP and an expanded hardware-compatibility database.</p>
+                        <p>A PCI layer with IRQ registration, e1000/RTL-8139/AMD-PCnet NIC drivers, ARP/ICMP/DHCP/DNS/TCP/HTTP/HTTPS (TLS 1.2 with X25519 + AES-128-GCM) and an expanded hardware-compatibility database.</p>
                     </div>
                     <div class="feature-card">
                         <h3>Live Desktop &amp; System Apps</h3>
@@ -280,13 +280,13 @@
                 <h2>Download</h2>
                 <div class="download-box">
                     <div class="download-info">
-                        <h3>JackBOT OS v1.0.3</h3>
-                        <p>Image file name: <strong>JackBOT-1.0.3.iso</strong></p>
+                        <h3>JackBOT OS v1.0.4</h3>
+                        <p>Image file name: <strong>JackBOT-1.0.4.iso</strong></p>
                         <p>64-bit hybrid ISO (BIOS + UEFI). Recommended VM: Oracle VirtualBox, 2048 MB RAM, VMSVGA graphics, PS/2 mouse.</p>
-                        <p style="margin-top:10px;font-size:13px;color:#6b7280;">Size: 22.55 MB &middot; Verify with SHA-256:</p>
-                        <p style="font-family:monospace;font-size:12px;color:#374151;background:#f3f4f6;padding:8px 10px;border-radius:6px;word-break:break-all;">b23122355f8726055543b4cbf793a87f60fe36b84e00092936777a15c1cc15b5</p>
+                        <p style="margin-top:10px;font-size:13px;color:#6b7280;">Size: 34.92 MB &middot; Verify with SHA-256:</p>
+                        <p style="font-family:monospace;font-size:12px;color:#374151;background:#f3f4f6;padding:8px 10px;border-radius:6px;word-break:break-all;">331e3777a6184820db3baa7beb0055879401ab1d5378776804dd21cb2bb41a08</p>
                     </div>
-                    <a class="download-btn" href="JackBOT-1.0.3.iso" download="JackBOT-1.0.3.iso">Download 64-bit ISO</a>
+                    <a class="download-btn" href="JackBOT-1.0.4.iso" download="JackBOT-1.0.4.iso">Download 64-bit ISO</a>
                 </div>
                 <div class="note">
                     <strong>Honest scope notes (please read):</strong>
@@ -310,8 +310,14 @@
 
         <section class="section" id="changelog">
             <div class="container">
-                <h2>Changelog v1.0.3</h2>
+                <h2>Changelog v1.0.4</h2>
                 <ul class="changelog-list">
+                                        <li><strong>v1.0.4 &mdash; real HTTPS (TLS 1.2) in the built-in browser:</strong> a from-scratch TLS 1.2 client (ECDHE/X25519 key exchange, AES-128-GCM record layer, SHA-256 PRF, Finished-message verification) is integrated into the HTTP client; HTTPS pages load and decrypt correctly. <strong>Honest boundary:</strong> the server certificate chain is parsed but NOT validated against a trust store (no CA bundle, no chain/signature check), and TLS 1.3 is not implemented.</li>
+                    <li><strong>v1.0.4 &mdash; AMD PCnet NIC driver:</strong> a new PCnet-PCI II / FAST III (Am79C970A/973) driver brings up the VirtualBox default network adapter; DHCP, DNS, TCP, HTTP and HTTPS now work with it (verified in VirtualBox: DHCP bound, https://example.com 584-byte page fetched through TLS).</li>
+                    <li><strong>v1.0.4 &mdash; kernel memory-safety fixes:</strong> the user-process address-space activation race that faulted the boot-time self-test process at USER_BASE is fixed (CR3 is now switched before any user thread can be scheduled); the heap rejects size wrap-around, guards calloc multiplication overflow, validates block magic on realloc and poisons headers on free to catch double frees; page-table allocation failures no longer dereference NULL; the desktop wallpaper path no longer dies when the wallpaper buffer cannot be allocated.</li>
+                    <li><strong>v1.0.4 &mdash; F2 settings-panel crash fixed:</strong> the wp_color divide-by-zero (w-1 == 0 when drawing a 1-pixel-wide thumbnail) is guarded, so opening the settings panel no longer faults.</li>
+                    <li><strong>v1.0.4 &mdash; Python subset hardening:</strong> the built-in interpreter's container allocation, range size cap, split token bound and string-replace error path were hardened; the offline harness passes 52/52 cases and the built-in self-test.</li>
+                    <li><strong>v1.0.4 &mdash; passive honeypot audit trail:</strong> the default-off honeypot module now writes one serial audit line per newly observed probe (unclaimed UDP, TCP SYN, ICMP echo) while still never sending a packet of its own.</li>
                     <li><strong>v1.0.2 &mdash; PCI compatibility database expanded to 231 recognized IDs:</strong> the detection table now covers additional NVIDIA/AMD/Intel display adapters, Intel I350/I217/I219 and Realtek 8125/8137/8138/8127 and Broadcom/Atheros/Mellanox Ethernet, more Intel/AMD/ASMedia/Marvell/VIA AHCI controllers, Intel/Samsung/WD/Kingston/Micron/Crucial/Phison NVMe IDs, Realtek/AMD/NVIDIA/Intel/VIA HDA and Creative SB X-Fi/Audigy audio, and extra EHCI/OHCI/xHCI USB host controllers. These remain detection/probe entries that log a serial line and return success; full functional command-layer drivers for AHCI/SATA, NVMe and e1000e are still next-stage work and are not claimed as working.</li>
                     <li><strong>v1.0.2 &mdash; HTTPS-aware HTTP client, HMAC-SHA256 primitive and TLS stub:</strong> the URL parser recognizes <code>https://</code> and defaults to port 443; a built-in HMAC-SHA256 primitive passes the RFC 4231 Test Case 1 and Test Case 2 vectors at boot, and a TLS state-machine/constant skeleton is in place. <strong>Honest boundary:</strong> the TLS handshake, ServerHello/Certificate parsing, X.509 chain validation, key exchange and symmetric record encryption are not implemented; an HTTPS request is stopped before DNS with an explicit "TLS engine unavailable" state instead of being sent in plaintext.</li>
                     <li><strong>v1.0.1 &mdash; expanded PCI compatibility database:</strong> more common Intel PRO/1000 and Realtek Ethernet IDs, additional Intel/AMD/ASMedia AHCI SATA controllers, and more Intel/AMD/NVIDIA HD Audio controllers are now recognized during PCI enumeration. Newer Intel I218/I219/I211 adapters are matched to the generic Ethernet probe rather than the legacy e1000 driver. These are detection/probe entries; full functional drivers for AHCI, NVMe and e1000e remain next-stage work.</li>
@@ -345,3 +351,4 @@
     </footer>
 </body>
 </html>
+

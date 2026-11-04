@@ -1,69 +1,120 @@
-# JackBOT OS v1.0.3 EastLake
+# JackBOT OS v1.0.4 EastLake
 
-A hobby x86_64 operating system with a graphical installer, first-boot setup
-wizard, a desktop environment, and a real networked browser — built from
-scratch and tested in VirtualBox.
+A from-scratch x86_64 hobby operating system (C + assembly kernel, custom GUI,
+FAT32, own program format) with a graphical installer, a first-boot setup
+wizard, a desktop environment and a real networked browser that speaks HTTP
+**and HTTPS (TLS 1.2)**.
 
-This repository is the **release / website** repository. It contains only the
-ready-to-use ISO and the project website; source code is not published here.
+This repository is the **release / website** repository. It contains the
+ready-to-use ISO, the project website and the user manual. Kernel source code
+is not published here.
 
 ## Download
 
-- **64-bit ISO**: [JackBOT-1.0.3.iso](JackBOT-1.0.3.iso) (~22.55 MB)
+- **64-bit ISO**: [JackBOT-1.0.4.iso](JackBOT-1.0.4.iso) (34.92 MB)
+- SHA-256:
+  `331e3777a6184820db3baa7beb0055879401ab1d5378776804dd21cb2bb41a08`
+- MD5: `346ff29af635b987387922cfe141545f`
 - Project website: [index.html](index.html)
+- User manual: [MANUAL.md](MANUAL.md)
 
-## Features in this release
+## Build environment (reproducible)
 
-- **Expanded PCI compatibility database (231 recognized IDs)**: more Intel/Realtek/
-  Broadcom/Atheros/Mellanox Ethernet, Intel/AMD/ASMedia/Marvell/VIA AHCI, NVMe,
-  HD Audio and USB host-controller device IDs are recognized at boot
-  (detection/probe level; AHCI/NVMe/e1000e functional command-layer drivers are
-  next-stage work)
-- **HTTPS-aware HTTP client + HMAC-SHA256**: `https://` URLs and port 443 are
-  recognized; an HMAC-SHA256 primitive passes RFC 4231 test vectors at boot.
-  The TLS handshake, certificate validation and encryption are **not implemented
-  yet**; HTTPS requests are stopped with an explicit unavailable state rather
-  than sent in plaintext.
-- **Live Desktop mode**: boot the full desktop without installing
-- **Real networked browser**: DHCP/TCP/HTTP over the e1000 NIC, real HTTP 200
-  pages, relative-URL navigation and automatic 302-redirect following
-  (plain HTTP only; HTTPS/TLS is not implemented yet)
-- Intel AC97 driver with a boot chime
-- Jbot Voice and Bluetooth/LED control panels (interface skeletons; on-device
-  speech-to-text and the full L2CAP/GATT pairing stack are next-stage work)
-- Native graphical installer (language, welcome, region/time zone, disk
-  partitioning, progress, completion)
-- First-boot OOBE wizard: language, keyboard layout, time zone
-- 205 interface languages with native names and real TTF fonts
-- Refreshed full-screen adaptive desktop, taskbar, wallpaper, settings
-- Five new system apps: USB Devices, Battery & Power, Recycle Bin, File
-  Explorer, Device Manager
-- Real hardware enumeration: ACPI tables, USB host controllers/root hub,
-  live PCI device tree
-- VMSVGA graphics with a GPU-composited hardware cursor
-- BIOS + UEFI hybrid bootable image
-- MBR partitioner (up to 4 primary partitions), FAT32, ATA LBA48
+- **Debian 13 (Trixie) inside VirtualBox** — the only build environment used
+  (no WSL, no QEMU, no VMware).
+- gcc 14.2.0 (freestanding, C11), NASM 2.16.03, GNU ld, GRUB 2 / grub-mkrescue,
+  xorriso.
+- Build: `make iso` → `build/JackBOT-1.0.4.iso`.
+- Result of the shipped build: full clean rebuild, `BUILD_RC=0`, one pre-existing
+  linker warning remains (`ld: warning: iso/boot/kernel has a LOAD segment with
+  RWX permissions`).
+
+## What is new in v1.0.4
+
+- **Real HTTPS in the built-in browser** — a self-written TLS 1.2 client
+  (ECDHE with X25519, AES-128-GCM record layer, SHA-256 PRF, Finished
+  verification) is integrated into the HTTP client and loads encrypted pages.
+- **AMD PCnet NIC driver** (PCnet-PCI II / FAST III 79C970A/973/975) — the
+  VirtualBox default adapter now works: DHCP, DNS, TCP, HTTP and HTTPS all run
+  over it (verified: DHCP bound, `https://example.com` 584-byte page fetched
+  through TLS).
+- **Kernel memory-safety fixes** — user-process address-space activation race
+  fixed (the boot self-test process no longer faults at USER_BASE); heap rejects
+  size wrap-around, guards `calloc` overflow, validates header magic on
+  `realloc`, poisons headers on free (double-free detection); page-table
+  allocation failures no longer dereference NULL; wallpaper-buffer allocation
+  failure falls back to a solid background.
+- **F2 settings-panel crash fixed** — the `wp_color` divide-by-zero
+  (`w - 1 == 0` for a 1-pixel-wide thumbnail) is guarded; the settings panel
+  opens and renders normally (verified in VirtualBox, 0 crashes, 0 panics).
+- **Python subset hardening** — container allocation, `range` cap, `split`
+  token bound and `str.replace` error path hardened; offline harness passes
+  52/52 cases plus the built-in self-test.
+- **Passive honeypot audit trail** — still off by default, still never sends a
+  packet; now writes one serial audit line per newly observed probe (unclaimed
+  UDP, TCP SYN, ICMP echo).
+
+Existing v1.0.x features retained: graphical installer, first-boot OOBE, 205
+interface languages with real TTF fonts, VMSVGA hardware cursor, adaptive
+full-screen desktop, ATA LBA48 + MBR + FAT32, JCA programs, micro-Python
+console, AC97 boot chime, Jbot voice/AI panel, Bluetooth/LED panel skeletons,
+USB/ACPI enumeration.
 
 ## Requirements
 
-- x86_64 PC (or a virtual machine)
-- 2 GB RAM recommended
-- Tested with VirtualBox (graphics: VMSVGA, NIC: Intel PRO/1000 82540EM,
-  audio: ICH AC97, mouse: PS/2)
+- x86_64 PC or virtual machine; 2 GB RAM recommended.
+- Tested with VirtualBox: graphics VMSVGA, NIC **AMD PCnet-PCI II (default) or
+  Intel PRO/1000 82540EM**, audio ICH AC97, PS/2 mouse.
 
 ## Quick start (VirtualBox)
 
-1. Create a 64-bit "Other Linux" VM with 2 GB RAM and a virtual hard disk.
-2. Set networking to NAT with the Intel PRO/1000/82540EM adapter type to use
-   the browser.
-3. Attach `JackBOT-1.0.3.iso` to the optical drive and boot from it.
-4. Pick "Try JackBOT OS 1.0.2 (Live Desktop)" to explore without installing, or
-   run the graphical installer, remove the disc and reboot.
-5. After an install, complete the first-boot setup and you reach the desktop.
+1. Create a 64-bit VM with 2 GB RAM and a virtual hard disk.
+2. Networking: NAT. The default Am79C973 (PCnet) adapter and the Intel PRO/1000
+   MT 82540EM adapter are both supported.
+3. Attach `JackBOT-1.0.4.iso` to the optical drive and boot from it.
+4. Pick "Try JackBOT OS (Live Desktop)" to explore without installing, or run
+   the graphical installer (remove the disc and reboot when it finishes).
+5. After installation, complete the first-boot OOBE (language, keyboard, time
+   zone) and the desktop appears. Press **F2** for the settings panel.
+
+## Known limitations (honest list)
+
+- **HTTPS certificate validation is NOT implemented.** The TLS 1.2 handshake and
+  record encryption are real and verified against OpenSSL, but the server
+  certificate chain is only parsed structurally — it is not validated against a
+  trust store, so a man-in-the-middle cannot be detected. TLS 1.3 is not
+  supported; servers that refuse TLS 1.2 will fail.
+- One TLS session at a time (the browser opens one page at a time).
+- The Python console runs a hand-written subset (no imports, classes,
+  exceptions or standard library); CPython is not ported.
+- Several compatibility-database entries are detection probes only: AHCI/NVMe
+  command queues and e1000e are not driven functionally.
+- Bluetooth pairing/L2CAP/GATT, on-device speech-to-text and the voice assistant
+  are interface skeletons.
+- OOBE keyboard layout selection is stored but does not remap every physical key.
+- The honeypot log is in memory + serial only (no on-disk log), off by default.
+- Single-core scheduling; no SMP, no preemption across cores.
+- Remaining toolchain warning: the kernel LOAD segment is RWX.
+
+## Tests run for this release (all local, inside VirtualBox)
+
+- Clean rebuild in Debian 13 VM (`BUILD_RC=0`).
+- Boot in VirtualBox: desktop renders, **F2 settings panel opens without any
+  kernel fault or panic** (serial: 0 crash lines, 0 panic lines; screenshot
+  palette analysis matches the settings-panel colours).
+- Network: PCnet driver init OK, DHCP bound, TCP/HTTP fetch OK,
+  **TLS 1.2 handshake to `example.com` OK, 584-byte encrypted page received**.
+- Offline harnesses: X25519 (RFC 7748 vectors), AES-128-GCM (NIST SP 800-38D
+  test cases 1-4, decrypt + tamper detection), Python subset 52/52, FAT32
+  functional suite + 200-round fuzz under ASAN (60 000 operations, no crash).
+- Honeypot harness: default-off, passive-only, merge/clear/capacity behaviour.
 
 ## License
 
-This repository contains only the compiled release and website. All rights
-reserved by the JackBOT OS project. Source code is not distributed here.
+This repository contains only the compiled release, the website and the manual.
+All rights reserved by the JackBOT OS project. Source code is not distributed
+here.
+
 ## Name
+
 Lee
