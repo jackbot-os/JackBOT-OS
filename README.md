@@ -20,7 +20,7 @@ is not published here.
 
 ## Build environment (reproducible)
 
-- **Debian 13 (Trixie) inside VirtualBox** 鈥?the only build environment used
+- **Debian 13 (Trixie) inside VirtualBox** the only build environment used
   (no WSL, no QEMU, no VMware).
 - gcc 14.2.0 (freestanding, C11), NASM 2.16.03, GNU ld, GRUB 2 / grub-mkrescue,
   xorriso.
@@ -31,26 +31,26 @@ is not published here.
 
 ## What is new in v1.0.4
 
-- **Real HTTPS in the built-in browser** 鈥?a self-written TLS 1.2 client
+- **Real HTTPS in the built-in browser** a self-written TLS 1.2 client
   (ECDHE with X25519, AES-128-GCM record layer, SHA-256 PRF, Finished
   verification) is integrated into the HTTP client and loads encrypted pages.
 - **AMD PCnet NIC driver** (PCnet-PCI II / FAST III 79C970A/973/975) 鈥?the
   VirtualBox default adapter now works: DHCP, DNS, TCP, HTTP and HTTPS all run
   over it (verified: DHCP bound, `https://example.com` 584-byte page fetched
   through TLS).
-- **Kernel memory-safety fixes** 鈥?user-process address-space activation race
+- **Kernel memory-safety fixes** user-process address-space activation race
   fixed (the boot self-test process no longer faults at USER_BASE); heap rejects
   size wrap-around, guards `calloc` overflow, validates header magic on
   `realloc`, poisons headers on free (double-free detection); page-table
   allocation failures no longer dereference NULL; wallpaper-buffer allocation
   failure falls back to a solid background.
-- **F2 settings-panel crash fixed** 鈥?the `wp_color` divide-by-zero
+- **F2 settings-panel crash fixed** the `wp_color` divide-by-zero
   (`w - 1 == 0` for a 1-pixel-wide thumbnail) is guarded; the settings panel
   opens and renders normally (verified in VirtualBox, 0 crashes, 0 panics).
 - **Python subset hardening** 鈥?container allocation, `range` cap, `split`
   token bound and `str.replace` error path hardened; offline harness passes
   52/52 cases plus the built-in self-test.
-- **Passive honeypot audit trail** 鈥?still off by default, still never sends a
+- **Passive honeypot audit trail** still off by default, still never sends a
   packet; now writes one serial audit line per newly observed probe (unclaimed
   UDP, TCP SYN, ICMP echo).
 
