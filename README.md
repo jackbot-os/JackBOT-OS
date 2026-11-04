@@ -13,7 +13,7 @@ is not published here.
 
 - **64-bit ISO**: [JackBOT-1.0.4.iso](JackBOT-1.0.4.iso) (34.92 MB)
 - SHA-256:
-  `46e6f7d5e6ec675c930e743940fd030564882aad9ae69131fb4a6fd56535f836`
+  `2940e065d6927a0569e633205597bc6c439469030a0552159fa8e3cfafd02194`
 - MD5: `2caf00c9d0841c38f016fb770ada2f17`
 - Project website: [index.html](index.html)
 - User manual: [MANUAL.md](MANUAL.md)
@@ -118,4 +118,5 @@ here.
 ## Name
 
 Lee
+
 
