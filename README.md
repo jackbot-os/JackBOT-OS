@@ -13,8 +13,8 @@ is not published here.
 
 - **64-bit ISO**: [JackBOT-1.0.4.iso](JackBOT-1.0.4.iso) (34.92 MB)
 - SHA-256:
-  `2940e065d6927a0569e633205597bc6c439469030a0552159fa8e3cfafd02194`
-- MD5: `2caf00c9d0841c38f016fb770ada2f17`
+  `984a8cea1dd22fff2bd25113292374d3b596a050d30a459f7b41cd9ab0031593`
+- MD5: `cc56a8abaec1d83a851990f74056eb60`
 - Project website: [index.html](index.html)
 - User manual: [MANUAL.md](MANUAL.md)
 
@@ -50,6 +50,13 @@ is not published here.
 - **Python subset hardening** 鈥?container allocation, `range` cap, `split`
   token bound and `str.replace` error path hardened; offline harness passes
   52/52 cases plus the built-in self-test.
+- **Liquid-glass menus and a faster desktop** — the start menu, its right-hand
+  quick buttons (Settings / Jbot / Browser / Files / Back) and the right-click
+  context menu are now alpha-blended over a freshly repainted frame, so they
+  stay translucent without ghost trails, and opening an app no longer wipes
+  the window behind the menu. The mouse IRQ no longer writes a serial line per
+  packet and memcpy/memset are word-at-a-time, which removes the pointer
+  stutter and the jerky animations.
 - **Passive honeypot audit trail** still off by default, still never sends a
   packet; now writes one serial audit line per newly observed probe (unclaimed
   UDP, TCP SYN, ICMP echo).
@@ -118,5 +125,7 @@ here.
 ## Name
 
 Lee
+
+
 
 
