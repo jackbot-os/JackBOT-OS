@@ -1,4 +1,4 @@
-# JackBOT OS v1.0.4 — User Manual
+﻿# JackBOT OS v1.0.4 鈥?User Manual
 
 ## 1. Booting
 
@@ -6,8 +6,8 @@
    PS/2 mouse, NAT networking) or burn it to a disc / USB stick on real x86_64
    hardware.
 2. The GRUB menu offers:
-   - **Try JackBOT OS (Live Desktop)** — boots the full desktop without a disk.
-   - **Install JackBOT OS** — the graphical installer.
+   - **Try JackBOT OS (Live Desktop)** 鈥?boots the full desktop without a disk.
+   - **Install JackBOT OS** 鈥?the graphical installer.
 3. The installer asks for the **language** (205 languages with native names),
    region/time zone, and the target disk (automatic or custom MBR partitioning,
    FAT32 format, GRUB install).
@@ -23,15 +23,15 @@ layout and time zone/region; the choices are written to `JBOT.CFG` on disk.
 
 ## 3. Desktop
 
-- **F2** — system settings panel: 5 tabs (Display, Region, Audio, Permissions,
+- **F2** 鈥?system settings panel: 5 tabs (Display, Region, Audio, Permissions,
   System). The Region tab lets you pick a real region and toggle satellite
   location permission.
-- **Start menu** — power, store, firewall, backup, capture, calendar, font
+- **Start menu** 鈥?power, store, firewall, backup, capture, calendar, font
   manager, region, network, audio, update, browser (JBrowser), 3D studio, disk
   manager, about, calculator, notepad, monitor, Python console, JCA runner, USB
   devices, battery/power, recycle bin, file manager, device manager, voice,
   Bluetooth, games.
-- **Jbot** — the built-in assistant window (self-contained intent model, no
+- **Jbot** 鈥?the built-in assistant window (self-contained intent model, no
   external API). It answers greetings, help, time/date, disk free space, system
   information, simple arithmetic and more.
 - Wallpaper thumbnails and the settings panel are drawn by the kernel's own GUI
@@ -40,7 +40,7 @@ layout and time zone/region; the choices are written to `JBOT.CFG` on disk.
 ## 4. Networking and the browser
 
 - The network stack brings the link up by DHCP. Supported NICs: AMD PCnet
-  (Am79C970A/973 — VirtualBox default) and Intel PRO/1000 (82540EM), plus
+  (Am79C970A/973 鈥?VirtualBox default) and Intel PRO/1000 (82540EM), plus
   RTL-8139.
 - Open **JBrowser** from the start menu, type a URL and press Enter.
   - `http://` pages load over plain TCP/HTTP.
@@ -50,7 +50,7 @@ layout and time zone/region; the choices are written to `JBOT.CFG` on disk.
 ### HTTPS honesty note
 
 The TLS implementation is real (handshake and record encryption verified
-against OpenSSL), **but the server certificate is not validated** — there is no
+against OpenSSL), **but the server certificate is not validated** 鈥?there is no
 CA trust store and no chain/signature verification. A man-in-the-middle cannot
 be detected. Do not use this browser for anything sensitive. TLS 1.3 is not
 supported.
@@ -88,3 +88,17 @@ machine.
 See the "Known limitations" section of the README. In short: no certificate
 validation, TLS 1.2 only, Python subset only, several hardware drivers are
 detection-only, Bluetooth/voice are skeletons, single-core scheduling.
+
+## 9. Running C programs (.jca native payloads)
+
+A .jca file that begins with the JCAN magic carries a compiled x86-64
+image instead of JCA bytecode. Build one on the Debian build VM:
+
+    python tools/jcacc.py hello.c -o HELLO.JCA
+
+(chibicc compiles the C, s/ld produce a flat image at USER_BASE, and
+the tool prepends the JCAN header.) Copy HELLO.JCA to a FAT32 disk the
+system mounts and open it from the File Explorer: it is started as a ring-3
+process and talks to the kernel through the JackBOT syscall ABI (int 0x80,
+ax=0 print one character, ax=2 exit). C++ needs a C++ front end - the
+pipeline accepts any compiler that emits x86-64 assembly.
