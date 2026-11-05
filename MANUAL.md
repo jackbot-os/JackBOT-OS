@@ -100,5 +100,6 @@ image instead of JCA bytecode. Build one on the Debian build VM:
 the tool prepends the JCAN header.) Copy HELLO.JCA to a FAT32 disk the
 system mounts and open it from the File Explorer: it is started as a ring-3
 process and talks to the kernel through the JackBOT syscall ABI (int 0x80,
-ax=0 print one character, ax=2 exit). C++ needs a C++ front end - the
-pipeline accepts any compiler that emits x86-64 assembly.
+ax=0 print one character, ax=2 exit). C++ works as well: pass a .cpp/.cc file and jcacc.py uses the host g++
+in freestanding mode (no STL, no exceptions, no RTTI, no crt).
+
