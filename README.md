@@ -13,8 +13,8 @@ is not published here.
 
 - **64-bit ISO**: [JackBOT-1.0.4.iso](JackBOT-1.0.4.iso) (34.92 MB)
 - SHA-256:
-  `bc30298798ab6a45d2cef783282a9d1a4906720534bef8217cb47704d98ca51b`
-- MD5: `1280006f9ffbac1747e2f857a0abd7e5`
+  `61ac05c24103e596c1713f8bb56173d29402719d62751185de33f767c4502fdd`
+- MD5: `d06d00447486b4817e38099fadc7317c`
 - Project website: [index.html](index.html)
 - User manual: [MANUAL.md](MANUAL.md)
 
@@ -50,6 +50,18 @@ is not published here.
 - **Python subset hardening** 鈥?container allocation, `range` cap, `split`
   token bound and `str.replace` error path hardened; offline harness passes
   52/52 cases plus the built-in self-test.
+- **Context cursor shapes** - the pointer switches between arrow (GPU cursor),
+  hand over menus/buttons/desktop icons, I-beam over the menu search box and a
+  four-way move cursor while a panel is dragged.
+- **Python subset additions** - str.join, str.find, dict.get,
+  dict.keys, dict.values (each exercised against expected values; the
+  offline suite still passes 52/52 plus the built-in self-test).
+- **C toolchain for JCA payloads (staged)** - the MIT-licensed chibicc C11
+  compiler is vendored under 	hird_party/chibicc and 	ools/jcacc.py
+  compiles .c -> chibicc asm -> s -> ld -> flat image -> .jca with a
+  JCAN header (verified end-to-end: an 8231-byte payload). The kernel-side
+  loader for JCAN payloads is not wired up yet, and C++ still needs a
+  front end - the pipeline accepts any compiler that emits x86-64 asm.
 - **Desktop shortcuts, window dragging and mouse wheel** — four desktop icons
   (Files / Browser / Python / Jbot) launch programs with a click; the built-in
   panels can be dragged by their title strips; the IntelliMouse wheel is
@@ -130,6 +142,7 @@ here.
 ## Name
 
 Lee
+
 
 
 
