@@ -13,8 +13,8 @@ is not published here.
 
 - **64-bit ISO**: [JackBOT-1.0.4.iso](JackBOT-1.0.4.iso) (34.92 MB)
 - SHA-256:
-  `984a8cea1dd22fff2bd25113292374d3b596a050d30a459f7b41cd9ab0031593`
-- MD5: `cc56a8abaec1d83a851990f74056eb60`
+  `bc30298798ab6a45d2cef783282a9d1a4906720534bef8217cb47704d98ca51b`
+- MD5: `1280006f9ffbac1747e2f857a0abd7e5`
 - Project website: [index.html](index.html)
 - User manual: [MANUAL.md](MANUAL.md)
 
@@ -50,6 +50,11 @@ is not published here.
 - **Python subset hardening** 鈥?container allocation, `range` cap, `split`
   token bound and `str.replace` error path hardened; offline harness passes
   52/52 cases plus the built-in self-test.
+- **Desktop shortcuts, window dragging and mouse wheel** — four desktop icons
+  (Files / Browser / Python / Jbot) launch programs with a click; the built-in
+  panels can be dragged by their title strips; the IntelliMouse wheel is
+  enabled (device id 3 confirmed at boot) and cycles the wallpaper on the
+  desktop or moves the highlight inside the start menu.
 - **Liquid-glass menus and a faster desktop** — the start menu, its right-hand
   quick buttons (Settings / Jbot / Browser / Files / Back) and the right-click
   context menu are now alpha-blended over a freshly repainted frame, so they
@@ -125,6 +130,7 @@ here.
 ## Name
 
 Lee
+
 
 
 
