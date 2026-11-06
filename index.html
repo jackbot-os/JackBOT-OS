@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>JackBOT OS Official Website | v1.0.4 EastLake</title>
-    <meta name="description" content="JackBOT OS v1.0.4 EastLake a from-scratch x86_64 hobby operating system with a graphical installer, 205-language UI, hardware-accelerated cursor, an expanded PCI compatibility database, HMAC-SHA256 and an HTTPS-aware HTTP client. Download the 64-bit ISO.">
+    <meta name="description" content="JackBOT OS v1.0.4 EastLake &mdash; a from-scratch x86_64 hobby operating system with a graphical installer, 205-language UI, GPU-composited hardware cursor, 231-ID PCI compatibility database, TLS 1.2 HTTPS client, and an AMD PCnet NIC driver. Download the 64-bit ISO.">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -125,6 +125,100 @@
             .download-box { flex-direction: column; align-items: flex-start; }
             .footer-inner { justify-content: center; text-align: center; }
         }
+
+/* ===== Manual: hand-flipped book ===== */
+.reader{max-width:900px;margin:36px auto 0}
+.book{position:relative;height:520px;background:#0b1220;border-radius:6px;overflow:hidden;
+  perspective:2600px;perspective-origin:50% 50%;
+  box-shadow:0 28px 56px -22px rgba(15,23,42,.6),0 0 0 1px rgba(15,23,42,.08);
+  touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:grab;isolation:isolate}
+.book:active{cursor:grabbing}
+.book:focus-visible{outline:2px solid #2563eb;outline-offset:4px}
+.leaf{position:absolute;top:0;bottom:0;width:50%;background:#fbf9f3;overflow:hidden}
+.leaf.left{left:0}
+.leaf.right{left:50%}
+.leaf.left::after{content:"";position:absolute;top:0;right:0;bottom:0;width:58px;pointer-events:none;
+  background:linear-gradient(270deg,rgba(96,86,66,.20),rgba(96,86,66,0))}
+.leaf.right::before{content:"";position:absolute;top:0;left:0;bottom:0;width:58px;pointer-events:none;
+  background:linear-gradient(90deg,rgba(96,86,66,.20),rgba(96,86,66,0))}
+.sheet{position:absolute;top:0;left:50%;width:50%;height:100%;transform-origin:left center;
+  transform-style:preserve-3d;transform:rotateY(0deg);z-index:25;visibility:hidden;pointer-events:none;will-change:transform}
+.face{position:absolute;top:0;right:0;bottom:0;left:0;overflow:hidden;background:#fbf9f3;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 10px 34px rgba(15,23,42,.26)}
+.face.back{transform:rotateY(180deg);background:#f8f6ef}
+.face.front::after{content:"";position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none;
+  background:linear-gradient(90deg,rgba(90,80,60,.16),rgba(90,80,60,0) 46%)}
+.face.back::after{content:"";position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none;
+  background:linear-gradient(270deg,rgba(90,80,60,.18),rgba(90,80,60,0) 46%)}
+.edges{position:absolute;top:8px;bottom:8px;right:0;width:7px;z-index:28;pointer-events:none;
+  background:repeating-linear-gradient(90deg,#e4dfd2 0 1px,#f7f5ec 1px 3px)}
+.spine{position:absolute;top:0;bottom:0;left:50%;width:26px;margin-left:-13px;z-index:30;pointer-events:none;
+  background:linear-gradient(90deg,rgba(15,23,42,.34),rgba(15,23,42,.05) 46%,rgba(15,23,42,.34))}
+
+.page{position:absolute;top:0;right:0;bottom:0;left:0;overflow-y:auto;color:#22252b;
+  font-family:Georgia,"Times New Roman",serif;-webkit-overflow-scrolling:touch}
+.pageR{padding:40px 34px 34px 48px}
+.pageL{padding:40px 48px 34px 34px}
+.eyebrow{font-family:"Segoe UI",Arial,sans-serif;font-size:10px;letter-spacing:.22em;color:#9aa3af;text-transform:uppercase}
+.title{font-family:"Segoe UI",Arial,sans-serif;font-size:22px;font-weight:700;color:#111827;margin:8px 0 0;line-height:1.26}
+.rule{width:36px;height:3px;background:#2563eb;margin:13px 0 18px}
+.page p{font-size:14px;line-height:1.8;color:#3b3f46;margin-bottom:12px}
+.list{list-style:none;margin:0;padding:0}
+.list li{font-size:13.5px;line-height:1.75;color:#3b3f46;padding-left:16px;position:relative;margin-bottom:10px}
+.list li::before{content:"";position:absolute;left:0;top:7px;width:5px;height:5px;border-radius:50%;background:#2563eb}
+.list li b{color:#111827;font-weight:700}
+.code{font-family:"Consolas",ui-monospace,monospace;font-size:11.5px;line-height:1.85;color:#334155;
+  background:#f0efe8;border-left:3px solid #2563eb;padding:10px 12px;margin:12px 0;white-space:pre-wrap;word-break:break-all}
+.folio{position:absolute;bottom:14px;font-family:"Segoe UI",Arial,sans-serif;font-size:10px;letter-spacing:.16em;color:#a5adba}
+.folio.r{right:36px}
+.folio.l{left:36px}
+
+.cover{position:absolute;top:0;right:0;bottom:0;left:0;padding:44px 38px 36px 46px;
+  background:linear-gradient(160deg,#0b1220 0%,#111c33 58%,#0b1220 100%);color:#f8fafc;
+  display:flex;flex-direction:column;justify-content:space-between;
+  font-family:"Segoe UI",Arial,sans-serif}
+.cover-top{border-top:1px solid rgba(148,163,184,.35);padding-top:18px}
+.cover-eyebrow{font-size:10px;letter-spacing:.3em;color:#60a5fa}
+.cover-title{font-size:34px;font-weight:800;line-height:1.14;margin:14px 0 8px;letter-spacing:-.4px}
+.cover-sub{font-size:13px;color:#94a3b8}
+.cover-foot{border-top:1px solid rgba(148,163,184,.35);padding-top:16px}
+.cover-badge{display:inline-block;background:rgba(37,99,235,.22);border:1px solid rgba(96,165,250,.45);
+  color:#dbeafe;font-size:11.5px;padding:5px 12px;border-radius:999px;letter-spacing:.06em}
+.cover-url{font-size:11px;color:#64748b;margin-top:12px;letter-spacing:.04em}
+
+.book-bar{max-width:900px;margin:18px auto 0;display:flex;align-items:center;justify-content:space-between;gap:14px}
+.navbtn{font-family:"Segoe UI",Arial,sans-serif;font-size:13px;padding:9px 18px;border-radius:6px;
+  border:1px solid #d1d5db;background:#fff;color:#111827;cursor:pointer;transition:border-color .18s,color .18s}
+.navbtn:hover:not(:disabled){border-color:#2563eb;color:#2563eb}
+.navbtn:disabled{opacity:.4;cursor:not-allowed}
+.counter{font-family:"Segoe UI",Arial,sans-serif;font-size:12px;color:#6b7280}
+.counter b{color:#2563eb;font-size:14px}
+.hint{max-width:900px;margin:10px auto 0;font-family:"Segoe UI",Arial,sans-serif;font-size:11px;
+  color:#9ca3af;text-align:center;letter-spacing:.12em}
+
+@media (max-width:768px){
+  .book{height:480px;perspective:1600px}
+  .pageR{padding:26px 18px 26px 30px}
+  .pageL{padding:26px 30px 26px 18px}
+  .title{font-size:18px}
+  .page p{font-size:12.5px;line-height:1.72}
+  .list li{font-size:12px;line-height:1.68;margin-bottom:8px}
+  .code{font-size:10px;line-height:1.7}
+  .cover{padding:30px 22px 26px 32px}
+  .cover-title{font-size:24px}
+  .cover-sub{font-size:11.5px}
+  .folio{font-size:9px;bottom:10px}
+  .folio.r{right:18px}
+  .folio.l{left:18px}
+}
+@media (max-width:480px){
+  .book{height:460px;perspective:1300px}
+  .pageR{padding:22px 14px 22px 24px}
+  .pageL{padding:22px 24px 22px 14px}
+  .title{font-size:16.5px}
+  .page p{font-size:11.5px}
+  .list li{font-size:11px}
+}
     </style>
 </head>
 <body>
@@ -136,6 +230,7 @@
                     <li><a href="#about">About</a></li>
                     <li><a href="#features">Features</a></li>
                     <li><a href="#screenshots">Screenshots</a></li>
+                    <li><a href="#manual">Manual</a></li>
                     <li><a href="#download">Download</a></li>
                     <li><a href="#changelog">Changelog</a></li>
                 </ul>
@@ -147,8 +242,8 @@
         <section class="hero">
             <div class="container hero-content">
                 <h1>JackBOT OS</h1>
-                <div class="version-badge">v1.0.4 EastLake 鈥?x86_64</div>
-                <p>A from-scratch, 64-bit hobby operating system written in C and NASM. Multiboot2 + GRUB, a native graphical installer, a 205-language setup experience, and a GPU-composited hardware cursor &mdash; no Linux kernel underneath.</p>
+                <div class="version-badge">v1.0.4 EastLake &mdash; x86_64</div>
+                <p>A from-scratch, 64-bit hobby operating system written in C and NASM. Multiboot2 + GRUB, a native graphical installer, a 205-language setup experience, a GPU-composited hardware cursor, and a TLS 1.2 HTTPS client &mdash; no Linux kernel underneath.</p>
                 <div class="hero-stats">
                     <div class="hero-stat"><div class="num">205</div><div class="lbl">Setup languages</div></div>
                     <div class="hero-stat"><div class="num">8</div><div class="lbl">Bundled TTF fonts</div></div>
@@ -168,16 +263,17 @@
                     calls, user-space isolation), and ships its own graphical stack, file system drivers and
                     applications &mdash; it is <strong>not a Linux distribution</strong>.
                     <br><br>
-                    The v1.0.2 release grows the PCI compatibility database to 231 recognized
-                    device IDs across display, Ethernet, storage, audio and USB classes, adds an
-                    HTTPS-aware HTTP client that parses <code>https://</code> URLs and port 443, and ships an
-                    HMAC-SHA256 primitive self-verified against RFC 4231 test vectors. A TLS state-machine
-                    stub is in place; <strong>the TLS handshake, certificate validation and encrypted
-                    record layer are not implemented yet</strong>, so HTTPS pages are reported as unavailable
-                    rather than opened as plaintext. The release keeps the bootable Live Desktop mode
-                    (try the full desktop without installing), five system-management applications (USB
-                    Devices, Battery &amp; Power, Recycle Bin, File Explorer and Device Manager), and real
-                    hardware enumeration: ACPI table/PM1-control-block parsing, USB host-controller
+                    The v1.0.4 release integrates a from-scratch TLS 1.2 client into the HTTP client
+                    &mdash; ECDHE/X25519 key exchange, AES-128-GCM record layer, SHA-256 PRF and
+                    Finished-message verification &mdash; so <code>https://</code> pages load and decrypt.
+                    An AMD PCnet NIC driver brings up the VirtualBox default network adapter, and the PCI
+                    compatibility database now covers 231 recognized device IDs.
+                    <strong>Honest boundary:</strong> the server certificate chain is parsed but
+                    <strong>NOT validated against a trust store</strong> (no CA bundle, no chain/signature
+                    check), and TLS 1.3 is not implemented. The release keeps the bootable Live Desktop
+                    mode (try the full desktop without installing), five system-management applications
+                    (USB Devices, Battery &amp; Power, Recycle Bin, File Explorer and Device Manager), and
+                    real hardware enumeration: ACPI table/PM1-control-block parsing, USB host-controller
                     and root-hub port reading, and a live PCI device tree. It also builds on the
                     complete graphical installer (language &rarr; welcome &rarr; time zone &rarr; disk
                     partitioning &rarr; install), a first-boot OOBE wizard, real TrueType
@@ -275,6 +371,30 @@
             </div>
         </section>
 
+        <section class="section" id="manual">
+            <div class="container">
+                <h2>User Manual</h2>
+                <p>A ten-page field manual you turn by hand. Press a page edge and drag it across, the way you would turn real paper; the buttons and the arrow keys work too. The site stays English-only, so use your browser's own translation when you need another language.</p>
+                <div class="reader">
+                    <div class="book" id="book" tabindex="0" role="group" aria-label="JackBOT OS field manual, drag a page edge to turn it">
+                        <div class="leaf left" id="leafL"></div>
+                        <div class="leaf right" id="leafR"></div>
+                        <div class="sheet" id="sheet">
+                            <div class="face front" id="faceF"></div>
+                            <div class="face back" id="faceB"></div>
+                        </div>
+                        <div class="edges" aria-hidden="true"></div>
+                        <div class="spine" aria-hidden="true"></div>
+                    </div>
+                    <div class="book-bar">
+                        <button class="navbtn" id="btnPrev" type="button">Previous</button>
+                        <div class="counter"><b id="nowPage">1&ndash;2</b> / <span id="allPages">10</span></div>
+                        <button class="navbtn" id="btnNext" type="button">Next</button>
+                    </div>
+                    <p class="hint">GRAB THE PAGE EDGE AND PULL IT ACROSS</p>
+                </div>
+            </div>
+        </section>
         <section class="section" id="download">
             <div class="container">
                 <h2>Download</h2>
@@ -298,11 +418,11 @@
                     physical graphics cards. Many compatibility-database entries are device-detection probes
                     rather than full functional drivers; in particular AHCI/SATA, NVMe and e1000e
                     adapters are only recognized and logged, their register command queues are not
-                    driven. The browser works over plain HTTP only: TLS 1.2/1.3 handshake, X.509
-                    certificate validation, key exchange and encrypted record layer are not implemented,
-                    and an <code>https://</code> URL fails with an explicit unavailable state instead of
-                    being opened in plaintext. Bluetooth pairing/L2CAP/GATT and on-device speech-to-text
-                    remain skeletons. OOBE keyboard selection stores the layout but does
+                    driven. The browser supports <strong>HTTPS over TLS 1.2</strong> (ECDHE/X25519,
+                    AES-128-GCM, SHA-256 PRF), but the server certificate chain is parsed and
+                    <strong>not validated against a trust store</strong> (no CA bundle, no chain/signature
+                    check), and TLS 1.3 is not implemented. Bluetooth pairing/L2CAP/GATT and on-device
+                    speech-to-text remain skeletons. OOBE keyboard selection stores the layout but does
                     not yet remap every physical key.
                 </div>
             </div>
@@ -312,7 +432,7 @@
             <div class="container">
                 <h2>Changelog v1.0.4</h2>
                 <ul class="changelog-list">
-                                        <li><strong>v1.0.4 &mdash; real HTTPS (TLS 1.2) in the built-in browser:</strong> a from-scratch TLS 1.2 client (ECDHE/X25519 key exchange, AES-128-GCM record layer, SHA-256 PRF, Finished-message verification) is integrated into the HTTP client; HTTPS pages load and decrypt correctly. <strong>Honest boundary:</strong> the server certificate chain is parsed but NOT validated against a trust store (no CA bundle, no chain/signature check), and TLS 1.3 is not implemented.</li>
+                    <li><strong>v1.0.4 &mdash; real HTTPS (TLS 1.2) in the built-in browser:</strong> a from-scratch TLS 1.2 client (ECDHE/X25519 key exchange, AES-128-GCM record layer, SHA-256 PRF, Finished-message verification) is integrated into the HTTP client; HTTPS pages load and decrypt correctly. <strong>Honest boundary:</strong> the server certificate chain is parsed but NOT validated against a trust store (no CA bundle, no chain/signature check), and TLS 1.3 is not implemented.</li>
                     <li><strong>v1.0.4 &mdash; AMD PCnet NIC driver:</strong> a new PCnet-PCI II / FAST III (Am79C970A/973) driver brings up the VirtualBox default network adapter; DHCP, DNS, TCP, HTTP and HTTPS now work with it (verified in VirtualBox: DHCP bound, https://example.com 584-byte page fetched through TLS).</li>
                     <li><strong>v1.0.4 &mdash; kernel memory-safety fixes:</strong> the user-process address-space activation race that faulted the boot-time self-test process at USER_BASE is fixed (CR3 is now switched before any user thread can be scheduled); the heap rejects size wrap-around, guards calloc multiplication overflow, validates block magic on realloc and poisons headers on free to catch double frees; page-table allocation failures no longer dereference NULL; the desktop wallpaper path no longer dies when the wallpaper buffer cannot be allocated.</li>
                     <li><strong>v1.0.4 &mdash; F2 settings-panel crash fixed:</strong> the wp_color divide-by-zero (w-1 == 0 when drawing a 1-pixel-wide thumbnail) is guarded, so opening the settings panel no longer faults.</li>
@@ -349,14 +469,295 @@
             <p>Educational hobby operating system. Test in a virtual machine first.</p>
         </div>
     </footer>
+    <script>
+    (function(){
+        var PAGES = [
+
+'<div class="cover">'
++'<div class="cover-top">'
++'<div class="cover-eyebrow">JACKBOT OS</div>'
++'<div class="cover-title">Field<br>Manual</div>'
++'<div class="cover-sub">Install, boot and first steps</div>'
++'</div>'
++'<div class="cover-foot">'
++'<div class="cover-badge">v1.0.4 EastLake &middot; x86_64</div>'
++'<div class="cover-url">jackbot-os.github.io/JackBOT-OS</div>'
++'</div>'
++'</div>',
+
+'<div class="page pageR">'
++'<div class="eyebrow">Contents</div>'
++'<div class="title">What is in this book</div>'
++'<div class="rule"></div>'
++'<ul class="list">'
++'<li><b>01</b> &mdash; Before you begin</li>'
++'<li><b>02</b> &mdash; Boot the ISO</li>'
++'<li><b>03</b> &mdash; Walk the installer</li>'
++'<li><b>04</b> &mdash; First boot</li>'
++'<li><b>05</b> &mdash; Programs and files</li>'
++'<li><b>06</b> &mdash; Honest limits</li>'
++'<li><b>&mdash;</b> &mdash; Check your download</li>'
++'</ul>'
++'<div class="folio r">02</div>'
++'</div>',
+
+'<div class="page pageL">'
++'<div class="eyebrow">Section 01</div>'
++'<div class="title">Before you begin</div>'
++'<div class="rule"></div>'
++'<ul class="list">'
++'<li><b>Use a virtual machine first.</b> Oracle VirtualBox is the recommended and most-tested target.</li>'
++'<li>Give the VM <b>2048 MB</b> of RAM, VMSVGA graphics and a PS/2 mouse.</li>'
++'<li>The download is a 64-bit hybrid ISO, bootable on both BIOS and UEFI.</li>'
++'<li>Nothing on the target disk is touched until you start the installer.</li>'
++'</ul>'
++'<div class="folio l">03</div>'
++'</div>',
+
+'<div class="page pageR">'
++'<div class="eyebrow">Section 02</div>'
++'<div class="title">Boot the ISO</div>'
++'<div class="rule"></div>'
++'<ul class="list">'
++'<li>Attach the ISO to the VM optical drive, or burn it to a DVD as an image.</li>'
++'<li>Start the machine and open the boot menu if the VM does not boot from the disc on its own.</li>'
++'<li>In the GRUB menu choose <b>Try JackBOT OS 1.0 (Live Desktop)</b> to see the desktop without installing.</li>'
++'<li>Live mode writes nothing to the disk: everything disappears on reboot.</li>'
++'</ul>'
++'<div class="folio r">04</div>'
++'</div>',
+
+'<div class="page pageL">'
++'<div class="eyebrow">Section 03</div>'
++'<div class="title">Walk the installer</div>'
++'<div class="rule"></div>'
++'<ul class="list">'
++'<li><b>Language</b> &mdash; pick one of the 205 installed languages on the first screen.</li>'
++'<li><b>Welcome</b> &mdash; the target disk is detected and reported for you.</li>'
++'<li><b>Time zone</b> &mdash; choose your region from a two-column list.</li>'
++'<li><b>Disk</b> &mdash; accept the automatic 75/25 split or set your own sizes. This erases the disk.</li>'
++'<li><b>Install</b> &mdash; wait for the progress bar, then remove the disc and restart.</li>'
++'</ul>'
++'<div class="folio l">05</div>'
++'</div>',
+
+'<div class="page pageR">'
++'<div class="eyebrow">Section 04</div>'
++'<div class="title">First boot</div>'
++'<div class="rule"></div>'
++'<p>A short first-run wizard asks for language, keyboard layout and time zone before the desktop appears.</p>'
++'<ul class="list">'
++'<li>Your answers are written to <b>JBOT.CFG</b> on the disk, so the next boot skips the wizard.</li>'
++'<li>The desktop scales to the real resolution instead of drawing at a fixed small size.</li>'
++'<li>Keyboard layout is stored but does not yet remap every physical key.</li>'
++'</ul>'
++'<div class="folio r">06</div>'
++'</div>',
+
+'<div class="page pageL">'
++'<div class="eyebrow">Section 05</div>'
++'<div class="title">Programs and files</div>'
++'<div class="rule"></div>'
++'<ul class="list">'
++'<li><b>.jca</b> &mdash; programs built with the bundled JCA compiler and run by the system.</li>'
++'<li><b>.xjh</b> &mdash; batch scripts for automation and repeatable setup steps.</li>'
++'<li>A small built-in Python console sits in the terminal for quick experiments.</li>'
++'<li>File Explorer, Recycle Bin, USB Devices, Battery &amp; Power and Device Manager ship with the system.</li>'
++'</ul>'
++'<div class="folio l">07</div>'
++'</div>',
+
+'<div class="page pageR">'
++'<div class="eyebrow">Section 06</div>'
++'<div class="title">Honest limits</div>'
++'<div class="rule"></div>'
++'<ul class="list">'
++'<li><b>HTTPS</b> works over TLS 1.2, but the server certificate chain is parsed and never validated.</li>'
++'<li><b>AHCI/SATA, NVMe and e1000e</b> are recognised in the device table only; their command queues are not driven.</li>'
++'<li><b>CPython 3.12</b> source is included, but there is no POSIX layer yet, so it does not run natively.</li>'
++'<li><b>Bluetooth</b> pairing and on-device speech recognition remain skeletons.</li>'
++'</ul>'
++'<div class="folio r">08</div>'
++'</div>',
+
+'<div class="page pageL">'
++'<div class="eyebrow">Appendix</div>'
++'<div class="title">Check your download</div>'
++'<div class="rule"></div>'
++'<p>JackBOT-1.0.4.iso is 34.92 MB. Compare its SHA-256 before you write it to a physical disk.</p>'
++'<div class="code">a87a5b701c96911229e4c410406e02a2b5b3e9526ba1188ad386658aa3b96faa</div>'
++'<p>If the hash does not match, delete the file and download it again.</p>'
++'<div class="folio l">09</div>'
++'</div>',
+
+'<div class="page pageR">'
++'<div class="eyebrow">Colophon</div>'
++'<div class="title">JackBOT<span style="color:#2563eb">.</span>OS</div>'
++'<div class="rule"></div>'
++'<p>An educational, single-developer hobby operating system written from scratch in C and NASM. Not a Linux distribution.</p>'
++'<p>Read more, report bugs and download the image at <b>jackbot-os.github.io/JackBOT-OS</b> or the JackBOT-OS repository on GitHub.</p>'
++'<p style="color:#6b7280;font-size:12px;margin-top:22px">Test in a virtual machine before using it on real hardware.</p>'
++'<div class="folio r">10</div>'
++'</div>'
+
+        ];
+
+        var book = document.getElementById('book');
+        if(!book) return;
+        var leafL = document.getElementById('leafL'),
+            leafR = document.getElementById('leafR'),
+            sheet = document.getElementById('sheet'),
+            faceF = document.getElementById('faceF'),
+            faceB = document.getElementById('faceB'),
+            btnPrev = document.getElementById('btnPrev'),
+            btnNext = document.getElementById('btnNext'),
+            nowPage = document.getElementById('nowPage'),
+            allPages = document.getElementById('allPages');
+
+        var SPREADS = PAGES.length / 2,
+            s = 0, busy = false, mode = null,
+            sx = 0, sy = 0, prog = 0, moved = false,
+            REDUCE = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+            MS = REDUCE ? 40 : 720;
+
+        allPages.textContent = PAGES.length;
+
+        function paint(i){
+            leafL.innerHTML = PAGES[i * 2] || '';
+            leafR.innerHTML = PAGES[i * 2 + 1] || '';
+            nowPage.innerHTML = (i * 2 + 1) + '&ndash;' + (i * 2 + 2);
+            btnPrev.disabled = (i === 0);
+            btnNext.disabled = (i === SPREADS - 1);
+        }
+
+        function hideSheet(){
+            sheet.style.transition = 'none';
+            sheet.style.visibility = 'hidden';
+            sheet.style.transform = 'rotateY(0deg)';
+            faceF.innerHTML = '';
+            faceB.innerHTML = '';
+        }
+
+        function settle(i){
+            s = i;
+            hideSheet();
+            paint(s);
+            busy = false;
+        }
+
+        function sweep(from, to, target){
+            sheet.style.transition = 'none';
+            sheet.style.transform = 'rotateY(' + from + 'deg)';
+            void sheet.offsetWidth;
+            sheet.style.transition = 'transform ' + MS + 'ms cubic-bezier(.38,.05,.55,1)';
+            sheet.style.transform = 'rotateY(' + to + 'deg)';
+            setTimeout(function(){ settle(target); }, MS + 40);
+        }
+
+        function goNext(){
+            if(busy || s >= SPREADS - 1) return;
+            busy = true;
+            leafL.innerHTML = PAGES[2 * s + 2];
+            leafR.innerHTML = PAGES[2 * s + 3];
+            faceF.innerHTML = PAGES[2 * s + 1];
+            faceB.innerHTML = PAGES[2 * s + 2];
+            sheet.style.visibility = 'visible';
+            sweep(0, -180, s + 1);
+        }
+
+        function goPrev(){
+            if(busy || s <= 0) return;
+            busy = true;
+            leafL.innerHTML = PAGES[2 * s - 2];
+            leafR.innerHTML = PAGES[2 * s - 1];
+            faceF.innerHTML = PAGES[2 * s - 1];
+            faceB.innerHTML = PAGES[2 * s];
+            sheet.style.visibility = 'visible';
+            sweep(-180, 0, s - 1);
+        }
+
+        function abort(){
+            if(!mode) return;
+            mode = null;
+            prog = 0;
+            hideSheet();
+            paint(s);
+            busy = false;
+        }
+
+        book.addEventListener('pointerdown', function(e){
+            if(busy) return;
+            if(e.pointerType === 'mouse' && e.button !== 0) return;
+            var r = book.getBoundingClientRect();
+            var rel = (e.clientX - r.left) / r.width;
+            if(rel >= 0.5){
+                if(s >= SPREADS - 1) return;
+                mode = 'next';
+                leafL.innerHTML = PAGES[2 * s + 2];
+                leafR.innerHTML = PAGES[2 * s + 3];
+                faceF.innerHTML = PAGES[2 * s + 1];
+                faceB.innerHTML = PAGES[2 * s + 2];
+            }else{
+                if(s <= 0) return;
+                mode = 'prev';
+                leafL.innerHTML = PAGES[2 * s - 2];
+                leafR.innerHTML = PAGES[2 * s - 1];
+                faceF.innerHTML = PAGES[2 * s - 1];
+                faceB.innerHTML = PAGES[2 * s];
+            }
+            busy = true;
+            moved = false;
+            prog = 0;
+            sx = e.clientX;
+            sy = e.clientY;
+            sheet.style.transition = 'none';
+            sheet.style.visibility = 'visible';
+            sheet.style.transform = 'rotateY(' + (mode === 'next' ? 0 : -180) + 'deg)';
+            try { book.setPointerCapture(e.pointerId); } catch(err) {}
+        });
+
+        book.addEventListener('pointermove', function(e){
+            if(!busy || !mode) return;
+            var dx = e.clientX - sx, dy = e.clientY - sy;
+            if(Math.abs(dx) > 6 || Math.abs(dy) > 6) moved = true;
+            if(Math.abs(dy) > 16 && Math.abs(dy) > Math.abs(dx)){ abort(); return; }
+            var w = Math.max(220, book.getBoundingClientRect().width * 0.5);
+            if(mode === 'next'){
+                prog = Math.min(1, Math.max(0, (-dx) / w));
+                sheet.style.transform = 'rotateY(' + (-180 * prog).toFixed(2) + 'deg)';
+            }else{
+                prog = Math.min(1, Math.max(0, dx / w));
+                sheet.style.transform = 'rotateY(' + (-180 + 180 * prog).toFixed(2) + 'deg)';
+            }
+        });
+
+        book.addEventListener('pointerup', function(e){
+            if(!mode) return;
+            var dir = mode;
+            mode = null;
+            var commit = (!moved) || prog > 0.28;
+            if(dir === 'next'){
+                if(commit) sweep(prog, -180, s + 1);
+                else sweep(prog, 0, s);
+            }else{
+                var cur = -180 + 180 * prog;
+                if(commit) sweep(cur, 0, s - 1);
+                else sweep(cur, -180, s);
+            }
+        });
+
+        book.addEventListener('pointercancel', abort);
+        btnPrev.addEventListener('click', goPrev);
+        btnNext.addEventListener('click', goNext);
+
+        book.addEventListener('keydown', function(e){
+            if(e.key === 'ArrowRight'){ e.preventDefault(); goNext(); }
+            else if(e.key === 'ArrowLeft'){ e.preventDefault(); goPrev(); }
+        });
+
+        paint(0);
+    })();
+    </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
 
