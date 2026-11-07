@@ -2,7 +2,7 @@
 
 这份文件是给作者的"做到哪了"清单，只写实测结果，不写计划性措辞。
 
-## 1. 语言：19 / 205 是"完整翻译"，其余 186 门被构建期剔除
+## 1. 语言：21 / 205 是"完整翻译"，其余 186 门被构建期剔除
 
 `tools/gen_i18n.py` 现在的规则是硬的：除 `en` 外，任何语言只要缺任意一个 key，就把整门从生成的
 `build/i18n_data.h` 里剔除，并在 stderr 打 `i18n: dropping N incomplete languages`。
@@ -11,7 +11,7 @@
 本次构建实际输出：`i18n: dropping 186 incomplete languages (first: aa, missing 363 keys)` /
 `i18n: shipping 19 complete languages`。
 
-19 门齐全（430 / 430 key）：
+21 门齐全（430 / 430 key）：
 
 | # | code | 语言 | 实测取证 |
 |---|------|------|----------|
@@ -34,10 +34,12 @@
 | 17 | cs | Čeština | — |
 | 18 | sv | Svenska | `sv_desktop.png`（Start/Bakgrundsbild/Inställningar/Utforskaren） |
 | 19 | fi | Suomi | — |
+| 20 | da | Dansk | da_desktop.png（Start/Baggrund/Indstillinger/Stifinder） |
+| 21 | id | Bahasa Indonesia | — |
 
-尚未完整的 186 门各缺 363 条（账户/登录等 14 条已补，仍缺主体 363 条），合计约 6.7 万条。
+尚未完整的 184 门各缺 363 条（账户/登录等 14 条已补，仍缺主体 363 条），合计约 6.7 万条。
 
-## 2. TTF：**只有 8 个**，不是 205 个
+## 2. TTF：库里 29 个，内核仍只加载 8 个，不是 205 个
 
 `assets/fonts` 与 `iso/boot/fonts` 各 8 个真 `.ttf`（内核用 stb_truetype 运行时光栅化）：
 
@@ -80,8 +82,8 @@ N'Ko、叙利亚、它加罗等文字，一个字体都没加。所以"205 个 T
 
 ## 5. 本版产物
 
-- ISO：`_work/users1.iso`，31,705,088 B（15,481 sectors），
-  sha256 `CE504A402115C42A36206A0E57CD13EA6954DDBB86F8496F25E3EFCCEF9C3426`
+- ISO：`_work/users1.iso`，32,061,440 B（15,655 sectors），
+  sha256 `90B9B8DEF5C3FBF0516510D86276C4C76C001529F273BE8A61775C7C3AC224FC`
 - 构建：`make iso` rc=0，0 error（Debian VM，远端仓库 `/home/jackbot/JackBOT-OS`）
 - 串口：`[I18N] langs=0x...` / `[I18N] code=en` / `[I18N] test PASS`
 - 预览：`_work/uk_desktop.png`（乌克兰语）、`_work/sv_desktop.png`（瑞典语）、
@@ -95,3 +97,15 @@ N'Ko、叙利亚、它加罗等文字，一个字体都没加。所以"205 个 T
 - `images/` 里 8 张官网截图仍是修复前版本，未重拍。
 - 381 条硬编码英文字面量未清（清单 `_work/hardcoded_strings.json`）。
 - 液态玻璃窗口体仍不透出桌面（`draw_glass_rect()` 只从壁纸缓冲混色）。
+
+## 7. 本轮补充（23:2x–23:4x 追加）
+
+- 新下载 21 个 OFL（Noto）字体到 `assets/fonts`：格鲁吉亚、亚美尼亚、埃塞俄比亚、孟加拉、泰米尔、
+  泰卢固、古吉拉特、奥里亚、僧伽罗、缅甸、高棉、老挝、藏、蒙古、彝、切罗基、加拿大音节、Thaana、
+  N'Ko、叙利亚、Tifinagh（另有约 15 个脚本在下载队列未被计入本版）。
+- **诚实说明**：这 21 个字体只是"文件入库"，内核 `ttf.c` 的 `fb_disk/fb_pay` 表仍只挂
+  CJK/KR/AR/TH/HI 五个回退面 + SANS/MONO/MONOB 三个主面，共 8 个真正参与渲染。
+  把新字体接入渲染链需要改 payload 表并重生成内核内嵌 payload，本轮**未做**。
+- 语言再 +2：丹麦语 `da`、印尼语 `id`，构建输出 `shipping 21 complete languages`，
+  剩余 184 门各缺 363 条。
+- 最终 ISO：32,061,440 B（15,655 sectors），sha256 `90B9B8DE...`（`make iso` 0 error）。
