@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>JackBOT OS Official Website | v1.0.4 EastLake</title>
-    <meta name="description" content="JackBOT OS v1.0.4 EastLake &mdash; a from-scratch x86_64 hobby operating system with a graphical installer, 205-language UI, GPU-composited hardware cursor, 231-ID PCI compatibility database, TLS 1.2 HTTPS client, and an AMD PCnet NIC driver. Download the 64-bit ISO.">
+    <title>JackBOT OS Official Website | v1.0.9 EastLake</title>
+    <meta name="description" content="JackBOT OS v1.0.9 EastLake &mdash; a from-scratch x86_64 hobby operating system with a graphical installer, 205-language UI, GPU-composited hardware cursor, 231-ID PCI compatibility database, TLS 1.2 HTTPS client, and an AMD PCnet NIC driver. Download the 64-bit ISO.">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -242,7 +242,7 @@
         <section class="hero">
             <div class="container hero-content">
                 <h1>JackBOT OS</h1>
-                <div class="version-badge">v1.0.4 EastLake &mdash; x86_64</div>
+                <div class="version-badge">v1.0.9 EastLake &mdash; x86_64</div>
                 <p>A from-scratch, 64-bit hobby operating system written in C and NASM. Multiboot2 + GRUB, a native graphical installer, a 205-language setup experience, a GPU-composited hardware cursor, and a TLS 1.2 HTTPS client &mdash; no Linux kernel underneath.</p>
                 <div class="hero-stats">
                     <div class="hero-stat"><div class="num">205</div><div class="lbl">Setup languages</div></div>
@@ -263,7 +263,7 @@
                     calls, user-space isolation), and ships its own graphical stack, file system drivers and
                     applications &mdash; it is <strong>not a Linux distribution</strong>.
                     <br><br>
-                    The v1.0.4 release integrates a from-scratch TLS 1.2 client into the HTTP client
+                    The v1.0.9 release integrates a from-scratch TLS 1.2 client into the HTTP client
                     &mdash; ECDHE/X25519 key exchange, AES-128-GCM record layer, SHA-256 PRF and
                     Finished-message verification &mdash; so <code>https://</code> pages load and decrypt.
                     An AMD PCnet NIC driver brings up the VirtualBox default network adapter, and the PCI
@@ -289,7 +289,7 @@
 
         <section class="section" id="features">
             <div class="container">
-                <h2>Key Features in v1.0.4</h2>
+                <h2>Key Features in v1.0.9</h2>
                 <div class="features-grid">
                     <div class="feature-card">
                         <h3>Graphical Installer</h3>
@@ -400,13 +400,13 @@
                 <h2>Download</h2>
                 <div class="download-box">
                     <div class="download-info">
-                        <h3>JackBOT OS v1.0.4</h3>
-                        <p>Image file name: <strong>JackBOT-1.0.4.iso</strong></p>
+                        <h3>JackBOT OS v1.0.9</h3>
+                        <p>Image file name: <strong>JackBOT-1.0.9.iso</strong></p>
                         <p>64-bit hybrid ISO (BIOS + UEFI). Recommended VM: Oracle VirtualBox, 2048 MB RAM, VMSVGA graphics, PS/2 mouse.</p>
                         <p style="margin-top:10px;font-size:13px;color:#6b7280;">Size: 34.92 MB &middot; Verify with SHA-256:</p>
                         <p style="font-family:monospace;font-size:12px;color:#374151;background:#f3f4f6;padding:8px 10px;border-radius:6px;word-break:break-all;">a87a5b701c96911229e4c410406e02a2b5b3e9526ba1188ad386658aa3b96faa</p>
                     </div>
-                    <a class="download-btn" href="JackBOT-1.0.4.iso" download="JackBOT-1.0.4.iso">Download 64-bit ISO</a>
+                    <a class="download-btn" href="JackBOT-1.0.9.iso" download="JackBOT-1.0.9.iso">Download 64-bit ISO</a>
                 </div>
                 <div class="note">
                     <strong>Honest scope notes (please read):</strong>
@@ -430,14 +430,15 @@
 
         <section class="section" id="changelog">
             <div class="container">
-                <h2>Changelog v1.0.4</h2>
+                <h2>Changelog v1.0.9</h2>
                 <ul class="changelog-list">
-                    <li><strong>v1.0.4 &mdash; real HTTPS (TLS 1.2) in the built-in browser:</strong> a from-scratch TLS 1.2 client (ECDHE/X25519 key exchange, AES-128-GCM record layer, SHA-256 PRF, Finished-message verification) is integrated into the HTTP client; HTTPS pages load and decrypt correctly. <strong>Honest boundary:</strong> the server certificate chain is parsed but NOT validated against a trust store (no CA bundle, no chain/signature check), and TLS 1.3 is not implemented.</li>
-                    <li><strong>v1.0.4 &mdash; AMD PCnet NIC driver:</strong> a new PCnet-PCI II / FAST III (Am79C970A/973) driver brings up the VirtualBox default network adapter; DHCP, DNS, TCP, HTTP and HTTPS now work with it (verified in VirtualBox: DHCP bound, https://example.com 584-byte page fetched through TLS).</li>
-                    <li><strong>v1.0.4 &mdash; kernel memory-safety fixes:</strong> the user-process address-space activation race that faulted the boot-time self-test process at USER_BASE is fixed (CR3 is now switched before any user thread can be scheduled); the heap rejects size wrap-around, guards calloc multiplication overflow, validates block magic on realloc and poisons headers on free to catch double frees; page-table allocation failures no longer dereference NULL; the desktop wallpaper path no longer dies when the wallpaper buffer cannot be allocated.</li>
-                    <li><strong>v1.0.4 &mdash; F2 settings-panel crash fixed:</strong> the wp_color divide-by-zero (w-1 == 0 when drawing a 1-pixel-wide thumbnail) is guarded, so opening the settings panel no longer faults.</li>
-                    <li><strong>v1.0.4 &mdash; Python subset hardening:</strong> the built-in interpreter's container allocation, range size cap, split token bound and string-replace error path were hardened; the offline harness passes 52/52 cases and the built-in self-test.</li>
-                    <li><strong>v1.0.4 &mdash; passive honeypot audit trail:</strong> the default-off honeypot module now writes one serial audit line per newly observed probe (unclaimed UDP, TCP SYN, ICMP echo) while still never sending a packet of its own.</li>
+<li><strong>v1.0.9 &mdash; built-in C compiler:</strong> a C front end (jcac) lowers a C subset (functions, locals, if/else, while, for, break/continue, short-circuit &amp;&amp; and ||, compound assignment, printf/puts) to JCA bytecode and runs it on the in-kernel VM; the boot self-test compiles and runs loop-sum, recursive fibonacci, gcd and boolean-logic programs and prints <code>[C] PASS</code>.</li><li><strong>v1.0.9 &mdash; liquid glass is back and switchable:</strong> windows, the Start menu, Settings and the Jbot window now blend over the wallpaper, and Settings &rarr; System has a "Liquid Glass" switch that applies live and is stored in JBOT.CFG.</li><li><strong>v1.0.9 &mdash; hardware probes:</strong> NVMe, Intel HDA and xHCI are identified through real register reads instead of stubs, next to AHCI/ATA, e1000/rtl8139/pcnet, AC97, PS/2, USB and VMSVGA.</li>
+                    <li><strong>v1.0.9 &mdash; real HTTPS (TLS 1.2) in the built-in browser:</strong> a from-scratch TLS 1.2 client (ECDHE/X25519 key exchange, AES-128-GCM record layer, SHA-256 PRF, Finished-message verification) is integrated into the HTTP client; HTTPS pages load and decrypt correctly. <strong>Honest boundary:</strong> the server certificate chain is parsed but NOT validated against a trust store (no CA bundle, no chain/signature check), and TLS 1.3 is not implemented.</li>
+                    <li><strong>v1.0.9 &mdash; AMD PCnet NIC driver:</strong> a new PCnet-PCI II / FAST III (Am79C970A/973) driver brings up the VirtualBox default network adapter; DHCP, DNS, TCP, HTTP and HTTPS now work with it (verified in VirtualBox: DHCP bound, https://example.com 584-byte page fetched through TLS).</li>
+                    <li><strong>v1.0.9 &mdash; kernel memory-safety fixes:</strong> the user-process address-space activation race that faulted the boot-time self-test process at USER_BASE is fixed (CR3 is now switched before any user thread can be scheduled); the heap rejects size wrap-around, guards calloc multiplication overflow, validates block magic on realloc and poisons headers on free to catch double frees; page-table allocation failures no longer dereference NULL; the desktop wallpaper path no longer dies when the wallpaper buffer cannot be allocated.</li>
+                    <li><strong>v1.0.9 &mdash; F2 settings-panel crash fixed:</strong> the wp_color divide-by-zero (w-1 == 0 when drawing a 1-pixel-wide thumbnail) is guarded, so opening the settings panel no longer faults.</li>
+                    <li><strong>v1.0.9 &mdash; Python subset hardening:</strong> the built-in interpreter's container allocation, range size cap, split token bound and string-replace error path were hardened; the offline harness passes 52/52 cases and the built-in self-test.</li>
+                    <li><strong>v1.0.9 &mdash; passive honeypot audit trail:</strong> the default-off honeypot module now writes one serial audit line per newly observed probe (unclaimed UDP, TCP SYN, ICMP echo) while still never sending a packet of its own.</li>
                     <li><strong>v1.0.2 &mdash; PCI compatibility database expanded to 231 recognized IDs:</strong> the detection table now covers additional NVIDIA/AMD/Intel display adapters, Intel I350/I217/I219 and Realtek 8125/8137/8138/8127 and Broadcom/Atheros/Mellanox Ethernet, more Intel/AMD/ASMedia/Marvell/VIA AHCI controllers, Intel/Samsung/WD/Kingston/Micron/Crucial/Phison NVMe IDs, Realtek/AMD/NVIDIA/Intel/VIA HDA and Creative SB X-Fi/Audigy audio, and extra EHCI/OHCI/xHCI USB host controllers. These remain detection/probe entries that log a serial line and return success; full functional command-layer drivers for AHCI/SATA, NVMe and e1000e are still next-stage work and are not claimed as working.</li>
                     <li><strong>v1.0.2 &mdash; HTTPS-aware HTTP client, HMAC-SHA256 primitive and TLS stub:</strong> the URL parser recognizes <code>https://</code> and defaults to port 443; a built-in HMAC-SHA256 primitive passes the RFC 4231 Test Case 1 and Test Case 2 vectors at boot, and a TLS state-machine/constant skeleton is in place. <strong>Honest boundary:</strong> the TLS handshake, ServerHello/Certificate parsing, X.509 chain validation, key exchange and symmetric record encryption are not implemented; an HTTPS request is stopped before DNS with an explicit "TLS engine unavailable" state instead of being sent in plaintext.</li>
                     <li><strong>v1.0.1 &mdash; expanded PCI compatibility database:</strong> more common Intel PRO/1000 and Realtek Ethernet IDs, additional Intel/AMD/ASMedia AHCI SATA controllers, and more Intel/AMD/NVIDIA HD Audio controllers are now recognized during PCI enumeration. Newer Intel I218/I219/I211 adapters are matched to the generic Ethernet probe rather than the legacy e1000 driver. These are detection/probe entries; full functional drivers for AHCI, NVMe and e1000e remain next-stage work.</li>
@@ -480,7 +481,7 @@
 +'<div class="cover-sub">Install, boot and first steps</div>'
 +'</div>'
 +'<div class="cover-foot">'
-+'<div class="cover-badge">v1.0.4 EastLake &middot; x86_64</div>'
++'<div class="cover-badge">v1.0.9 EastLake &middot; x86_64</div>'
 +'<div class="cover-url">jackbot-os.github.io/JackBOT-OS</div>'
 +'</div>'
 +'</div>',
@@ -584,7 +585,7 @@
 +'<div class="eyebrow">Appendix</div>'
 +'<div class="title">Check your download</div>'
 +'<div class="rule"></div>'
-+'<p>JackBOT-1.0.4.iso is 34.92 MB. Compare its SHA-256 before you write it to a physical disk.</p>'
++'<p>JackBOT-1.0.9.iso is 34.92 MB. Compare its SHA-256 before you write it to a physical disk.</p>'
 +'<div class="code">a87a5b701c96911229e4c410406e02a2b5b3e9526ba1188ad386658aa3b96faa</div>'
 +'<p>If the hash does not match, delete the file and download it again.</p>'
 +'<div class="folio l">09</div>'
