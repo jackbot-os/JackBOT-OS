@@ -12,3 +12,4 @@ build_iso.log
 build_make.log
 build_vbox.txt
 build_wsl_setup.log
+third_party/chibicc/
