@@ -415,7 +415,21 @@
   "quick_files",
   "quick_back",
   "wp_eastlake",
-  "wp_sky"
+  "wp_sky",
+  "users",
+  "select_user",
+  "always_sign_in",
+  "sign_in",
+  "password",
+  "try_again",
+  "press_enter",
+  "new_user",
+  "current_user",
+  "switch_user",
+  "set_password",
+  "password_saved",
+  "password_removed",
+  "password_hint"
  ],
  "langs": [
   {
@@ -837,7 +851,21 @@
     "quick_files": "Files",
     "quick_back": "Back",
     "wp_eastlake": "East Lake",
-    "wp_sky": "Sky Blue"
+    "wp_sky": "Sky Blue",
+    "users": "Users",
+    "select_user": "Select user",
+    "always_sign_in": "Always sign in as this user",
+    "sign_in": "Sign in",
+    "password": "Password",
+    "try_again": "Try again",
+    "press_enter": "Press Enter to sign in",
+    "new_user": "New user",
+    "current_user": "Current user",
+    "switch_user": "Switch user",
+    "set_password": "Set password",
+    "password_saved": "Password saved",
+    "password_removed": "Password removed",
+    "password_hint": "Type a new password, Enter to save, empty clears it"
    }
   },
   {
@@ -1258,7 +1286,21 @@
     "quick_files": "文件",
     "quick_back": "返回",
     "wp_eastlake": "东湖",
-    "wp_sky": "天空蓝"
+    "wp_sky": "天空蓝",
+    "users": "用户",
+    "select_user": "选择用户",
+    "always_sign_in": "以后始终以该用户登录",
+    "sign_in": "登录",
+    "password": "密码",
+    "try_again": "重试",
+    "press_enter": "按回车登录",
+    "new_user": "新建用户",
+    "current_user": "当前用户",
+    "switch_user": "切换用户",
+    "set_password": "设置密码",
+    "password_saved": "密码已保存",
+    "password_removed": "密码已清除",
+    "password_hint": "输入新密码，回车保存，留空即清除"
    }
   },
   {
@@ -1679,7 +1721,21 @@
     "quick_files": "文件",
     "quick_back": "返回",
     "wp_eastlake": "东湖",
-    "wp_sky": "天空蓝"
+    "wp_sky": "天空蓝",
+    "users": "使用者",
+    "select_user": "選擇使用者",
+    "always_sign_in": "之後一律以此使用者登入",
+    "sign_in": "登入",
+    "password": "密碼",
+    "try_again": "重試",
+    "press_enter": "按 Enter 登入",
+    "new_user": "新增使用者",
+    "current_user": "目前使用者",
+    "switch_user": "切換使用者",
+    "set_password": "設定密碼",
+    "password_saved": "密碼已儲存",
+    "password_removed": "密碼已清除",
+    "password_hint": "輸入新密碼，Enter 儲存，留空即清除"
    }
   },
   {
@@ -1738,7 +1794,21 @@
     "quick_back": "Back",
     "wp_eastlake": "East Lake",
     "wp_ocean": "Ocean Blue",
-    "wp_sky": "Sky Blue"
+    "wp_sky": "Sky Blue",
+    "users": "ユーザー",
+    "select_user": "ユーザーを選択",
+    "always_sign_in": "今後このユーザーでサインイン",
+    "sign_in": "サインイン",
+    "password": "パスワード",
+    "try_again": "再試行",
+    "press_enter": "Enter でサインイン",
+    "new_user": "新しいユーザー",
+    "current_user": "現在のユーザー",
+    "switch_user": "ユーザーを切り替え",
+    "set_password": "パスワード設定",
+    "password_saved": "パスワードを保存しました",
+    "password_removed": "パスワードを削除しました",
+    "password_hint": "新しいパスワードを入力し Enter で保存、空欄で削除"
    }
   },
   {
@@ -1797,7 +1867,21 @@
     "quick_back": "Back",
     "wp_eastlake": "East Lake",
     "wp_ocean": "Ocean Blue",
-    "wp_sky": "Sky Blue"
+    "wp_sky": "Sky Blue",
+    "users": "사용자",
+    "select_user": "사용자 선택",
+    "always_sign_in": "이 사용자로 항상 로그인",
+    "sign_in": "로그인",
+    "password": "암호",
+    "try_again": "다시 시도",
+    "press_enter": "Enter 키로 로그인",
+    "new_user": "새 사용자",
+    "current_user": "현재 사용자",
+    "switch_user": "사용자 전환",
+    "set_password": "암호 설정",
+    "password_saved": "암호가 저장되었습니다",
+    "password_removed": "암호가 삭제되었습니다",
+    "password_hint": "새 암호를 입력하고 Enter 로 저장, 비우면 삭제"
    }
   },
   {
@@ -1856,7 +1940,21 @@
     "quick_back": "Back",
     "wp_eastlake": "East Lake",
     "wp_ocean": "Ocean Blue",
-    "wp_sky": "Sky Blue"
+    "wp_sky": "Sky Blue",
+    "users": "Usuarios",
+    "select_user": "Elegir usuario",
+    "always_sign_in": "Iniciar siempre con este usuario",
+    "sign_in": "Iniciar sesión",
+    "password": "Contraseña",
+    "try_again": "Reintentar",
+    "press_enter": "Intro para iniciar sesión",
+    "new_user": "Nuevo usuario",
+    "current_user": "Usuario actual",
+    "switch_user": "Cambiar de usuario",
+    "set_password": "Establecer contraseña",
+    "password_saved": "Contraseña guardada",
+    "password_removed": "Contraseña eliminada",
+    "password_hint": "Escribe una contraseña, Intro para guardar, vacío la borra"
    }
   },
   {
@@ -1915,7 +2013,21 @@
     "quick_back": "Back",
     "wp_eastlake": "East Lake",
     "wp_ocean": "Ocean Blue",
-    "wp_sky": "Sky Blue"
+    "wp_sky": "Sky Blue",
+    "users": "Utilisateurs",
+    "select_user": "Choisir un utilisateur",
+    "always_sign_in": "Toujours se connecter avec cet utilisateur",
+    "sign_in": "Se connecter",
+    "password": "Mot de passe",
+    "try_again": "Réessayer",
+    "press_enter": "Entrée pour se connecter",
+    "new_user": "Nouvel utilisateur",
+    "current_user": "Utilisateur actuel",
+    "switch_user": "Changer d'utilisateur",
+    "set_password": "Définir un mot de passe",
+    "password_saved": "Mot de passe enregistré",
+    "password_removed": "Mot de passe supprimé",
+    "password_hint": "Saisir un mot de passe, Entrée pour valider, vide pour effacer"
    }
   },
   {
@@ -1974,7 +2086,21 @@
     "quick_back": "Back",
     "wp_eastlake": "East Lake",
     "wp_ocean": "Ocean Blue",
-    "wp_sky": "Sky Blue"
+    "wp_sky": "Sky Blue",
+    "users": "Benutzer",
+    "select_user": "Benutzer auswählen",
+    "always_sign_in": "Immer als dieser Benutzer anmelden",
+    "sign_in": "Anmelden",
+    "password": "Kennwort",
+    "try_again": "Erneut versuchen",
+    "press_enter": "Eingabetaste zum Anmelden",
+    "new_user": "Neuer Benutzer",
+    "current_user": "Aktueller Benutzer",
+    "switch_user": "Benutzer wechseln",
+    "set_password": "Kennwort setzen",
+    "password_saved": "Kennwort gespeichert",
+    "password_removed": "Kennwort entfernt",
+    "password_hint": "Neues Kennwort eingeben, Enter speichert, leer löscht"
    }
   },
   {
@@ -2033,7 +2159,21 @@
     "quick_back": "Back",
     "wp_eastlake": "East Lake",
     "wp_ocean": "Ocean Blue",
-    "wp_sky": "Sky Blue"
+    "wp_sky": "Sky Blue",
+    "users": "Usuários",
+    "select_user": "Escolher usuário",
+    "always_sign_in": "Entrar sempre com este usuário",
+    "sign_in": "Entrar",
+    "password": "Senha",
+    "try_again": "Tentar de novo",
+    "press_enter": "Enter para entrar",
+    "new_user": "Novo usuário",
+    "current_user": "Usuário atual",
+    "switch_user": "Trocar de usuário",
+    "set_password": "Definir senha",
+    "password_saved": "Senha salva",
+    "password_removed": "Senha removida",
+    "password_hint": "Digite uma senha, Enter para salvar, vazio remove"
    }
   },
   {
@@ -2092,7 +2232,21 @@
     "quick_back": "Back",
     "wp_eastlake": "East Lake",
     "wp_ocean": "Ocean Blue",
-    "wp_sky": "Sky Blue"
+    "wp_sky": "Sky Blue",
+    "users": "Utenti",
+    "select_user": "Scegli utente",
+    "always_sign_in": "Accedi sempre come questo utente",
+    "sign_in": "Accedi",
+    "password": "Password",
+    "try_again": "Riprova",
+    "press_enter": "Invio per accedere",
+    "new_user": "Nuovo utente",
+    "current_user": "Utente corrente",
+    "switch_user": "Cambia utente",
+    "set_password": "Imposta password",
+    "password_saved": "Password salvata",
+    "password_removed": "Password rimossa",
+    "password_hint": "Digita una password, Invio per salvare, vuoto cancella"
    }
   },
   {
@@ -2151,7 +2305,21 @@
     "quick_back": "Back",
     "wp_eastlake": "East Lake",
     "wp_ocean": "Ocean Blue",
-    "wp_sky": "Sky Blue"
+    "wp_sky": "Sky Blue",
+    "users": "Пользователи",
+    "select_user": "Выбор пользователя",
+    "always_sign_in": "Всегда входить как этот пользователь",
+    "sign_in": "Войти",
+    "password": "Пароль",
+    "try_again": "Повторить",
+    "press_enter": "Enter — войти",
+    "new_user": "Новый пользователь",
+    "current_user": "Текущий пользователь",
+    "switch_user": "Сменить пользователя",
+    "set_password": "Задать пароль",
+    "password_saved": "Пароль сохранён",
+    "password_removed": "Пароль удалён",
+    "password_hint": "Введите пароль, Enter — сохранить, пусто — удалить"
    }
   },
   {
@@ -2269,7 +2437,21 @@
     "quick_back": "Back",
     "wp_eastlake": "East Lake",
     "wp_ocean": "Ocean Blue",
-    "wp_sky": "Sky Blue"
+    "wp_sky": "Sky Blue",
+    "users": "Użytkownicy",
+    "select_user": "Wybierz użytkownika",
+    "always_sign_in": "Zawsze loguj się jako ten użytkownik",
+    "sign_in": "Zaloguj",
+    "password": "Hasło",
+    "try_again": "Spróbuj ponownie",
+    "press_enter": "Enter, aby zalogować",
+    "new_user": "Nowy użytkownik",
+    "current_user": "Obecny użytkownik",
+    "switch_user": "Zmień użytkownika",
+    "set_password": "Ustaw hasło",
+    "password_saved": "Hasło zapisane",
+    "password_removed": "Hasło usunięte",
+    "password_hint": "Wpisz hasło, Enter zapisuje, puste usuwa"
    }
   },
   {
@@ -2328,7 +2510,21 @@
     "quick_back": "Back",
     "wp_eastlake": "East Lake",
     "wp_ocean": "Ocean Blue",
-    "wp_sky": "Sky Blue"
+    "wp_sky": "Sky Blue",
+    "users": "Gebruikers",
+    "select_user": "Kies gebruiker",
+    "always_sign_in": "Altijd aanmelden als deze gebruiker",
+    "sign_in": "Aanmelden",
+    "password": "Wachtwoord",
+    "try_again": "Opnieuw",
+    "press_enter": "Enter om aan te melden",
+    "new_user": "Nieuwe gebruiker",
+    "current_user": "Huidige gebruiker",
+    "switch_user": "Gebruiker wisselen",
+    "set_password": "Wachtwoord instellen",
+    "password_saved": "Wachtwoord opgeslagen",
+    "password_removed": "Wachtwoord verwijderd",
+    "password_hint": "Typ een wachtwoord, Enter opslaan, leeg wist het"
    }
   },
   {
@@ -2387,7 +2583,21 @@
     "quick_back": "Back",
     "wp_eastlake": "East Lake",
     "wp_ocean": "Ocean Blue",
-    "wp_sky": "Sky Blue"
+    "wp_sky": "Sky Blue",
+    "users": "Kullanıcılar",
+    "select_user": "Kullanıcı seç",
+    "always_sign_in": "Her zaman bu kullanıcıyla oturum aç",
+    "sign_in": "Oturum aç",
+    "password": "Parola",
+    "try_again": "Yeniden dene",
+    "press_enter": "Oturum için Enter",
+    "new_user": "Yeni kullanıcı",
+    "current_user": "Geçerli kullanıcı",
+    "switch_user": "Kullanıcı değiştir",
+    "set_password": "Parola belirle",
+    "password_saved": "Parola kaydedildi",
+    "password_removed": "Parola kaldırıldı",
+    "password_hint": "Parola yazın, Enter kaydeder, boş bırakınca silinir"
    }
   },
   {
@@ -2446,7 +2656,21 @@
     "quick_back": "Back",
     "wp_eastlake": "East Lake",
     "wp_ocean": "Ocean Blue",
-    "wp_sky": "Sky Blue"
+    "wp_sky": "Sky Blue",
+    "users": "Người dùng",
+    "select_user": "Chọn người dùng",
+    "always_sign_in": "Luôn đăng nhập bằng người dùng này",
+    "sign_in": "Đăng nhập",
+    "password": "Mật khẩu",
+    "try_again": "Thử lại",
+    "press_enter": "Enter để đăng nhập",
+    "new_user": "Người dùng mới",
+    "current_user": "Người dùng hiện tại",
+    "switch_user": "Đổi người dùng",
+    "set_password": "Đặt mật khẩu",
+    "password_saved": "Đã lưu mật khẩu",
+    "password_removed": "Đã xóa mật khẩu",
+    "password_hint": "Nhập mật khẩu, Enter để lưu, để trống để xóa"
    }
   },
   {
@@ -2505,7 +2729,21 @@
     "quick_back": "Back",
     "wp_eastlake": "East Lake",
     "wp_ocean": "Ocean Blue",
-    "wp_sky": "Sky Blue"
+    "wp_sky": "Sky Blue",
+    "users": "Pengguna",
+    "select_user": "Pilih pengguna",
+    "always_sign_in": "Selalu masuk sebagai pengguna ini",
+    "sign_in": "Masuk",
+    "password": "Kata sandi",
+    "try_again": "Coba lagi",
+    "press_enter": "Enter untuk masuk",
+    "new_user": "Pengguna baru",
+    "current_user": "Pengguna saat ini",
+    "switch_user": "Ganti pengguna",
+    "set_password": "Atur kata sandi",
+    "password_saved": "Kata sandi disimpan",
+    "password_removed": "Kata sandi dihapus",
+    "password_hint": "Ketik kata sandi, Enter menyimpan, kosong menghapus"
    }
   },
   {
@@ -2565,7 +2803,21 @@
     "quick_back": "Back",
     "wp_eastlake": "East Lake",
     "wp_ocean": "Ocean Blue",
-    "wp_sky": "Sky Blue"
+    "wp_sky": "Sky Blue",
+    "users": "المستخدمون",
+    "select_user": "اختيار مستخدم",
+    "always_sign_in": "الدخول دائمًا بهذا المستخدم",
+    "sign_in": "دخول",
+    "password": "كلمة المرور",
+    "try_again": "إعادة المحاولة",
+    "press_enter": "Enter للدخول",
+    "new_user": "مستخدم جديد",
+    "current_user": "المستخدم الحالي",
+    "switch_user": "تبديل المستخدم",
+    "set_password": "تعيين كلمة المرور",
+    "password_saved": "تم حفظ كلمة المرور",
+    "password_removed": "تم حذف كلمة المرور",
+    "password_hint": "اكتب كلمة مرور، Enter للحفظ، والفارغ يحذفها"
    }
   },
   {
@@ -2624,7 +2876,21 @@
     "quick_back": "Back",
     "wp_eastlake": "East Lake",
     "wp_ocean": "Ocean Blue",
-    "wp_sky": "Sky Blue"
+    "wp_sky": "Sky Blue",
+    "users": "ผู้ใช้",
+    "select_user": "เลือกผู้ใช้",
+    "always_sign_in": "เข้าสู่ระบบด้วยผู้ใช้นี้เสมอ",
+    "sign_in": "เข้าสู่ระบบ",
+    "password": "รหัสผ่าน",
+    "try_again": "ลองใหม่",
+    "press_enter": "Enter เพื่อเข้าสู่ระบบ",
+    "new_user": "ผู้ใช้ใหม่",
+    "current_user": "ผู้ใช้ปัจจุบัน",
+    "switch_user": "สลับผู้ใช้",
+    "set_password": "ตั้งรหัสผ่าน",
+    "password_saved": "บันทึกรหัสผ่านแล้ว",
+    "password_removed": "ลบรหัสผ่านแล้ว",
+    "password_hint": "พิมพ์รหัสผ่าน Enter เพื่อบันทึก เว้นว่างเพื่อลบ"
    }
   },
   {
@@ -7823,7 +8089,21 @@
     "quick_back": "返回",
     "wp_eastlake": "东湖",
     "wp_ocean": "海洋蓝",
-    "wp_sky": "天空蓝"
+    "wp_sky": "天空蓝",
+    "users": "用戶",
+    "select_user": "選擇用戶",
+    "always_sign_in": "以後一律以此用戶登入",
+    "sign_in": "登入",
+    "password": "密碼",
+    "try_again": "重試",
+    "press_enter": "按 Enter 登入",
+    "new_user": "新增用戶",
+    "current_user": "目前用戶",
+    "switch_user": "切換用戶",
+    "set_password": "設定密碼",
+    "password_saved": "密碼已儲存",
+    "password_removed": "密碼已清除",
+    "password_hint": "輸入新密碼，Enter 儲存，留空即清除"
    }
   },
   {

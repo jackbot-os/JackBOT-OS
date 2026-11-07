@@ -9,6 +9,8 @@ static char names[USERS_MAX][USER_NAME_MAX];
 static uint32_t hashes[USERS_MAX];
 static int count;
 static int cur;
+/* Remembered "always sign in as" account, -1 = ask every boot. */
+static int auto_user = -1;
 
 static int upper(char c)
 {
@@ -80,6 +82,12 @@ void users_save(void)
     u2s((uint32_t)cur, num);
     for (int i = 0; num[i]; i++) buf[p++] = num[i];
     buf[p++] = '\n';
+    if (auto_user >= 0) {
+        buf[p++] = 'A'; buf[p++] = '=';
+        u2s((uint32_t)auto_user, num);
+        for (int j = 0; num[j]; j++) buf[p++] = num[j];
+        buf[p++] = '\n';
+    }
     for (int i = 0; i < count; i++) {
         buf[p++] = 'U'; buf[p++] = '=';
         for (int j = 0; names[i][j] && p < (int)sizeof(buf) - 20; j++)
@@ -99,6 +107,8 @@ static void parse(const char *b)
         if (b[i] == 'C' && b[i + 1] == '=') {
             cur = (int)s2u(b + i + 2);
             if (cur < 0 || cur >= count) cur = 0;
+        } else if (b[i] == 'A' && b[i + 1] == '=') {
+            auto_user = (int)s2u(b + i + 2);
         } else if (b[i] == 'U' && b[i + 1] == '=' && count < USERS_MAX) {
             char nm[USER_NAME_MAX];
             int n = 0, k = i + 2;
@@ -165,9 +175,28 @@ int users_switch(int i)
     if (i < 0 || i >= count)
         return -1;
     cur = i;
+    auto_user = i;
     users_save();
     users_ensure_folders();
     return cur;
+}
+
+/* Picker result: switch for this session, and remember it only when the
+   "always sign in as this user" box is ticked (remember=0 restores asking). */
+int users_select(int i, int remember)
+{
+    if (i < 0 || i >= count)
+        return -1;
+    cur = i;
+    auto_user = remember ? i : -1;
+    users_save();
+    users_ensure_folders();
+    return cur;
+}
+
+int users_auto(void)
+{
+    return (auto_user >= 0 && auto_user < count) ? auto_user : -1;
 }
 
 int users_add(const char *name, const char *pass)

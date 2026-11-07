@@ -14,6 +14,10 @@ int users_has_pass(int i);
 int users_current(void);
 int users_auth(int i, const char *pass);   /* 1 = password ok */
 int users_switch(int i);
+/* Picker result: remember=1 stores "always sign in as this user". */
+int users_select(int i, int remember);
+/* Remembered account, or -1 when the boot picker should ask. */
+int users_auto(void);
 int users_add(const char *name, const char *pass); /* new index, or -1 */
 int users_set_pass(int i, const char *pass);
 /* "HOME/<NAME>" for user i; the per-user writable area. */

@@ -17,6 +17,7 @@
 #include <kernel/tcp.h>
 #include <kernel/wallpaper_image.h>
 #include <kernel/perm.h>
+#include <kernel/users.h>
 
 #define N_WP 3
 #define CAROUSEL_TICKS 250
@@ -44,6 +45,8 @@ static int restore_win;
 static int prev_mX, prev_mY, prev_mW, prev_mH;
 static int menu_was_open;
 static int gl_on = 1;
+
+static void pass_modal(int who);
 
 /* alpha for a panel: the stored value when liquid glass is on, else solid */
 static uint8_t glc(uint8_t d) { return (uint8_t)(gl_on ? d : 255); }
@@ -76,7 +79,7 @@ static int jb_inlen;
 static int jWX, jWY, jWW, jWH;
 static int jb_dirty = 1;
 
-#define SET_TABS 5
+#define SET_TABS 6
 static int set_tab;
 
 struct region_entry {
@@ -717,7 +720,8 @@ static const char *set_tab_label(int i)
     case 1: return tr(STR_TAB_REGION);
     case 2: return tr(STR_TAB_AUDIO);
     case 3: return tr(STR_TAB_PERMISSIONS);
-    default: return tr(STR_TAB_SYSTEM);
+    case 4: return tr(STR_TAB_SYSTEM);
+    default: return tr(STR_USERS);
     }
 }
 
@@ -1076,8 +1080,7 @@ static void draw_settings(int mx, int my, int clicked)
                 need_redraw = 1;
             }
         }
-    } else {
-        /* System: read-only language card, version, font */
+    } else if (set_tab == 4) {
         int card_h = 56 * S;
         ui_round_rect(cx, cy, cw, card_h, 6 * S, fb_rgb(16, 19, 28));
         ui_round_border(cx, cy, cw, card_h, 6 * S, fb_rgb(60, 78, 110));
@@ -1119,8 +1122,108 @@ static void draw_settings(int mx, int my, int clicked)
                 need_redraw = 1;
             }
         }
+    } else {
+        /* Users: real account list; pick one to switch, or add a new one.
+           Passwords stay optional, so "add" never forces one. */
+        gfx_draw_string(cx, cy, fb_rgb(150, 210, 255), fb_rgb(24, 27, 38),
+                        tr(STR_USERS));
+        int n = users_count();
+        for (int i = 0; i < n; i++) {
+            int ry = cy + (i + 1) * 34 * S;
+            int busy = (i == users_current());
+            int hit = clicked && inside(mx, my, cx, ry, cw - 120 * S, 28 * S);
+            ui_round_rect(cx, ry, cw - 120 * S, 28 * S, 5 * S,
+                          busy ? fb_rgb(38, 86, 150) : fb_rgb(30, 36, 52));
+            gfx_draw_string(cx + 10 * S, ry + 6 * S,
+                            busy ? fb_rgb(240, 248, 255) : fb_rgb(205, 215, 235),
+                            busy ? fb_rgb(38, 86, 150) : fb_rgb(30, 36, 52),
+                            users_name(i));
+            if (busy)
+                gfx_draw_string(cx + cw - 240 * S, ry + 6 * S,
+                                fb_rgb(160, 200, 240), fb_rgb(38, 86, 150),
+                                tr(STR_CURRENT_USER));
+            if (hit) {
+                users_switch(i);
+                app_open(APP_FILES);
+                need_redraw = 1;
+            }
+        }
+        int by = cy + (n + 2) * 34 * S;
+        if (button2(cx, by, 150 * S, 30 * S, tr(STR_NEW_USER), 0, mx, my,
+                    clicked)) {
+            char nm[16];
+            int p = 0;
+            const char *base = "User";
+            for (; base[p]; p++) nm[p] = base[p];
+            nm[p++] = (char)('0' + (users_count() + 1) % 10);
+            nm[p] = 0;
+            if (users_add(nm, "") >= 0)
+                need_redraw = 1;
+        }
+        if (button2(cx + 170 * S, by, 170 * S, 30 * S, tr(STR_SET_PASSWORD), 0,
+                    mx, my, clicked)) {
+            pass_modal(users_current());
+            win_painted = 0;
+            need_redraw = 1;
+        }
     }
 }
+
+static void pass_modal(int who)
+{
+    int W = (int)fb_width(), H = (int)fb_height();
+    char buf[32];
+    int len = 0, mx = W / 2, my = H / 2;
+    for (;;) {
+        int cx, cy, ck;
+        ps2_mouse_xy(&mx, &my);
+        ck = ps2_mouse_click(&cx, &cy);
+        if (ck) { mx = cx; my = cy; }
+
+        cursor_begin_frame();
+        fb_invalidate();
+        fb_fill_rect(0, 0, W, H, fb_rgb(10, 14, 24));
+        int pw = 420, ph = 190;
+        int px = (W - pw) / 2, py = (H - ph) / 2;
+        fb_fill_rect(px, py, pw, ph, fb_rgb(24, 30, 46));
+        fb_fill_rect(px, py, pw, 3, fb_rgb(70, 140, 230));
+        gfx_draw_string(px + 20, py + 20, fb_rgb(235, 240, 250),
+                        fb_rgb(24, 30, 46), users_name(who));
+        gfx_draw_string(px + 20, py + 48, fb_rgb(150, 200, 245),
+                        fb_rgb(24, 30, 46), tr(STR_SET_PASSWORD));
+        gfx_draw_string(px + 20, py + 90, fb_rgb(190, 200, 220),
+                        fb_rgb(24, 30, 46), tr(STR_PASSWORD_HINT));
+        char shown[34];
+        int n = len > 24 ? 24 : len;
+        for (int i = 0; i < n; i++)
+            shown[i] = '*';
+        shown[n] = 0;
+        fb_fill_rect(px + 20, py + 120, pw - 40, 28, fb_rgb(14, 20, 32));
+        gfx_draw_string(px + 28, py + 126, fb_rgb(230, 238, 250),
+                        fb_rgb(14, 20, 32), shown);
+        cursor_end_frame(mx, my);
+        fb_present_dirty();
+
+        char k;
+        while (ps2_read_key(&k)) {
+            if (k == '\r' || k == '\n') {
+                users_set_pass(who, buf);
+                return;
+            } else if (k == 27) {
+                return;
+            } else if (k == '\b' || k == 0x7f) {
+                if (len > 0)
+                    buf[--len] = 0;
+            } else if (k >= 32 && k < 127 && len < 30) {
+                buf[len++] = k;
+                buf[len] = 0;
+            }
+        }
+    }
+}
+
+static int pick_scale(void);
+static void pass_modal(int who);
 
 static int pick_scale(void)
 {
