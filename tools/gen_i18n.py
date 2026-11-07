@@ -11,6 +11,26 @@ with open(DATA, encoding="utf-8") as f:
 keys = data["keys"]
 langs = data["langs"]
 
+# Only ship languages that carry a REAL translation for every key. A
+# language with holes would fall back to English and leave foreign text
+# on screen, which is exactly what the "one language, no leftovers"
+# rule forbids. Add translations first, then the language appears.
+_full = []
+_missing = {}
+for lg in langs:
+    miss = [k for k in keys if not (lg["strings"].get(k) or "").strip()]
+    if miss and lg["code"] != "en":
+        _missing[lg["code"]] = miss
+    else:
+        _full.append(lg)
+if _missing:
+    print("i18n: dropping %d incomplete languages (first: %s, missing %d keys)"
+          % (len(_missing), sorted(_missing)[0], len(next(iter(_missing.values())))),
+          file=sys.stderr)
+langs = _full
+if len(langs) != len(data["langs"]):
+    print("i18n: shipping %d complete languages" % len(langs), file=sys.stderr)
+
 def cesc(s):
     out = ""
     for ch in s:

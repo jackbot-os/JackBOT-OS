@@ -531,9 +531,13 @@ int ttf_draw_cp(int x, int y, uint32_t fg, uint32_t bg, uint32_t cp)
                 if (cov) {
                     uint32_t under = trans_mode ? fb_getpixel(pxx, py) : bg;
                     fb_putpixel(pxx, py, fb_mix(fg, under, cov));
-                } else if (!trans_mode) {
-                    fb_putpixel(pxx, py, bg);
                 }
+                /* No background fill for the empty part of the glyph cell.
+                   Filling it produced a dark block behind every text run
+                   whenever the caller's idea of the background (opaque panel
+                   colour) disagreed with what is really under the glyph (a
+                   glass panel over wallpaper). The cell is left untouched,
+                   so text can never carry its own rectangle with it. */
             }
         }
     }

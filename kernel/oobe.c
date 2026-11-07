@@ -469,10 +469,12 @@ void oobe_run(void)
             if (old != sel_lang) {
                 i18n_set_lang(sel_lang);
                 config_set_language(sel_lang);
+                config_set_language_code(i18n_code(sel_lang));
             }
             if (enter) {
                 i18n_set_lang(sel_lang);
                 config_set_language(sel_lang);
+                config_set_language_code(i18n_code(sel_lang));
                 page = P_KB;
                 render_full(0, 0, 0);
                 enter = 0; clicked = 0;
@@ -558,6 +560,7 @@ void oobe_run(void)
                 (clicked &&
                  hit(primary_x, primary_y, btn_w, btn_h, mx, my))) {
                 config_set_language(sel_lang);
+                config_set_language_code(i18n_code(sel_lang));
                 config_set_keyboard(sel_kb);
                 config_set_tz(sel_tz);
                 config_set_oobe_done(1);

@@ -9,6 +9,7 @@
 #include <kernel/ata.h>
 #include <kernel/protect.h>
 #include <kernel/serial.h>
+#include <kernel/i18n.h>
 
 static install_progress_fn g_cb;
 static int g_lang_idx = 0;
@@ -309,6 +310,18 @@ int installer_install(int mode, install_progress_fn progress)
             num[nn++] = '0';
         while (lv > 0) { num[nn++] = (char)('0' + lv % 10); lv /= 10; }
         while (nn) cfg[p++] = num[--nn];
+        /* Q=<code>: store the language by code so a later change to the
+           shipped language table cannot silently switch the system back */
+        {
+            const char *code = i18n_code(g_lang_idx);
+            if (code && code[0]) {
+                cfg[p++] = '\n';
+                cfg[p++] = 'Q';
+                cfg[p++] = '=';
+                for (int i = 0; code[i] && p < 40; i++)
+                    cfg[p++] = code[i];
+            }
+        }
         const char *pre = "\nF=0\nT=";
         while (*pre) cfg[p++] = *pre++;
         int tv = g_tz_idx;

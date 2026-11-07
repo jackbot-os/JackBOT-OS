@@ -4,6 +4,7 @@
 #include <kernel/serial.h>
 
 static int lang;
+static char lcode[12];   /* language code ("zh-CN", "ja", ...) */
 static int font;
 static int tz;
 static int fw;
@@ -69,6 +70,14 @@ static void parse(const char *b)
     for (int i = 0; b[i]; i++) {
         if (b[i] == 'L' && b[i + 1] == '=' && b[i + 2] >= '0')
             num_after(b, i, &lang);
+        /* Q=<code>: the language is stored by code, not by list index.
+           The index is meaningless once the shipped language table shrinks. */
+        if (b[i] == 'Q' && b[i + 1] == '=') {
+            int k = i + 2, j = 0;
+            while (b[k] && b[k] != '\n' && j < 11)
+                lcode[j++] = b[k++];
+            lcode[j] = 0;
+        }
         if (b[i] == 'F' && b[i + 1] == '=' && b[i + 2] >= '0')
             num_after(b, i, &font);
         if (b[i] == 'T' && b[i + 1] == '=' && b[i + 2] >= '0')
@@ -103,6 +112,7 @@ static void parse(const char *b)
 void config_init(void)
 {
     lang = 0;
+    lcode[0] = 0;
     font = 0;
     tz = 20;
     fw = 1;
@@ -130,6 +140,7 @@ void config_init(void)
 }
 
 int config_language(void) { return lang; }
+const char *config_language_code(void) { return lcode; }
 int config_font(void) { return font; }
 int config_tz(void) { return tz; }
 int config_fw(void) { return fw; }
@@ -146,6 +157,15 @@ int config_net_perm(void) { return net_perm; }
 int config_glass(void) { return glass; }
 
 void config_set_language(int l) { lang = l; }
+void config_set_language_code(const char *c)
+{
+    int i = 0;
+    while (c && c[i] && i < 11) {
+        lcode[i] = c[i];
+        i++;
+    }
+    lcode[i] = 0;
+}
 void config_set_font(int f) { font = f; }
 void config_set_tz(int v) { tz = v; }
 void config_set_fw(int v) { fw = v ? 1 : 0; }
@@ -179,6 +199,13 @@ void config_save(void)
     char b[160];
     int p = 0;
     put_line(b, &p, 'L', lang);
+    if (lcode[0]) {          /* Q=<code>: authoritative language selector */
+        b[p++] = 'Q';
+        b[p++] = '=';
+        for (int i = 0; lcode[i] && p < 150; i++)
+            b[p++] = lcode[i];
+        b[p++] = '\n';
+    }
     put_line(b, &p, 'F', font);
     put_line(b, &p, 'T', tz);
     put_line(b, &p, 'W', fw);
@@ -201,6 +228,8 @@ void config_self_test(void)
     /* preserve the user's real configuration across the write test so the
        language chosen at install is never reset back to English */
     int sl = lang, sf = font, st = tz, sw = fw;
+    char scol[12];
+    for (int i = 0; i < 12; i++) scol[i] = lcode[i];
     config_init();
     config_set_language(1);
     config_set_font(2);
@@ -213,6 +242,7 @@ void config_self_test(void)
         ok = contains(b, "L=1") && contains(b, "F=2");
     }
     config_set_language(sl);
+    for (int i = 0; i < 12; i++) lcode[i] = scol[i];
     config_set_font(sf);
     config_set_tz(st);
     config_set_fw(sw);

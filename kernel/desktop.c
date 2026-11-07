@@ -544,7 +544,8 @@ static void draw_taskbar(int mx, int my, int clicked, int *start_click,
 {
     int w = (int)fb_width(), top = (int)fb_height() - BAR;
     int bh = BAR - 8 * S;
-    gfx_set_transparent(0);   /* solid bar: opaque glyph background */
+    /* the glyph layer no longer paints its own background, so the bar can
+       keep the glass setting instead of forcing a solid pass */
 
     int wp_x = w * 30 / 100, set_x = w * 42 / 100, jb_x = w * 54 / 100;
     if (wp_x < 112 * S + 110 * S) wp_x = 112 * S + 110 * S;
@@ -1250,7 +1251,15 @@ void desktop_init(void)
     cursor_set_scale(S);
     cursor_init();
     i18n_init();
-    i18n_set_lang(config_language());
+    /* the language is stored as a code: a numeric index no longer identifies
+       a language once the shipped table changes size */
+    {
+        const char *lc = config_language_code();
+        if (lc[0])
+            i18n_set_code(lc);
+        else
+            i18n_set_lang(config_language());
+    }
     gfx_set_font(config_font());
     wp_index = 0;
     carousel = 0;
@@ -1362,9 +1371,21 @@ static void draw_desktop_icons(int mx, int my, int clicked)
         ui_round_border(x, y, w, w, 12 * S,
                         hover ? fb_rgb(200, 220, 255) : fb_rgb(140, 170, 220));
         {
-            int tw = gfx_text_width(dsk_label(i));
-            gfx_draw_string(x + (w - tw) / 2, y + 8 * S,
-                            fb_rgb(240, 246, 255), tint, dsk_label(i));
+            /* Label under the tile, not squeezed inside it: longer
+               translations (Japanese, German, ...) used to overflow the
+               64 px cell and run off the left edge of the screen. */
+            const char *nm = dsk_label(i);
+            int tw = gfx_text_width(nm);
+            int th = gfx_text_height();
+            int lx = x, ly = y + w + 2 * S;
+            if (lx + tw > (int)fb_width() - 4 * S)
+                lx = (int)fb_width() - 4 * S - tw;
+            if (lx < 4 * S)
+                lx = 4 * S;
+            draw_glass_rect(lx - 4 * S, ly - 2 * S, tw + 8 * S, th + 4 * S,
+                            fb_rgb(12, 16, 26), 205);
+            gfx_draw_string(lx, ly, fb_rgb(240, 246, 255),
+                            fb_rgb(12, 16, 26), nm);
         }
         if (clicked && hover) {
             int id = dsk_app[i];

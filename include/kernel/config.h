@@ -4,6 +4,7 @@
 
 void config_init(void);
 int config_language(void);
+const char *config_language_code(void);
 int config_font(void);
 int config_tz(void);
 int config_fw(void);
@@ -19,6 +20,7 @@ int config_loc_perm(void);
 int config_net_perm(void);
 int config_glass(void);
 void config_set_language(int l);
+void config_set_language_code(const char *c);
 void config_set_font(int f);
 void config_set_tz(int v);
 void config_set_fw(int v);

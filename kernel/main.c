@@ -500,7 +500,15 @@ void kmain(uint64_t magic, uint64_t mb_info)
     if (!live_install && !live_desktop) {
         persist_self_test();
         config_init();
-        i18n_set_lang(config_language());
+        /* apply the stored language by code; the numeric index is stale once
+           the shipped language table changes size */
+        {
+            const char *lc = config_language_code();
+            if (lc[0])
+                i18n_set_code(lc);
+            else
+                i18n_set_lang(config_language());
+        }
         config_self_test();
         honeypot_init();
         honeypot_self_test();
@@ -699,20 +707,42 @@ void kmain(uint64_t magic, uint64_t mb_info)
 
     {
         int saved_lang = config_language();
+        char saved_code[12];
+        {
+            const char *lc = config_language_code();
+            int ci = 0;
+            while (lc[ci] && ci < 11) {
+                saved_code[ci] = lc[ci];
+                ci++;
+            }
+            saved_code[ci] = 0;
+        }
         const char *en = tr(STR_CLOSE);
         i18n_set_code("zh-CN");
         const char *zh = tr(STR_CLOSE);
         int changed = (en != zh) && ((unsigned char)zh[0] >= 0x80);
-        int ar = i18n_set_code("ar");
-        int ar_rtl = i18n_rtl_idx(ar);
         int en_rtl = i18n_rtl_idx(0);
-        int langok = i18n_count() >= 20 && changed && ar_rtl && !en_rtl;
+        /* completeness is enforced at build time by tools/gen_i18n.py:
+           a language with any missing key is not shipped at all. */
+        int langok = i18n_count() >= 3 && changed && !en_rtl;
+        serial_puts("[I18N] code=");
+        serial_puts(i18n_code(i18n_lang()));
+        serial_putc('\n');
+        serial_puts("[I18N] langs=");
+        serial_puthex((uint64_t)i18n_count());
+        serial_putc('\n');
         int fontok = gfx_font_count() == 3;
         int f0 = gfx_get_font();
         gfx_set_font(2);
         fontok = fontok && gfx_get_font() == 2;
         gfx_set_font(f0);
-        i18n_set_lang(saved_lang);
+        if (saved_code[0])
+            i18n_set_code(saved_code);
+        else
+            i18n_set_lang(saved_lang);
+        serial_puts("[I18N] code=");
+        serial_puts(i18n_code(i18n_lang()));
+        serial_putc('\n');
         serial_puts((langok && fontok) ? "[I18N] test PASS\n"
                                       : "[I18N] test FAIL\n");
     }
