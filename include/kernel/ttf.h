@@ -28,6 +28,7 @@ int  ttf_base_px(void);
 int  ttf_pixel_height(void);
 void ttf_set_pixel_height(int px);
 
+void ttf_set_transparent(int on);
 int  ttf_draw_cp(int x, int y, uint32_t fg, uint32_t bg, uint32_t cp);
 int  ttf_advance(uint32_t cp);
 int  ttf_line_height(void);

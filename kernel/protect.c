@@ -51,8 +51,35 @@ int protect_is_core(const char *name83)
     return 0;
 }
 
+/* Anything inside the SYSTEM tree is read-only for user/software writes;
+   the kernel itself (ACTOR_ADMIN) may still update it. */
+static int under_system(const char *p)
+{
+    const char *k = "SYSTEM";
+    int i = 0;
+    while (k[i] && p[i]) {
+        char c = p[i];
+        if (c >= 'a' && c <= 'z')
+            c = (char)(c - 32);
+        if (c != k[i])
+            return 0;
+        i++;
+    }
+    if (!k[i])
+        return (p[i] == 0 || p[i] == '/' || p[i] == '\\');
+    return 0;
+}
+
 int protect_check(const char *name83, int action)
 {
+    if (under_system(name83)) {
+        if (action == ACT_READ || actor == ACTOR_ADMIN)
+            return 0;
+        serial_puts("[PROT] blocked SYSTEM tree write: ");
+        serial_puts(name83);
+        serial_putc('\n');
+        return -1;
+    }
     if (!protect_is_core(name83))
         return 0;
 

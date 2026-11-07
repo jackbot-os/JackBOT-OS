@@ -52,6 +52,7 @@
 #include <kernel/bluetooth.h>
 #include <kernel/voice.h>
 #include <kernel/hmac_sha256.h>
+#include <kernel/users.h>
 #include "native_demo.h"
 #include "native_demo_cxx.h"
 #include "native_libc.h"
@@ -681,6 +682,12 @@ void kmain(uint64_t magic, uint64_t mb_info)
     serial_puts("[B] desktop\n");
     desktop_init();
     serial_puts("[B] desktop done\n");
+
+    /* Accounts: load the user list and make sure the SYSTEM (read-only) and
+       HOME (per-user writable) folders exist before anything else touches the
+       volume. */
+    users_init();
+    login_run();
 
     if (!live_desktop && !config_oobe_done()) {
         serial_puts("[B] first-boot OOBE\n");

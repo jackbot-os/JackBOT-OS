@@ -29,6 +29,7 @@ void cursor_set_scale(int s);
 void cursor_set_shape(int shape);   /* CUR_ARROW / CUR_HAND / CUR_TEXT / CUR_MOVE */
 int  cursor_shape(void);
 void cursor_begin_frame(void);
+void cursor_invalidate(void);
 void cursor_end_frame(int mx, int my);
 void cursor_show(int visible);
 

@@ -770,6 +770,8 @@ int fat_mkdir(const char *name83)
 {
     if (!is_mounted)
         return -1;
+    if (protect_check(name83, ACT_WRITE) != 0)
+        return -1;
     uint8_t nm[11];
     uint32_t dirc;
     if (resolve_path(name83, nm, &dirc, 1) < 0)

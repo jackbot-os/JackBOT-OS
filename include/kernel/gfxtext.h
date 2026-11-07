@@ -18,6 +18,7 @@ int gfx_set_font(int i);
 int gfx_get_font(void);
 const char *gfx_font_name(int i);
 void gfx_set_scale(int s);
+void gfx_set_transparent(int on);
 int gfx_get_scale(void);
 
 int gfx_draw_cp(int x, int y, uint32_t fg, uint32_t bg, uint32_t cp);

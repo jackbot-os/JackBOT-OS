@@ -5,6 +5,7 @@
 #include <kernel/ui.h>
 #include <kernel/fat32.h>
 #include <kernel/recycle.h>
+#include <kernel/users.h>
 #include <kernel/i18n.h>
 #include "i18n_data.h"
 #include <kernel/kstring.h>
@@ -293,6 +294,10 @@ void files_open(void)
 {
     ui_fit(760, 540, &W);
     cwd[0] = 0;
+    /* Start in the current account's own Home folder; SYSTEM stays reachable
+       one level up but is write-protected by protect_check(). */
+    if (fat_mounted())
+        users_home(users_current(), cwd, sizeof(cwd));
     msg[0] = 0;
     viewbuf[0] = 0;
     viewing = 0;

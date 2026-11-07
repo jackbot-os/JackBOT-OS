@@ -18,7 +18,7 @@
 #include <kernel/wallpaper_image.h>
 #include <kernel/perm.h>
 
-#define N_WP 6
+#define N_WP 3
 #define CAROUSEL_TICKS 250
 
 uint64_t timer_get_ticks(void);
@@ -112,9 +112,10 @@ static const struct region_entry REGIONS[25] = {
     {"Auckland", 24},
 };
 
-static const char *wp_names[N_WP] = {
-    "Ocean Blue", "Sunset", "Teal", "Night Glow", "Stripes", "Grid",
-};
+static int wp_name_key(int i)
+{
+    return i == 0 ? STR_WP_EASTLAKE : (i == 1 ? STR_WP_OCEAN : STR_WP_SKY);
+}
 
 static uint32_t lerp_c(uint32_t a, uint32_t b, int t)
 {
@@ -130,35 +131,13 @@ static uint32_t wp_color(int idx, int x, int y, int w, int h)
 {
     int u = (w > 1) ? (x * 255) / (w - 1) : 0;
     int v = (h > 1) ? (y * 255) / (h - 1) : 0;
-    switch (idx) {
-    case 0:
+    if (idx == 1)
         return lerp_c(fb_rgb(8, 18, 48), fb_rgb(38, 112, 205), v);
-    case 1: {
-        int t = (u + v) / 2;
-        return lerp_c(fb_rgb(90, 30, 110), fb_rgb(240, 140, 70), t);
-    }
-    case 2:
-        return lerp_c(fb_rgb(8, 70, 78), fb_rgb(40, 180, 150), u);
-    case 3: {
-        int dx = x - w / 2, dy = y - h / 2;
-        int d = (dx * dx + dy * dy);
-        int t = 255 - (d / 1400);
-        if (t < 0) t = 0;
-        return lerp_c(fb_rgb(10, 10, 24), fb_rgb(70, 90, 170), t);
-    }
-    case 4: {
-        int s = (x + y) / 24;
-        return (s & 1) ? fb_rgb(40, 60, 120) : fb_rgb(120, 60, 140);
-    }
-    default: {
-        int gx = (x / 48) & 1, gy = (y / 48) & 1;
-        uint32_t c = (gx ^ gy) ? fb_rgb(34, 38, 52) : fb_rgb(44, 49, 66);
-        int lx = x % 48, ly = y % 48;
-        if (lx == 0 || ly == 0)
-            c = fb_rgb(70, 80, 110);
-        return c;
-    }
-    }
+    if (idx == 2)
+        return lerp_c(fb_rgb(70, 150, 235), fb_rgb(150, 210, 255), (u + v) / 2);
+    /* index 0 is the East Lake photo: the decoder fills wp_buf, this is
+       only the fallback used if that decode ever fails. */
+    return lerp_c(fb_rgb(8, 18, 48), fb_rgb(24, 60, 120), v);
 }
 
 static void render_wallpaper(void)
@@ -175,10 +154,16 @@ static void render_wallpaper(void)
         return;
     }
     if (wp_dirty) {
-        for (int y = 0; y < h; y++)
-            for (int x = 0; x < w; x++)
-                wp_buf[(uint64_t)y * w + x] =
-                    wp_color(wp_index, x, y, w, h);
+        if (wp_index == 0) {
+            /* East Lake is the built-in photo: decode it again so switching
+               back from a gradient never leaves a painted-over buffer. */
+            wimg_apply_default();
+        } else {
+            for (int y = 0; y < h; y++)
+                for (int x = 0; x < w; x++)
+                    wp_buf[(uint64_t)y * w + x] =
+                        wp_color(wp_index, x, y, w, h);
+        }
         for (int y = h; y < H; y++)
             for (int x = 0; x < w; x++)
                 wp_buf[(uint64_t)y * w + x] = fb_rgb(16, 18, 28);
@@ -383,16 +368,46 @@ static void draw_glass_rect(int x, int y, int w, int h, uint32_t c,
     if (y < 0) { h += y; y = 0; }
     if (x + w > (int)fb_width()) w = (int)fb_width() - x;
     if (y + h > (int)fb_height()) h = (int)fb_height() - y;
-    for (int j = 0; j < h; j++)
-        for (int i = 0; i < w; i++)
-            fb_putpixel_blend(x + i, y + j, c, cover);
+    if (w <= 0 || h <= 0)
+        return;
+    /* Blend against the wallpaper surface, never against the framebuffer.
+       Sampling the frame made every repaint of a moved window mix in the
+       window's own previous pixels, which smeared the photo into the
+       "broken picture" mess seen while dragging. The wallpaper buffer is
+       stable, so the panel is identical no matter how often it is redrawn. */
+    int W = (int)fb_width();
+    uint32_t cr = (c >> 16) & 255, cg = (c >> 8) & 255, cb = c & 255;
+    if (!wp_buf) {
+        for (int j = 0; j < h; j++)
+            for (int i = 0; i < w; i++)
+                fb_putpixel_blend(x + i, y + j, c, cover);
+        return;
+    }
+    for (int j = 0; j < h; j++) {
+        uint32_t *row = wp_buf + (uint64_t)(y + j) * W;
+        for (int i = 0; i < w; i++) {
+            uint32_t b = row[x + i];
+            int br = (b >> 16) & 255, bg = (b >> 8) & 255, bb = b & 255;
+            int rr = (br * (255 - cover) + (int)cr * cover) / 255;
+            int gg = (bg * (255 - cover) + (int)cg * cover) / 255;
+            int bl = (bb * (255 - cover) + (int)cb * cover) / 255;
+            fb_putpixel(x + i, y + j, fb_rgb(rr, gg, bl));
+        }
+    }
 }
 
 /* Right-hand quick buttons inside the start menu. */
 #define M_QUICK 5
-static const char *const m_quick_label[M_QUICK] = {
-    "Settings", "Jbot", "Browser", "Files", "Back"
-};
+static const char *m_quick_label(int i)
+{
+    switch (i) {
+    case 0: return tr(STR_QUICK_SETTINGS);
+    case 1: return tr(STR_QUICK_JBOT);
+    case 2: return tr(STR_QUICK_BROWSER);
+    case 3: return tr(STR_QUICK_FILES);
+    default: return tr(STR_QUICK_BACK);
+    }
+}
 
 static int m_quick_win(int i)
 {
@@ -496,11 +511,38 @@ static void rtc_time(int *h, int *m, int *s)
     *h = hr; *m = min; *s = sec;
 }
 
+/* Date for the taskbar: CMOS 0x09/0x08/0x07, same BCD/binary rule as the
+   clock. Returns month/day as 1-12 and 1-31 so the caller only formats. */
+static void rtc_date(int *mo, int *dy, int *yr)
+{
+    int mon = 0, day = 0, year = 0, guard = 0;
+    while (rtc_uip() && guard++ < 2000000)
+        ;
+    for (int round = 0; round < 4; round++) {
+        day  = cmos(0x07);
+        mon  = cmos(0x08);
+        year = cmos(0x09);
+        if (!rtc_uip())
+            break;
+    }
+    uint8_t sb = cmos(0x0b);
+    if (!(sb & 0x04)) {
+        day = bcd(day);
+        mon = bcd(mon);
+        year = bcd(year);
+    }
+    if (mon < 1 || mon > 12) mon = 1;
+    if (day < 1 || day > 31) day = 1;
+    *mo = mon; *dy = day; *yr = year;
+}
+
 static void draw_taskbar(int mx, int my, int clicked, int *start_click,
                          int *wp_click, int *set_click, int *jb_click)
 {
     int w = (int)fb_width(), top = (int)fb_height() - BAR;
     int bh = BAR - 8 * S;
+    gfx_set_transparent(0);   /* solid bar: opaque glyph background */
+
     int wp_x = w * 30 / 100, set_x = w * 42 / 100, jb_x = w * 54 / 100;
     if (wp_x < 112 * S + 110 * S) wp_x = 112 * S + 110 * S;
     set_x = wp_x + (128 * S);
@@ -526,6 +568,7 @@ static void draw_taskbar(int mx, int my, int clicked, int *start_click,
     }
     gfx_draw_string(112 * S, top + 6 * S, fb_rgb(90, 200, 255),
                     fb_rgb(16, 18, 28), "JackBOT OS");
+    gfx_set_transparent(gl_on);
     if (button2(wp_x, top + 4 * S, 120 * S, bh,
                 tr(STR_WALLPAPER), 0, mx, my, clicked))
         *wp_click = 1;
@@ -536,13 +579,17 @@ static void draw_taskbar(int mx, int my, int clicked, int *start_click,
                 "Jbot", 0, mx, my, clicked))
         *jb_click = 1;
 
-    int hh, mm, ss;
+    int hh, mm, ss, mo, dy, yr;
     rtc_time(&hh, &mm, &ss);
-    char clk[16];
+    rtc_date(&mo, &dy, &yr);
+    (void)yr;
+    char clk[24];
     const char *d = "0123456789";
-    clk[0] = d[hh / 10]; clk[1] = d[hh % 10]; clk[2] = ':';
-    clk[3] = d[mm / 10]; clk[4] = d[mm % 10]; clk[5] = ':';
-    clk[6] = d[ss / 10]; clk[7] = d[ss % 10]; clk[8] = 0;
+    clk[0] = d[mo / 10]; clk[1] = d[mo % 10]; clk[2] = '-';
+    clk[3] = d[dy / 10]; clk[4] = d[dy % 10]; clk[5] = ' ';
+    clk[6] = d[hh / 10]; clk[7] = d[hh % 10]; clk[8] = ':';
+    clk[9] = d[mm / 10]; clk[10] = d[mm % 10]; clk[11] = ':';
+    clk[12] = d[ss / 10]; clk[13] = d[ss % 10]; clk[14] = 0;
     int cw = gfx_text_width(clk);
     gfx_draw_string(w - cw - 12 * S, top + 6 * S, fb_rgb(225, 232, 245),
                     fb_rgb(16, 18, 28), clk);
@@ -565,10 +612,12 @@ static void paint_personalization(void)
     wfile_count = wimg_list(wfiles, WIMG_MAX_FILES);
     if (wfile_count < 0)
         wfile_count = 0;
-    draw_glass_rect(pWX, pWY, pWW, pWH, fb_rgb(24, 27, 38), glc(170));
+    draw_glass_rect(pWX, pWY, pWW, pWH, fb_rgb(24, 27, 38), glc(112));
     ui_round_border(pWX, pWY, pWW, pWH, rad, fb_rgb(70, 110, 180));
-    ui_rect(pWX + rad, pWY, pWW - 2 * rad, 26 * S, fb_rgb(30, 64, 122));
-    ui_rect(pWX, pWY + rad, pWW, 26 * S - rad, fb_rgb(30, 64, 122));
+    draw_glass_rect(pWX + rad, pWY, pWW - 2 * rad, 26 * S,
+                    fb_rgb(30, 64, 122), glc(150));
+    draw_glass_rect(pWX, pWY + rad, pWW, 26 * S - rad,
+                    fb_rgb(30, 64, 122), glc(150));
     ui_rect(pWX, pWY + 26 * S, pWW, 2 * S, fb_rgb(64, 120, 200));
     gfx_draw_string(pWX + 10 * S, pWY + 5 * S, fb_rgb(235, 240, 250),
                     fb_rgb(30, 64, 122), tr(STR_PERSONALIZATION));
@@ -582,22 +631,22 @@ static void paint_personalization(void)
         draw_border(tx, ty, CW, CH,
                     (i == wp_index) ? fb_rgb(255, 210, 80)
                                     : fb_rgb(120, 130, 160));
-        int tw = gfx_text_width(wp_names[i]);
+        int tw = gfx_text_width(tr(wp_name_key(i)));
         gfx_draw_string(tx + (CW - tw) / 2, ty + CH + 4 * S,
                         fb_rgb(225, 230, 240), fb_rgb(30, 34, 46),
-                        wp_names[i]);
+                        tr(wp_name_key(i)));
     }
     {
         int lx = pWX + 40 * S;
         int lw = pWW - 80 * S;
         int secy = pWY + 50 * S + 2 * (CH + 46 * S) + 12 * S;
         gfx_draw_string(lx, secy, fb_rgb(150, 210, 255), fb_rgb(24, 27, 38),
-                        "Local pictures (BMP decode; PNG/JPG in a later build)");
+                        tr(STR_LOCAL_PICTURES));
         int ry0 = secy + 24 * S;
         if (wfile_count == 0) {
             ui_round_rect(lx, ry0, lw, 26 * S, 5 * S, fb_rgb(38, 44, 60));
             gfx_draw_string(lx + 12 * S, ry0 + 7 * S, fb_rgb(180, 190, 210),
-                            fb_rgb(38, 44, 60), "(no pictures on disk)");
+                            fb_rgb(38, 44, 60), tr(STR_NO_PICTURES));
         } else {
             for (int i = 0; i < wfile_count && i < 6; i++) {
                 int ry = ry0 + i * 28 * S;
@@ -677,10 +726,12 @@ static void paint_settings(void)
     int rad = 8 * S;
     int title_h = 26 * S;
     int nav_w = 150 * S;
-    draw_glass_rect(sWX, sWY, sWW, sWH, fb_rgb(24, 27, 38), glc(170));
+    draw_glass_rect(sWX, sWY, sWW, sWH, fb_rgb(24, 27, 38), glc(112));
     ui_round_border(sWX, sWY, sWW, sWH, rad, fb_rgb(70, 110, 180));
-    ui_rect(sWX + rad, sWY, sWW - 2 * rad, title_h, fb_rgb(30, 64, 122));
-    ui_rect(sWX, sWY + rad, sWW, title_h - rad, fb_rgb(30, 64, 122));
+    draw_glass_rect(sWX + rad, sWY, sWW - 2 * rad, title_h,
+                    fb_rgb(30, 64, 122), glc(150));
+    draw_glass_rect(sWX, sWY + rad, sWW, title_h - rad,
+                    fb_rgb(30, 64, 122), glc(150));
     ui_rect(sWX, sWY + title_h, sWW, 2 * S, fb_rgb(64, 120, 200));
     gfx_draw_string(sWX + 10 * S, sWY + 5 * S, fb_rgb(235, 240, 250),
                     fb_rgb(30, 64, 122), tr(STR_SETTINGS));
@@ -689,7 +740,7 @@ static void paint_settings(void)
     int nav_y = sWY + title_h + 2 * S;
     int nav_h = sWH - title_h - 2 * S;
     if (gl_on)
-        draw_glass_rect(sWX, nav_y, nav_w, nav_h, fb_rgb(18, 21, 30), 200);
+        draw_glass_rect(sWX, nav_y, nav_w, nav_h, fb_rgb(18, 21, 30), 128);
     else
         ui_rect(sWX, nav_y, nav_w, nav_h, fb_rgb(18, 21, 30));
     for (int i = 0; i < SET_TABS; i++) {
@@ -712,7 +763,7 @@ static void paint_settings(void)
     /* right content panel */
     int cx = sWX + nav_w;
     if (gl_on)
-        draw_glass_rect(cx, nav_y, sWW - nav_w, nav_h, fb_rgb(24, 27, 38), 232);
+        draw_glass_rect(cx, nav_y, sWW - nav_w, nav_h, fb_rgb(24, 27, 38), 150);
     else
         ui_rect(cx, nav_y, sWW - nav_w, nav_h, fb_rgb(24, 27, 38));
 }
@@ -756,11 +807,11 @@ static void jb_send(void)
     if (jb_inlen == 0)
         return;
     char tmp[JB_LINE_MAX];
-    jb_cat(tmp, "You: ", jb_in, JB_LINE_MAX);
+    jb_cat(tmp, tr(STR_YOU_PREFIX), jb_in, JB_LINE_MAX);
     jb_add(tmp);
     char rp[JB_LINE_MAX];
     jbot_reply(jb_in, rp, sizeof(rp));
-    jb_cat(tmp, "Jbot: ", rp, JB_LINE_MAX);
+    jb_cat(tmp, tr(STR_JBOT_PREFIX), rp, JB_LINE_MAX);
     jb_add(tmp);
     jb_inlen = 0;
     jb_in[0] = 0;
@@ -769,10 +820,12 @@ static void jb_send(void)
 static void paint_jbot(void)
 {
     int rad = 8 * S;
-    draw_glass_rect(jWX, jWY, jWW, jWH, fb_rgb(24, 27, 38), glc(170));
+    draw_glass_rect(jWX, jWY, jWW, jWH, fb_rgb(24, 27, 38), glc(112));
     ui_round_border(jWX, jWY, jWW, jWH, rad, fb_rgb(70, 110, 180));
-    ui_rect(jWX + rad, jWY, jWW - 2 * rad, 26 * S, fb_rgb(30, 64, 122));
-    ui_rect(jWX, jWY + rad, jWW, 26 * S - rad, fb_rgb(30, 64, 122));
+    draw_glass_rect(jWX + rad, jWY, jWW - 2 * rad, 26 * S,
+                    fb_rgb(30, 64, 122), glc(150));
+    draw_glass_rect(jWX, jWY + rad, jWW, 26 * S - rad,
+                    fb_rgb(30, 64, 122), glc(150));
     ui_rect(jWX, jWY + 26 * S, jWW, 2 * S, fb_rgb(64, 120, 200));
     gfx_draw_string(jWX + 10 * S, jWY + 5 * S, fb_rgb(235, 240, 250),
                     fb_rgb(30, 64, 122), "Jbot");
@@ -920,9 +973,21 @@ static void draw_settings(int mx, int my, int clicked)
             int bx = cx + col * (bw + 12 * S);
             int by = cy + row * row_h + rr * (bh + 26 * S);
             ui_round_rect(bx, by, bw, bh, 6 * S, fb_rgb(30, 36, 52));
-            for (int yy = 0; yy < bh; yy += 2)
-                ui_rect(bx + 6 * S, by + 6 * S + yy, bw - 12 * S, 1,
-                        wp_color(i, 0, yy, 1, bh));
+            for (int yy = 0; yy < bh; yy += 2) {
+                for (int xx = 0; xx < bw - 12 * S; xx += 2) {
+                    uint32_t pc;
+                    if (i == 0 && wp_buf && wp_index == 0) {
+                        int sx = (int)((int64_t)(xx + 6 * S) * fb_width() / (bw - 12 * S));
+                        int sy = (int)((int64_t)(yy + 6 * S) * (fb_height() - BAR) / bh);
+                        if (sx >= (int)fb_width()) sx = (int)fb_width() - 1;
+                        if (sy >= (int)fb_height()) sy = (int)fb_height() - 1;
+                        pc = wp_buf[(uint64_t)sy * (int)fb_width() + sx];
+                    } else {
+                        pc = wp_color(i, xx, yy, bw - 12 * S, bh);
+                    }
+                    ui_rect(bx + 6 * S + xx, by + 6 * S + yy, 2, 2, pc);
+                }
+            }
             if (i == wp_index && !custom_wp)
                 ui_round_border(bx, by, bw, bh, 6 * S, fb_rgb(255, 210, 80));
             if (clicked && inside(mx, my, bx, by, bw, bh)) {
@@ -933,7 +998,7 @@ static void draw_settings(int mx, int my, int clicked)
             }
             gfx_draw_string(bx + 8 * S, by + bh + 4 * S,
                             fb_rgb(210, 220, 235), fb_rgb(24, 27, 38),
-                            wp_names[i]);
+                            tr(wp_name_key(i)));
         }
     } else if (set_tab == 1) {
         /* Region: manual country/region pick, linked to its time zone */
@@ -1106,7 +1171,7 @@ void desktop_init(void)
     jb_nlines = 0;
     jb_inlen = 0;
     jb_in[0] = 0;
-    jb_add("Jbot Quick (free). Type help for what I can do.");
+    jb_add(tr(STR_JBOT_GREETING));
     jb_dirty = 1;
 
     wp_buf = kcalloc((size_t)fb_width() * fb_height(), 4);
@@ -1124,6 +1189,7 @@ void desktop_init(void)
        buffer). A user-chosen picture still replaces it at runtime. */
     if (wp_buf) {
         if (wimg_apply_default() == 0) {
+            wp_dirty = 0;   /* the decoder already filled wp_buf */
             serial_puts("[DESK] default wallpaper: East Lake\n");
         } else {
             serial_puts("[DESK] default wallpaper failed: ");
@@ -1136,9 +1202,15 @@ void desktop_init(void)
 
 /* ---- Desktop shortcuts: click an icon to launch a program ---- */
 #define DSK_ICONS 4
-static const char *const dsk_label[DSK_ICONS] = {
-    "Files", "Browser", "Python", "Jbot"
-};
+static const char *dsk_label(int i)
+{
+    switch (i) {
+    case 0: return app_name(APP_FILES);
+    case 1: return app_name(APP_BROWSER);
+    case 2: return app_name(APP_PYTHON);
+    default: return "Jbot";
+    }
+}
 static const int dsk_app[DSK_ICONS] = {
     APP_FILES, APP_BROWSER, APP_PYTHON, 3
 };
@@ -1187,9 +1259,9 @@ static void draw_desktop_icons(int mx, int my, int clicked)
         ui_round_border(x, y, w, w, 12 * S,
                         hover ? fb_rgb(200, 220, 255) : fb_rgb(140, 170, 220));
         {
-            int tw = gfx_text_width(dsk_label[i]);
+            int tw = gfx_text_width(dsk_label(i));
             gfx_draw_string(x + (w - tw) / 2, y + 8 * S,
-                            fb_rgb(240, 246, 255), tint, dsk_label[i]);
+                            fb_rgb(240, 246, 255), tint, dsk_label(i));
         }
         if (clicked && hover) {
             int id = dsk_app[i];
@@ -1230,6 +1302,10 @@ void desktop_run(void)
        of the screen early in the frame, which would have stamped the stale
        saved pixels back over freshly restored wallpaper. */
     cursor_begin_frame();
+
+    /* Text on a translucent panel must not paint an opaque box; toggle the
+       glyph layer's background fill with the glass setting. */
+    gfx_set_transparent(gl_on);
 
     net_poll();
     tcp_poll();
@@ -1308,18 +1384,21 @@ void desktop_run(void)
                heavy. The window body itself is repainted later in the frame
                because win_painted is cleared. */
             if (nx != ox || ny != oy) {
-                int pad = 18 * S;
-                int ux0 = (ox < nx ? ox : nx) - pad;
-                int uy0 = (oy < ny ? oy : ny) - pad;
-                int ux1 = (ox > nx ? ox : nx) + ww + pad;
-                int uy1 = (oy > ny ? oy : ny) + wh + pad;
-                int lim_y = (int)fb_height() - BAR;
-                if (ux0 < 0) ux0 = 0;
-                if (uy0 < 0) uy0 = 0;
-                if (ux1 > (int)fb_width()) ux1 = (int)fb_width();
-                if (uy1 > lim_y) uy1 = lim_y;
-                if (ux1 > ux0 && uy1 > uy0)
-                    restore_wp_rect(ux0, uy0, ux1 - ux0, uy1 - uy0);
+                /* Repaint the two silhouettes the window vacated and now
+                   occupies, straight from the wallpaper surface. Restoring
+                   both rects keeps the frame correct without a full-screen
+                   flush (a whole-frame blit made dragging heavy); the stale
+                   pointer pixels are dropped first so they cannot be saved
+                   back over the fresh wallpaper. */
+                cursor_invalidate();
+                if (wp_buf) {
+                    fb_blit_rect(ox, oy, ww, wh,
+                                 wp_buf + (size_t)oy * fb_width() + ox,
+                                 fb_width());
+                    fb_blit_rect(nx, ny, ww, wh,
+                                 wp_buf + (size_t)ny * fb_width() + nx,
+                                 fb_width());
+                }
                 win_painted = 0;
                 drawn_win = -1;
             }
@@ -1425,17 +1504,27 @@ void desktop_run(void)
     if (!start_open)
         draw_desktop_icons(mx, my, win_id == 0 ? clicked : 0);
 
-    if (rclicked && win_id == 0 && my < (int)fb_height() - BAR) {
-        ctx_open = 1;
-        ctx_x = rcx; ctx_y = rcy;
-        ctx_sel = 0;
-        start_open = 0;
+    /* Right-click menu: one panel only, and one click dismisses it. */
+    if (rclicked) {
+        if (ctx_open) {
+            ctx_open = 0;
+            need_redraw = 1;       /* wipe the panel off the wallpaper */
+        } else if (my < (int)fb_height() - BAR) {
+            ctx_open = 1;
+            ctx_x = rcx; ctx_y = rcy;
+            ctx_sel = 0;
+            start_open = 0;
+            /* A new menu must not be composited on top of the pixels of an
+               earlier one: rebuild the frame first. */
+            need_redraw = 1;
+        }
     }
-    if (ctx_open && clicked && win_id == 0) {
+    if (ctx_open && clicked) {
         int bx, by, bw, bh;
         ctx_box(&bx, &by, &bw, &bh);
         if (!inside(mx, my, bx, by, bw, bh)) {
             ctx_open = 0;
+            need_redraw = 1;   /* wipe the menu pixels off the wallpaper */
         } else {
             for (int i = 0; i < CTX_ITEMS; i++) {
                 int ix, iy, iw, ih;
@@ -1447,6 +1536,7 @@ void desktop_run(void)
                     else { app_open(APP_ABOUT); win_id = APP_ABOUT;
                            win_painted = 1; }
                     ctx_open = 0;
+                    need_redraw = 1;
                     break;
                 }
             }
@@ -1527,13 +1617,13 @@ void desktop_run(void)
         /* Liquid-glass panel: translucent, the wallpaper/window shows
            through. The frame is fully repainted while the menu is open,
            so the blend always samples fresh pixels (no ghosting). */
-        draw_glass_rect(mX, mY, mW, mH, fb_rgb(24, 28, 40), glc(170));
+        draw_glass_rect(mX, mY, mW, mH, fb_rgb(24, 28, 40), glc(112));
         ui_round_border(mX, mY, mW, mH, rad, fb_rgb(96, 146, 216));
         /* translucent blue title strip */
         draw_glass_rect(mX + rad, mY, mW - 2 * rad, m_titleh,
-                        fb_rgb(30, 64, 122), 232);
+                        fb_rgb(30, 64, 122), 150);
         draw_glass_rect(mX, mY + rad, mW, m_titleh - rad,
-                        fb_rgb(30, 64, 122), 232);
+                        fb_rgb(30, 64, 122), 150);
         ui_rect(mX, mY + m_titleh, mW, 2 * S, fb_rgb(70, 126, 204));
         gfx_draw_string(mX + 14 * S, mY + 8 * S, fb_rgb(235, 242, 255),
                         fb_rgb(30, 64, 122), "JackBOT OS 1.0.9");
@@ -1542,7 +1632,7 @@ void desktop_run(void)
         int sbw = mW - (sbx - mX) - 14 * S - m_rightw;
         int sbh = 22 * S;
         int sby = mY + (m_titleh - sbh) / 2;
-        draw_glass_rect(sbx, sby, sbw, sbh, fb_rgb(18, 24, 38), 220);
+        draw_glass_rect(sbx, sby, sbw, sbh, fb_rgb(18, 24, 38), 140);
         ui_round_border(sbx, sby, sbw, sbh, 5 * S, fb_rgb(96, 146, 216));
         if (search_len)
             gfx_draw_string(sbx + 10 * S, sby + (sbh - gfx_text_height()) / 2,
@@ -1564,7 +1654,7 @@ void desktop_run(void)
             int hov = inside(mx, my, ix, iy, iw, ih);
             int hl = hov || k == menu_sel;
             if (hl) {
-                draw_glass_rect(ix, iy, iw, ih, fb_rgb(52, 92, 160), 235);
+                draw_glass_rect(ix, iy, iw, ih, fb_rgb(52, 92, 160), 190);
                 ui_round_border(ix, iy, iw, ih, 5 * S, fb_rgb(130, 175, 245));
             }
             gfx_draw_string(ix + 12 * S, iy + (ih - gfx_text_height()) / 2,
@@ -1592,13 +1682,13 @@ void desktop_run(void)
             m_quick_geom(q, &qx, &qy, &qw, &qh);
             int hov = inside(mx, my, qx, qy, qw, qh);
             if (hov) {
-                draw_glass_rect(qx, qy, qw, qh, fb_rgb(52, 92, 160), 240);
+                draw_glass_rect(qx, qy, qw, qh, fb_rgb(52, 92, 160), 190);
                 ui_round_border(qx, qy, qw, qh, 6 * S, fb_rgb(130, 175, 245));
             }
             gfx_draw_string(qx + 12 * S, qy + (qh - gfx_text_height()) / 2,
                             fb_rgb(224, 232, 246),
                             hov ? fb_rgb(52, 92, 160) : fb_rgb(26, 30, 44),
-                            m_quick_label[q]);
+                            m_quick_label(q));
             if (clicked && hov) {
                 int w = m_quick_win(q);
                 if (w < 0) {
@@ -1638,7 +1728,7 @@ void desktop_run(void)
         int bx, by, bw, bh;
         ctx_box(&bx, &by, &bw, &bh);
         int crad = 8 * S;
-        draw_glass_rect(bx, by, bw, bh, fb_rgb(24, 28, 40), 216);
+        draw_glass_rect(bx, by, bw, bh, fb_rgb(24, 28, 40), glc(120));
         ui_round_border(bx, by, bw, bh, crad, fb_rgb(96, 146, 216));
         for (int i = 0; i < CTX_ITEMS; i++) {
             int ix, iy, iw, ih;

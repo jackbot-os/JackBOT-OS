@@ -13,7 +13,9 @@
 set -uo pipefail
 
 TRIPLE=x86_64-unknown-none
-HERE=/root
+PICOLIBC_TAR=${PICOLIBC_TAR:-$HERE/picolibc.tar.gz}
+HERE=${JB_M1_HOME:-$HOME/jackbot-m1}
+mkdir -p "$HERE"
 SRC=$HERE/picolibc-main
 SYSROOT=$HERE/sysroot
 CROSS=$HERE/x86_64-jackbot-cross.txt
@@ -22,7 +24,7 @@ CROSS=$HERE/x86_64-jackbot-cross.txt
 # apt-get install -y --no-install-recommends clang llvm meson ninja-build
 
 # --- 2. picolibc (bare-metal C library) ----------------------------------
-test -d "$SRC" || tar xzf "$HERE/picolibc.tar.gz"
+test -d "$SRC" || tar xzf "$PICOLIBC_TAR" -C "$HERE"
 rm -rf "$SRC/build-x86_64"
 meson setup "$SRC/build-x86_64" "$SRC" \
   --cross-file="$CROSS" \

@@ -134,6 +134,14 @@ static int is_edge(int x, int y)
     return 0;
 }
 
+/* Drop the saved backdrop without painting it back. Callers use this when
+   the frame underneath the pointer changed (a window was dragged), so the
+   saved pixels are stale and must never be stamped onto the screen. */
+void cursor_invalidate(void)
+{
+    g_have = 0;
+}
+
 /* Software path: restore the backing pixels saved at the old position. */
 static void sw_restore(void)
 {

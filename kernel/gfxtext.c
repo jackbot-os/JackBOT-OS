@@ -9,6 +9,7 @@
 
 static const struct font_set *fonts[3];
 static const struct font_set *cur;
+static int trans = 0;
 static int scale = 1;
 
 void gfx_init_fonts(void)
@@ -67,6 +68,12 @@ static const uint8_t *find_glyph(uint32_t cp, int *w)
     return cur->g8['?'];
 }
 
+void gfx_set_transparent(int on)
+{
+    trans = on ? 1 : 0;
+    ttf_set_transparent(trans);
+}
+
 int gfx_draw_cp(int x, int y, uint32_t fg, uint32_t bg, uint32_t cp)
 {
     if (ttf_ready())
@@ -77,6 +84,8 @@ int gfx_draw_cp(int x, int y, uint32_t fg, uint32_t bg, uint32_t cp)
     for (int ry = 0; ry < FONT_H; ry++) {
         for (int rx = 0; rx < w; rx++) {
             int on = rows[ry * nbytes + rx / 8] & (0x80 >> (rx % 8));
+            if (!on && trans)
+                continue;
             uint32_t col = on ? fg : bg;
             for (int sy = 0; sy < scale; sy++)
                 for (int sx = 0; sx < scale; sx++)
@@ -226,6 +235,8 @@ static int gfx_draw_cp_w(int x, int y, uint32_t fg, uint32_t bg, uint32_t cp)
     for (int ry = 0; ry < FONT_H; ry++) {
         for (int rx = g.l; rx <= g.r; rx++) {
             int on = g.rows[ry * nbytes + rx / 8] & (0x80 >> (rx % 8));
+            if (!on && trans)
+                continue;
             uint32_t col = on ? fg : bg;
             for (int sy = 0; sy < scale; sy++)
                 for (int sx = 0; sx < scale; sx++)

@@ -403,7 +403,19 @@
   "wp_night",
   "wp_stripes",
   "wp_grid",
-  "glass"
+  "glass",
+  "local_pictures",
+  "no_pictures",
+  "you_prefix",
+  "jbot_prefix",
+  "jbot_greeting",
+  "quick_settings",
+  "quick_jbot",
+  "quick_browser",
+  "quick_files",
+  "quick_back",
+  "wp_eastlake",
+  "wp_sky"
  ],
  "langs": [
   {
@@ -813,7 +825,19 @@
     "wp_night": "Night Glow",
     "wp_stripes": "Stripes",
     "wp_grid": "Grid",
-    "glass": "Liquid Glass"
+    "glass": "Liquid Glass",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -1222,7 +1246,19 @@
     "wp_teal": "青碧",
     "wp_night": "夜辉",
     "wp_stripes": "条纹",
-    "wp_grid": "网格"
+    "wp_grid": "网格",
+    "local_pictures": "本地图片",
+    "no_pictures": "（磁盘上没有图片）",
+    "you_prefix": "你：",
+    "jbot_prefix": "Jbot：",
+    "jbot_greeting": "Jbot 快速版（免费）。输入 help 查看我能做什么。",
+    "quick_settings": "设置",
+    "quick_jbot": "Jbot",
+    "quick_browser": "浏览器",
+    "quick_files": "文件",
+    "quick_back": "返回",
+    "wp_eastlake": "东湖",
+    "wp_sky": "天空蓝"
    }
   },
   {
@@ -1631,7 +1667,19 @@
     "wp_teal": "青碧",
     "wp_night": "夜輝",
     "wp_stripes": "條紋",
-    "wp_grid": "網格"
+    "wp_grid": "網格",
+    "local_pictures": "本地图片",
+    "no_pictures": "（磁盘上没有图片）",
+    "you_prefix": "你：",
+    "jbot_prefix": "Jbot：",
+    "jbot_greeting": "Jbot 快速版（免费）。输入 help 查看我能做什么。",
+    "quick_settings": "设置",
+    "quick_jbot": "Jbot",
+    "quick_browser": "浏览器",
+    "quick_files": "文件",
+    "quick_back": "返回",
+    "wp_eastlake": "东湖",
+    "wp_sky": "天空蓝"
    }
   },
   {
@@ -1677,7 +1725,20 @@
     "check_log": "ディスクエラーの詳細はシリアルログを確認してください",
     "keyboard_hint": "↑/↓キーで移動 · Enterキーで決定",
     "ok": "OK",
-    "cancel": "キャンセル"
+    "cancel": "キャンセル",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -1723,7 +1784,20 @@
     "check_log": "디스크 오류 내용은 직렬 로그를 확인하세요",
     "keyboard_hint": "위/아래 키로 이동 · Enter 키로 확인",
     "ok": "확인",
-    "cancel": "취소"
+    "cancel": "취소",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -1769,7 +1843,20 @@
     "check_log": "Revisa el registro serie para ver los detalles del error de disco",
     "keyboard_hint": "Flechas arriba/abajo para moverte · Enter para confirmar",
     "ok": "Aceptar",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -1815,7 +1902,20 @@
     "check_log": "Consultez le journal série pour les détails de l'erreur de disque",
     "keyboard_hint": "Haut/Bas pour naviguer · Entrée pour confirmer",
     "ok": "OK",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -1861,7 +1961,20 @@
     "check_log": "Details zum Festplattenfehler finden Sie im seriellen Protokoll",
     "keyboard_hint": "Auf/Ab zum Bewegen · Eingabe zum Bestätigen",
     "ok": "OK",
-    "cancel": "Abbrechen"
+    "cancel": "Abbrechen",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -1907,7 +2020,20 @@
     "check_log": "Verifique o log serial para ver os detalhes do erro de disco",
     "keyboard_hint": "Setas cima/baixo para mover · Enter para confirmar",
     "ok": "OK",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -1953,7 +2079,20 @@
     "check_log": "Controlla il log seriale per i dettagli dell'errore del disco",
     "keyboard_hint": "Su/Giù per spostarti · Invio per confermare",
     "ok": "OK",
-    "cancel": "Annulla"
+    "cancel": "Annulla",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -1999,7 +2138,20 @@
     "check_log": "Подробности ошибки диска см. в последовательном журнале",
     "keyboard_hint": "Вверх/вниз — выбор · Enter — подтверждение",
     "ok": "ОК",
-    "cancel": "Отмена"
+    "cancel": "Отмена",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -2045,7 +2197,20 @@
     "check_log": "Деталі помилки диска див. у послідовному журналі",
     "keyboard_hint": "Вгору/вниз — переміщення · Enter — підтвердження",
     "ok": "Гаразд",
-    "cancel": "Скасувати"
+    "cancel": "Скасувати",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -2091,7 +2256,20 @@
     "check_log": "Szczegóły błędu dysku znajdziesz w dzienniku szeregowym",
     "keyboard_hint": "Góra/Dół — ruch · Enter — potwierdzenie",
     "ok": "OK",
-    "cancel": "Anuluj"
+    "cancel": "Anuluj",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -2137,7 +2315,20 @@
     "check_log": "Bekijk het seriële logboek voor schijffoutdetails",
     "keyboard_hint": "Omhoog/omlaag om te bewegen · Enter om te bevestigen",
     "ok": "OK",
-    "cancel": "Annuleren"
+    "cancel": "Annuleren",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -2183,7 +2374,20 @@
     "check_log": "Disk hatası ayrıntıları için seri günlüğe bakın",
     "keyboard_hint": "Yukarı/Aşağı ile gezin · Enter ile onaylayın",
     "ok": "Tamam",
-    "cancel": "İptal"
+    "cancel": "İptal",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -2229,7 +2433,20 @@
     "check_log": "Xem nhật ký nối tiếp để biết chi tiết lỗi đĩa",
     "keyboard_hint": "Lên/Xuống để di chuyển · Enter để xác nhận",
     "ok": "OK",
-    "cancel": "Hủy"
+    "cancel": "Hủy",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -2275,7 +2492,20 @@
     "check_log": "Periksa log serial untuk detail galat disk",
     "keyboard_hint": "Atas/Bawah untuk berpindah · Enter untuk mengonfirmasi",
     "ok": "Oke",
-    "cancel": "Batal"
+    "cancel": "Batal",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -2322,7 +2552,20 @@
     "check_log": "راجع السجل التسلسلي لتفاصيل خطأ القرص",
     "keyboard_hint": "أعلى/أسفل للتنقل · Enter للتأكيد",
     "ok": "موافق",
-    "cancel": "إلغاء"
+    "cancel": "إلغاء",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -2368,7 +2611,20 @@
     "check_log": "ดูบันทึกอนุกรมสำหรับรายละเอียดข้อผิดพลาดของดิสก์",
     "keyboard_hint": "ปุ่มลูกศรขึ้น/ลง เพื่อเลือก · Enter เพื่อยืนยัน",
     "ok": "ตกลง",
-    "cancel": "ยกเลิก"
+    "cancel": "ยกเลิก",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -2414,7 +2670,20 @@
     "check_log": "डिस्क त्रुटि विवरण के लिए सीरियल लॉग देखें",
     "keyboard_hint": "ऊपर/नीचे चुनें · Enter से पुष्टि करें",
     "ok": "ठीक है",
-    "cancel": "रद्द करें"
+    "cancel": "रद्द करें",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -2461,7 +2730,20 @@
     "check_log": "Kontrollera serielloggen för diskfel",
     "keyboard_hint": "Upp/Ner för att bläddra · Retur för att bekräfta",
     "ok": "OK",
-    "cancel": "Avbryt"
+    "cancel": "Avbryt",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -2508,7 +2790,20 @@
     "check_log": "Kontrollér serieloggen for diskfejl",
     "keyboard_hint": "Op/Ned for at bevæge · Enter for at bekræfte",
     "ok": "OK",
-    "cancel": "Annullér"
+    "cancel": "Annullér",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -2555,7 +2850,20 @@
     "check_log": "Sjekk serielloggen for diskfeil",
     "keyboard_hint": "Opp/Ned for å bla · Enter for å bekrefte",
     "ok": "OK",
-    "cancel": "Avbryt"
+    "cancel": "Avbryt",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -2602,7 +2910,20 @@
     "check_log": "Tarkista sarjalokia levyvirheiden tiedoista",
     "keyboard_hint": "Ylös/Alas liikkuu · Enter vahvistaa",
     "ok": "OK",
-    "cancel": "Peruuta"
+    "cancel": "Peruuta",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -2649,7 +2970,20 @@
     "check_log": "Skoðaðu raðannálann fyrir nánari villur",
     "keyboard_hint": "Upp/Niður til að færa · Enter til að staðfesta",
     "ok": "Í lagi",
-    "cancel": "Hætta við"
+    "cancel": "Hætta við",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -2696,7 +3030,20 @@
     "check_log": "Kettatõrke üksikasjad leia seriallogist",
     "keyboard_hint": "Üles/Alla liigub · Enter kinnitab",
     "ok": "OK",
-    "cancel": "Tühista"
+    "cancel": "Tühista",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -2743,7 +3090,20 @@
     "check_log": "Skatiet seriālo žurnālu par diska kļūdām",
     "keyboard_hint": "Augšup/Lejup, lai pārvietotu · Enter, lai apstiprinātu",
     "ok": "LABI",
-    "cancel": "Atcelt"
+    "cancel": "Atcelt",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -2790,7 +3150,20 @@
     "check_log": "Disko klaidų ieškokite nuosekliajame žurnale",
     "keyboard_hint": "Aukštyn/Žemyn judėti · Enter patvirtinti",
     "ok": "GERAI",
-    "cancel": "Atšaukti"
+    "cancel": "Atšaukti",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -2837,7 +3210,20 @@
     "check_log": "Podrobnosti o chybě disku najdete v sériovém logu",
     "keyboard_hint": "Nahoru/Dolů pro pohyb · Enter pro potvrzení",
     "ok": "OK",
-    "cancel": "Zrušit"
+    "cancel": "Zrušit",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -2884,7 +3270,20 @@
     "check_log": "Podrobnosti o chybe disku nájdete v sériovom logu",
     "keyboard_hint": "Hore/Dole pre pohyb · Enter pre potvrdenie",
     "ok": "OK",
-    "cancel": "Zrušiť"
+    "cancel": "Zrušiť",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -2931,7 +3330,20 @@
     "check_log": "A lemezhibák részleteit a soros naplóban találja",
     "keyboard_hint": "Fel/Le mozgás · Enter jóváhagyás",
     "ok": "OK",
-    "cancel": "Mégse"
+    "cancel": "Mégse",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -2978,7 +3390,20 @@
     "check_log": "Verificați jurnalul serial pentru detalii despre eroarea de disc",
     "keyboard_hint": "Sus/Jos pentru a deplasa · Enter pentru a confirma",
     "ok": "OK",
-    "cancel": "Anulare"
+    "cancel": "Anulare",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -3025,7 +3450,20 @@
     "check_log": "Pojedinosti o pogrešci diska potražite u serijskom zapisu",
     "keyboard_hint": "Gore/Dolje za pomicanje · Enter za potvrdu",
     "ok": "U redu",
-    "cancel": "Odustani"
+    "cancel": "Odustani",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -3072,7 +3510,20 @@
     "check_log": "Podrobnosti napake diska poiščite v serijskem dnevniku",
     "keyboard_hint": "Gor/Dol za premik · Enter za potrditev",
     "ok": "V redu",
-    "cancel": "Prekliči"
+    "cancel": "Prekliči",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -3119,7 +3570,20 @@
     "check_log": "Δείτε το σειριακό αρχείο για λεπτομέρειες σφάλματος δίσκου",
     "keyboard_hint": "Πάνω/Κάτω για κίνηση · Enter για επιβεβαίωση",
     "ok": "ΟΚ",
-    "cancel": "Άκυρο"
+    "cancel": "Άκυρο",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -3166,7 +3630,20 @@
     "check_log": "Consulteu el registre sèrie per als detalls de l'error de disc",
     "keyboard_hint": "Amunt/Avall per moure · Enter per confirmar",
     "ok": "D'acord",
-    "cancel": "Cancel·la"
+    "cancel": "Cancel·la",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -3213,7 +3690,20 @@
     "check_log": "Проверете серийния дневник за подробности за дисковата грешка",
     "keyboard_hint": "Нагоре/Надолу за движение · Enter за потвърждение",
     "ok": "ОК",
-    "cancel": "Отказ"
+    "cancel": "Отказ",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -3260,7 +3750,20 @@
     "check_log": "Падрабязнасці пра памылку дыска глядзіце ў часопісе",
     "keyboard_hint": "Уверх/Уніз для руху · Enter для пацверджання",
     "ok": "ОК",
-    "cancel": "Адмяніць"
+    "cancel": "Адмяніць",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -3307,7 +3810,20 @@
     "check_log": "Детаље грешке диска потражите у серијском запису",
     "keyboard_hint": "Горе/Доле за померање · Enter за потврду",
     "ok": "У реду",
-    "cancel": "Откажи"
+    "cancel": "Откажи",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -3354,7 +3870,20 @@
     "check_log": "Detalje greške diska potražite u serijskom zapisu",
     "keyboard_hint": "Gore/Dole za pomeranje · Enter za potvrdu",
     "ok": "U redu",
-    "cancel": "Otkaži"
+    "cancel": "Otkaži",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -3401,7 +3930,20 @@
     "check_log": "Деталите за грешката на дискот се во серискиот дневник",
     "keyboard_hint": "Горе/Долу за движење · Enter за потврда",
     "ok": "ОК",
-    "cancel": "Откажи"
+    "cancel": "Откажи",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -3448,7 +3990,20 @@
     "check_log": "Диск қатесінің мәліметтерін сериялық журналдан қараңыз",
     "keyboard_hint": "Жоғары/Төмен жылжу · Enter растау",
     "ok": "ЖАРАЙДЫ",
-    "cancel": "Бас тарту"
+    "cancel": "Бас тарту",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -3495,7 +4050,20 @@
     "check_log": "Диск катасынын чоо-жайын сериялык журналдан караңыз",
     "keyboard_hint": "Жогору/Төмөн жылдыруу · Enter ырастоо",
     "ok": "МАКУЛ",
-    "cancel": "Жокко чыгаруу"
+    "cancel": "Жокко чыгаруу",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -3542,7 +4110,20 @@
     "check_log": "Kontrolloni regjistrin serik për detaje të gabimit të diskut",
     "keyboard_hint": "Lart/Poshtë për lëvizur · Enter për të konfirmuar",
     "ok": "OK",
-    "cancel": "Anulo"
+    "cancel": "Anulo",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -3589,7 +4170,20 @@
     "check_log": "בדוק את יומן הסיריאלי לפרטי שגיאת דיסק",
     "keyboard_hint": "למעלה/למטה למעבר · Enter לאישור",
     "ok": "אישור",
-    "cancel": "ביטול"
+    "cancel": "ביטול",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -3636,7 +4230,20 @@
     "check_log": "برای جزئیات خطای دیسک به گزارش سریال مراجعه کنید",
     "keyboard_hint": "بالا/پایین برای حرکت · Enter برای تأیید",
     "ok": "تأیید",
-    "cancel": "لغو"
+    "cancel": "لغو",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -3683,7 +4290,20 @@
     "check_log": "Disk xətasının təfərrüatları üçün serial jurnala baxın",
     "keyboard_hint": "Yuxarı/Aşağı hərəkət · Enter təsdiq",
     "ok": "OK",
-    "cancel": "Ləğv et"
+    "cancel": "Ləğv et",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -3730,7 +4350,20 @@
     "check_log": "Disk xatosi tafsilotlarini ketma-ketlik jurnalidan koʻring",
     "keyboard_hint": "Yuqoriga/Pastga harakat · Enter tasdiqlash",
     "ok": "OK",
-    "cancel": "Bekor qilish"
+    "cancel": "Bekor qilish",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -3777,7 +4410,20 @@
     "check_log": "डिस्क त्रुटि विवरणका लागि सिरियल लग जाँच्नुहोस्",
     "keyboard_hint": "सार्न माथि/तल · पुष्टि गर्न Enter",
     "ok": "ठीक छ",
-    "cancel": "रद्द गर्नुहोस्"
+    "cancel": "रद्द गर्नुहोस्",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -3824,7 +4470,20 @@
     "check_log": "Semak log bersiri untuk butiran ralat cakera",
     "keyboard_hint": "Atas/Bawah untuk gerak · Enter untuk sah",
     "ok": "OK",
-    "cancel": "Batal"
+    "cancel": "Batal",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -3871,7 +4530,20 @@
     "check_log": "Tingnan ang serial log para sa detalye ng disk error",
     "keyboard_hint": "Pataas/Pababa para lumipat · Enter para kumpirmahin",
     "ok": "OK",
-    "cancel": "Kanselahin"
+    "cancel": "Kanselahin",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -3918,7 +4590,20 @@
     "check_log": "Angalia kumbukumbu ya mfululizo kwa maelezo ya hitilafu ya diski",
     "keyboard_hint": "Juu/Chini kusogeza · Enter kuthibitisha",
     "ok": "SAWA",
-    "cancel": "Ghairi"
+    "cancel": "Ghairi",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -3965,7 +4650,20 @@
     "check_log": "Gwiriwch y log cyfresol am fanylion gwall disg",
     "keyboard_hint": "I fyny/i lawr i symud · Enter i gadarnhau",
     "ok": "Iawn",
-    "cancel": "Diddymu"
+    "cancel": "Diddymu",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -4012,7 +4710,20 @@
     "check_log": "Consulte o rexistro serie para detalles do erro do disco",
     "keyboard_hint": "Arriba/Abaixo para mover · Enter para confirmar",
     "ok": "Aceptar",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -4059,7 +4770,20 @@
     "check_log": "Gaan die reeklog na vir skyffoutbesonderhede",
     "keyboard_hint": "Op/Af om te beweeg · Enter om te bevestig",
     "ok": "OK",
-    "cancel": "Kanselleer"
+    "cancel": "Kanselleer",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -4106,7 +4830,20 @@
     "check_log": "Kontrolu la serian protokolon por disk-eraro-detaloj",
     "keyboard_hint": "Supren/Malsupren por movi · Enter por konfirmi",
     "ok": "Bone",
-    "cancel": "Nuligi"
+    "cancel": "Nuligi",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -4153,7 +4890,20 @@
     "check_log": "Дискний алдааны дэлгэрэнгүйг цуваа логоос шалгана уу",
     "keyboard_hint": "Дээш/Доош хөдлөх · Enter батлах",
     "ok": "ЗА",
-    "cancel": "Цуцлах"
+    "cancel": "Цуцлах",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
@@ -4200,890 +4950,2961 @@
     "check_log": "Disk ýalňyşlygynyň jikme-jikliklerini serial gurnaldan görüň",
     "keyboard_hint": "Ýokary/Aşak hereket · Enter tassyklama",
     "ok": "BOLÝAR",
-    "cancel": "Bes et"
+    "cancel": "Bes et",
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
    }
   },
   {
    "code": "aa",
    "name": "Qafar",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ab",
    "name": "Аԥсшәа",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ak",
    "name": "Akan",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "am",
    "name": "አማርኛ",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "an",
    "name": "aragonés",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "as",
    "name": "অসমীয়া",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ba",
    "name": "башҡорт теле",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "bm",
    "name": "bamanakan",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "bn",
    "name": "বাংলা",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "bo",
    "name": "བོད་སྐད་",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "br",
    "name": "brezhoneg",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "bs",
    "name": "bosanski",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ce",
    "name": "нохчийн",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "co",
    "name": "corsu",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "cu",
    "name": "церковнослове́нскїй",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "cv",
    "name": "чӑваш",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "dv",
    "name": "ދިވެހިބަސް",
    "rtl": true,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "dz",
    "name": "རྫོང་ཁ",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ee",
    "name": "eʋegbe",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "eu",
    "name": "euskara",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ff",
    "name": "Pulaar",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "fo",
    "name": "føroyskt",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "fy",
    "name": "Frysk",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ga",
    "name": "Gaeilge",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "gd",
    "name": "Gàidhlig",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "gn",
    "name": "avañe’ẽ",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "gu",
    "name": "ગુજરાતી",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "gv",
    "name": "Gaelg",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ha",
    "name": "Hausa",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ht",
    "name": "Kreyòl Ayisyen",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "hy",
    "name": "հայերեն",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ia",
    "name": "interlingua",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ie",
    "name": "Interlingue",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ig",
    "name": "Igbo",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ii",
    "name": "ꆈꌠꉙ",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "io",
    "name": "Ido",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "iu",
    "name": "ᐃᓄᒃᑎᑐᑦ",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "jv",
    "name": "Jawa",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ka",
    "name": "ქართული",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ki",
    "name": "Gikuyu",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "kl",
    "name": "kalaallisut",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "km",
    "name": "ខ្មែរ",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "kn",
    "name": "ಕನ್ನಡ",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ks",
    "name": "کٲشُر",
    "rtl": true,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ku",
    "name": "kurdî (kurmancî)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "kw",
    "name": "kernewek",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "la",
    "name": "Latina",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "lb",
    "name": "Lëtzebuergesch",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "lg",
    "name": "Luganda",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ln",
    "name": "lingála",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "lo",
    "name": "ລາວ",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "lu",
    "name": "Tshiluba",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "mg",
    "name": "Malagasy",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "mi",
    "name": "Māori",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ml",
    "name": "മലയാളം",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "mr",
    "name": "मराठी",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "mt",
    "name": "Malti",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "my",
    "name": "မြန်မာ",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "nd",
    "name": "isiNdebele",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "nn",
    "name": "norsk nynorsk",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "nr",
    "name": "isiNdebele",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "nv",
    "name": "Diné Bizaad",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ny",
    "name": "Nyanja",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "oc",
    "name": "occitan",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "om",
    "name": "Oromoo",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "or",
    "name": "ଓଡ଼ିଆ",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "os",
    "name": "ирон",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "pa",
    "name": "ਪੰਜਾਬੀ",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ps",
    "name": "پښتو",
    "rtl": true,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "qu",
    "name": "Runasimi",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "rm",
    "name": "rumantsch",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "rn",
    "name": "Ikirundi",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "rw",
    "name": "Ikinyarwanda",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "sa",
    "name": "संस्कृत भाषा",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "sc",
    "name": "sardu",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "sd",
    "name": "سنڌي",
    "rtl": true,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "se",
    "name": "davvisámegiella",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "sg",
    "name": "Sängö",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "si",
    "name": "සිංහල",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "sn",
    "name": "chiShona",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "so",
    "name": "Soomaali",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ss",
    "name": "siSwati",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "st",
    "name": "Sesotho",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "su",
    "name": "Basa Sunda",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ta",
    "name": "தமிழ்",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "te",
    "name": "తెలుగు",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "tg",
    "name": "тоҷикӣ",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ti",
    "name": "ትግርኛ",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "tn",
    "name": "Setswana",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "to",
    "name": "lea fakatonga",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ts",
    "name": "Xitsonga",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "tt",
    "name": "татар",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ug",
    "name": "ئۇيغۇرچە",
    "rtl": true,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ur",
    "name": "اردو",
    "rtl": true,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ve",
    "name": "Tshivenḓa",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "vo",
    "name": "Volapük",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "wa",
    "name": "walon",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "wo",
    "name": "Wolof",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "xh",
    "name": "IsiXhosa",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "yi",
    "name": "ייִדיש",
    "rtl": true,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "yo",
    "name": "Èdè Yorùbá",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "za",
    "name": "Vahcuengh",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "zu",
    "name": "isiZulu",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "en-US",
    "name": "English (United States)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "en-GB",
    "name": "English (United Kingdom)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "en-AU",
    "name": "English (Australia)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "en-CA",
    "name": "English (Canada)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "en-IN",
    "name": "English (India)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "en-ZA",
    "name": "English (South Africa)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "en-IE",
    "name": "English (Ireland)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "es-MX",
    "name": "español (México)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "es-AR",
    "name": "español (Argentina)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "es-CO",
    "name": "español (Colombia)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "es-CL",
    "name": "español (Chile)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "es-PE",
    "name": "español (Perú)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "es-VE",
    "name": "español (Venezuela)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "es-EC",
    "name": "español (Ecuador)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "es-GT",
    "name": "español (Guatemala)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "es-CU",
    "name": "español (Cuba)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "es-BO",
    "name": "español (Bolivia)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "es-DO",
    "name": "español (República Dominicana)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "pt-BR",
    "name": "português (Brasil)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "pt-PT",
    "name": "português (Portugal)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "pt-AO",
    "name": "português (Angola)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "pt-MZ",
    "name": "português (Moçambique)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "fr-CA",
    "name": "français (Canada)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "fr-BE",
    "name": "français (Belgique)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "fr-CH",
    "name": "français (Suisse)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "fr-LU",
    "name": "français (Luxembourg)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "de-AT",
    "name": "Deutsch (Österreich)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "de-CH",
    "name": "Deutsch (Schweiz)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ar-EG",
    "name": "العربية (مصر)",
    "rtl": true,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ar-SA",
    "name": "العربية (المملكة العربية السعودية)",
    "rtl": true,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ar-DZ",
    "name": "العربية (الجزائر)",
    "rtl": true,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ar-MA",
    "name": "العربية (المغرب)",
    "rtl": true,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ar-AE",
    "name": "العربية (الإمارات العربية المتحدة)",
    "rtl": true,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ar-TN",
    "name": "العربية (تونس)",
    "rtl": true,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "az-Latn",
    "name": "azərbaycan (latın)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "az-Cyrl",
    "name": "азәрбајҹан (Кирил)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "uz-Latn",
    "name": "o‘zbek (lotin)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "uz-Cyrl",
    "name": "ўзбекча (Кирил)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "sr-Cyrl",
    "name": "српски (ћирилица)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "zh-HK",
    "name": "中文 (繁體字, 中國香港特別行政區)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "本地图片",
+    "no_pictures": "（磁盘上没有图片）",
+    "you_prefix": "你：",
+    "jbot_prefix": "Jbot：",
+    "jbot_greeting": "Jbot 快速版（免费）。输入 help 查看我能做什么。",
+    "quick_settings": "设置",
+    "quick_jbot": "Jbot",
+    "quick_browser": "浏览器",
+    "quick_files": "文件",
+    "quick_back": "返回",
+    "wp_eastlake": "东湖",
+    "wp_ocean": "海洋蓝",
+    "wp_sky": "天空蓝"
+   }
   },
   {
    "code": "pa-Guru",
    "name": "ਪੰਜਾਬੀ (ਗੁਰਮੁਖੀ)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "pa-Arab",
    "name": "پنجابی (عربی)",
    "rtl": true,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "hi-Latn",
    "name": "Hindi (Latin)",
    "rtl": false,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   },
   {
    "code": "ur-IN",
    "name": "اردو (بھارت)",
    "rtl": true,
-   "strings": {}
+   "strings": {
+    "local_pictures": "Local pictures",
+    "no_pictures": "(no pictures on disk)",
+    "you_prefix": "You: ",
+    "jbot_prefix": "Jbot: ",
+    "jbot_greeting": "Jbot Quick (free). Type help for what I can do.",
+    "quick_settings": "Settings",
+    "quick_jbot": "Jbot",
+    "quick_browser": "Browser",
+    "quick_files": "Files",
+    "quick_back": "Back",
+    "wp_eastlake": "East Lake",
+    "wp_ocean": "Ocean Blue",
+    "wp_sky": "Sky Blue"
+   }
   }
  ]
 }

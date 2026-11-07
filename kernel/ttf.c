@@ -507,6 +507,10 @@ int ttf_advance(uint32_t cp)
     return (int)(aw * st + 0.5f);
 }
 
+static int trans_mode;
+
+void ttf_set_transparent(int on) { trans_mode = on ? 1 : 0; }
+
 int ttf_draw_cp(int x, int y, uint32_t fg, uint32_t bg, uint32_t cp)
 {
     if (!g_ready)
@@ -524,10 +528,12 @@ int ttf_draw_cp(int x, int y, uint32_t fg, uint32_t bg, uint32_t cp)
             for (int rx = 0; rx < g->w; rx++) {
                 uint8_t cov = row[rx];
                 int pxx = gx + rx;
-                if (cov)
-                    fb_putpixel(pxx, py, fb_mix(fg, bg, cov));
-                else
+                if (cov) {
+                    uint32_t under = trans_mode ? fb_getpixel(pxx, py) : bg;
+                    fb_putpixel(pxx, py, fb_mix(fg, under, cov));
+                } else if (!trans_mode) {
                     fb_putpixel(pxx, py, bg);
+                }
             }
         }
     }
