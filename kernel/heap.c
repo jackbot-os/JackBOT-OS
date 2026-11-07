@@ -30,8 +30,17 @@ static block_hdr *grow(size_t bytes)
     uint64_t base = heap_end;
     for (size_t i = 0; i < pages; i++) {
         void *frame = pmm_alloc_page();
-        if (!frame)
+        if (!frame) {
+            /* Roll back the pages already allocated for this growth so
+               they are not leaked while the rest of the kernel keeps
+               running in an OOM situation. */
+            for (size_t k = 0; k < i; k++) {
+                uint64_t phys = vmm_phys_of(base + k * PAGE_SIZE);
+                if (phys)
+                    pmm_free_page((void *)phys);
+            }
             return NULL;
+        }
         vmm_map_page(base + i * PAGE_SIZE, (uint64_t)(uintptr_t)frame,
                      KERNEL_PTE_FLAGS);
     }
@@ -81,7 +90,8 @@ static void split(block_hdr *b, size_t bytes)
 
 void *kmalloc(size_t size)
 {
-    if (size == 0)
+    /* Reject 0 and sizes whose ALIGN16 rounding would wrap around. */
+    if (size == 0 || size > (size_t)-1 - 15)
         return NULL;
     size_t wanted = ALIGN16(size);
 
@@ -116,14 +126,21 @@ void kfree(void *ptr)
     if (!ptr)
         return;
     block_hdr *b = (block_hdr *)((uint8_t *)ptr - HDR_SIZE);
+    /* Magic check doubles as a double-free detector: after the first
+       free the header is poisoned, so a second free of the same pointer
+       (or any bogus pointer) is silently rejected instead of corrupting
+       the free list through coalesce(). */
     if (b->magic != HDR_MAGIC)
         return;
+    b->magic = 0;
     b->free = 1;
     coalesce();
 }
 
 void *kcalloc(size_t n, size_t size)
 {
+    if (n && size > (size_t)-1 / n)
+        return NULL;
     size_t total = n * size;
     void *p = kmalloc(total);
     if (!p)
@@ -143,6 +160,11 @@ void *krealloc(void *ptr, size_t size)
         return NULL;
     }
     block_hdr *b = (block_hdr *)((uint8_t *)ptr - HDR_SIZE);
+    /* A freed or bogus pointer must not be treated as a live block:
+       reading b->size on a poisoned/foreign header could copy garbage
+       amounts of memory or corrupt the heap. */
+    if (b->magic != HDR_MAGIC)
+        return NULL;
     if (b->size >= ALIGN16(size))
         return ptr;
 

@@ -7,8 +7,27 @@ void context_switch(uint64_t *old_rsp, uint64_t *new_rsp);
 void thread_trampoline(void);
 void user_enter(void);
 
+extern uint64_t p4_table[512];
+void tss_set_rsp0(uint64_t rsp0);
+
 static thread_t threads[MAX_THREADS];
 static thread_t *current;
+
+/* Per-thread address space: user threads run under their own page table,
+   kernel threads under the kernel one. p4_table is linked/loaded low and
+   identity mapped, so its address is also its physical address.
+   TSS.rsp0 must follow the running user thread: the CPU loads it when a
+   ring-3 task traps into the kernel, and using another task's stack there
+   corrupts both stacks. */
+static void load_cr3_for(thread_t *next)
+{
+    uint64_t cr3 = (next && next->is_user && next->p4phys)
+                 ? next->p4phys
+                 : (uint64_t)(uintptr_t)p4_table;
+    if (next && next->is_user && next->kstack_top)
+        tss_set_rsp0(next->kstack_top);
+    __asm__ volatile("mov %0, %%cr3" : : "r"(cr3) : "memory");
+}
 
 thread_t *current_thread(void)
 {
@@ -82,6 +101,9 @@ thread_t *thread_create_user(uint64_t p4phys, uint64_t user_rip, uint64_t user_r
     thread_t *t = &threads[i];
     t->id = i;
     t->is_user = 1;
+    t->user_entry = user_rip;
+    t->recover_count = 0;
+    t->recover_tick = 0;
     t->p4phys = p4phys;
     t->cpu_ticks = 0;
     t->mem_bytes = 0;
@@ -131,6 +153,7 @@ void thread_yield(void)
     prev->state = T_READY;
     next->state = T_RUNNING;
     current = next;
+    load_cr3_for(next);
     context_switch(&prev->rsp, &next->rsp);
     __asm__ volatile("push %0; popf" : : "r"(flags));
 }
@@ -147,6 +170,7 @@ void thread_exit(void)
     }
     next->state = T_RUNNING;
     current = next;
+    load_cr3_for(next);
     context_switch(&prev->rsp, &next->rsp);
     for (;;)
         __asm__ volatile("hlt");
@@ -183,6 +207,7 @@ void process_kill(thread_t *t, const char *reason)
         if (next) {
             next->state = T_RUNNING;
             current = next;
+            load_cr3_for(next);
             context_switch(&t->rsp, &next->rsp);
         } else {
             __asm__ volatile("cli");
@@ -199,3 +224,4 @@ void sched_tick(void)
         current->cpu_ticks++;
     thread_yield();
 }
+

@@ -5,9 +5,41 @@
 #include <kernel/ui.h>
 
 static int us = 1;
+static int glass = 1;
 
 void ui_set_scale(int s) { us = s; }
 int ui_scale(void) { return us; }
+void ui_set_glass(int on) { glass = on ? 1 : 0; }
+int ui_glass(void) { return glass; }
+
+/* Blend-fill helpers: same shapes as the solid versions, but every pixel is
+   mixed with what is already on the framebuffer, so the wallpaper and any
+   window behind the panel stay visible. */
+static void fill_blend(int x, int y, int w, int h, uint32_t c, int cov)
+{
+    for (int j = 0; j < h; j++)
+        for (int i = 0; i < w; i++)
+            fb_putpixel_blend(x + i, y + j, c, (uint8_t)cov);
+}
+
+static void round_blend(int x, int y, int w, int h, int r, uint32_t c, int cov)
+{
+    if (w <= 0 || h <= 0)
+        return;
+    if (r <= 0 || r * 2 >= w || r * 2 >= h) {
+        fill_blend(x, y, w, h, c, cov);
+        return;
+    }
+    fill_blend(x + r, y, w - 2 * r, h, c, cov);
+    fill_blend(x, y + r, w, h - 2 * r, c, cov);
+    for (int yy = 0; yy < r; yy++) {
+        int span = 0;
+        while (span * span + (r - 1 - yy) * (r - 1 - yy) < r * r)
+            span++;
+        fill_blend(x + r - span + 1, y + yy, 2 * (span - 1), 1, c, cov);
+        fill_blend(x + r - span + 1, y + h - 1 - yy, 2 * (span - 1), 1, c, cov);
+    }
+}
 
 void ui_rect(int x, int y, int w, int h, uint32_t c)
 {
@@ -138,15 +170,27 @@ int ui_window(struct ui_win *win, const char *title,
     last_win = *win;
     last_valid = 1;
     int rad = 7 * S;
-    /* window body */
-    ui_round_rect(win->x, win->y, win->w, win->h, rad, fb_rgb(24, 27, 38));
+    /* window body: frosted when liquid glass is on, solid otherwise */
+    if (glass)
+        round_blend(win->x, win->y, win->w, win->h, rad,
+                    fb_rgb(24, 27, 38), 170);
+    else
+        ui_round_rect(win->x, win->y, win->w, win->h, rad,
+                      fb_rgb(24, 27, 38));
     ui_round_border(win->x, win->y, win->w, win->h, rad,
                     fb_rgb(70, 110, 180));
     /* blue title bar (rounded top, square bottom edge) */
-    ui_rect(win->x + rad, win->y, win->w - 2 * rad, 26 * S,
-            fb_rgb(30, 64, 122));
-    ui_rect(win->x, win->y + rad, win->w, 26 * S - rad,
-            fb_rgb(30, 64, 122));
+    if (glass) {
+        fill_blend(win->x + rad, win->y, win->w - 2 * rad, 26 * S,
+                   fb_rgb(30, 64, 122), 175);
+        fill_blend(win->x, win->y + rad, win->w, 26 * S - rad,
+                   fb_rgb(30, 64, 122), 175);
+    } else {
+        ui_rect(win->x + rad, win->y, win->w - 2 * rad, 26 * S,
+                fb_rgb(30, 64, 122));
+        ui_rect(win->x, win->y + rad, win->w, 26 * S - rad,
+                fb_rgb(30, 64, 122));
+    }
     ui_rect(win->x, win->y + 26 * S, win->w, 2 * S,
             fb_rgb(64, 120, 200));
     gfx_draw_string(win->x + 12 * S, win->y + 5 * S,

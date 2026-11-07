@@ -3,6 +3,9 @@
 #include <stdint.h>
 
 void ui_set_scale(int s);
+/* Liquid-glass switch: translucent window chrome over the desktop. */
+void ui_set_glass(int on);
+int ui_glass(void);
 int ui_scale(void);
 
 void ui_rect(int x, int y, int w, int h, uint32_t c);

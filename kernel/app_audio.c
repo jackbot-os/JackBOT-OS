@@ -5,6 +5,8 @@
 #include <kernel/ui.h>
 #include <kernel/ps2.h>
 #include <kernel/ac97.h>
+#include <kernel/i18n.h>
+#include "i18n_data.h"
 
 static struct ui_win W;
 static char msg[80];
@@ -42,7 +44,7 @@ int audio_frame(int mx, int my, int clicked)
     if (!inited)
         audio_open();
     int S = ui_scale();
-    if (ui_window(&W, "Audio", mx, my, clicked))
+    if (ui_window(&W, tr(STR_WT_AUDIO), mx, my, clicked))
         return 1;
 
     int x = W.x + 30 * S, y = W.y + 56 * S;
@@ -50,13 +52,13 @@ int audio_frame(int mx, int my, int clicked)
     int have = ac97_present();
     gfx_draw_string(x, y, have ? fb_rgb(150, 230, 170) : fb_rgb(240, 200, 120),
         fb_rgb(30, 34, 46),
-        have ? "Sound card: Intel AC97 (48000 Hz, stereo 16-bit)."
-             : "No sound card: AC97/HD Audio driver not built yet.");
+        have ? tr(STR_AU_CARD)
+             : tr(STR_AU_NOCARD));
 
     int trackY = y + 72 * S, trackH = 12 * S;
     int trackX = x + 80 * S, trackW = bw - 160 * S;
     gfx_draw_string(x, trackY - 4 * S, fb_rgb(150, 210, 255),
-                    fb_rgb(30, 34, 46), "Volume");
+                    fb_rgb(30, 34, 46), tr(STR_AU_VOLUME));
     ui_rect(trackX, trackY, trackW, trackH, fb_rgb(50, 56, 72));
     int hx = trackX + (int)((long)trackW * vol / 100);
     ui_rect(hx - 6 * S, trackY - 8 * S, 12 * S, trackH + 16 * S,
@@ -81,12 +83,12 @@ int audio_frame(int mx, int my, int clicked)
 
     int dy2 = trackY + 64 * S;
     gfx_draw_string(x, dy2, fb_rgb(150, 210, 255), fb_rgb(30, 34, 46),
-                    "Output devices:");
+                    tr(STR_AU_OUTPUTS));
     ui_rect(x, dy2 + 28 * S, bw, 34 * S, fb_rgb(38, 44, 60));
     gfx_draw_string(x + 14 * S, dy2 + 37 * S, fb_rgb(180, 230, 200),
                     fb_rgb(38, 44, 60),
-                    have ? "AC97 codec (SigmaTel STAC9700)"
-                         : "(none detected)");
+                    have ? tr(STR_AU_CODEC)
+                         : tr(STR_AU_NONE));
 
     if (msg[0])
         gfx_draw_string(x, W.y + W.h - 122 * S, fb_rgb(240, 200, 120),
@@ -96,8 +98,8 @@ int audio_frame(int mx, int my, int clicked)
     int half = (bw - gap) / 2;
     int by = W.y + W.h - 78 * S;
     if (have && ui_button(x, by, half, 38 * S,
-                          "Play boot", 0, mx, my, clicked)) {
-        const char *m = "Playing boot sound...";
+                          tr(STR_AU_PLAY_BOOT), 0, mx, my, clicked)) {
+        const char *m = tr(STR_AU_BOOT_PLAYING);
         int q = 0;
         while (m[q] && q < 70) { msg[q] = m[q]; q++; }
         msg[q] = 0;

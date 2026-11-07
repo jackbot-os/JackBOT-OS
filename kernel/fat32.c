@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <kernel/fat32.h>
 #include <kernel/ata.h>
+#include <kernel/blk.h>
 #include <kernel/heap.h>
 #include <kernel/protect.h>
 #include <kernel/persist.h>
@@ -85,19 +86,19 @@ static int read_cluster(uint32_t c, uint8_t *buf)
 {
     if (!cluster_valid(c))
         return -1;
-    return ata_read(cluster_lba(c), spc, buf);
+    return blk_read(cluster_lba(c), spc, buf);
 }
 static int write_cluster(uint32_t c, const uint8_t *buf)
 {
     if (!cluster_valid(c))
         return -1;
-    return ata_write(cluster_lba(c), spc, buf);
+    return blk_write(cluster_lba(c), spc, buf);
 }
 
 static void fache_load(uint32_t sec)
 {
     if (sec != fache_sec) {
-        ata_read(part_offset + sec, 1, fache);
+        blk_read(part_offset + sec, 1, fache);
         fache_sec = sec;
     }
 }
@@ -120,7 +121,7 @@ static void fat_set(uint32_t c, uint32_t v)
     uint32_t old = rd32(fache + off);
     wr32(fache + off, (old & 0xF0000000) | (v & 0x0FFFFFFF));
     for (uint8_t f = 0; f < nfats; f++)
-        ata_write(part_offset + fat_start + (uint32_t)f * fat_size + rel,
+        blk_write(part_offset + fat_start + (uint32_t)f * fat_size + rel,
                   1, fache);
 }
 
@@ -391,10 +392,10 @@ static int mount_common(void)
 int fat_mount_part(uint32_t offset, uint32_t part_sectors)
 {
     (void)part_sectors;
-    if (!ata_present())
+    if (!blk_present())
         return -1;
     part_offset = offset;
-    if (ata_read(part_offset, 1, sbuf) < 0)
+    if (blk_read(part_offset, 1, sbuf) != 0)
         return -1;
     return mount_common();
 }
@@ -841,7 +842,7 @@ uint32_t fat_free_bytes(void)
     uint32_t freec = 0;
     uint32_t per = bps / 4;
     for (uint32_t s = 0; s < fat_size; s++) {
-        ata_read(part_offset + fat_start + s, 1, sbuf);
+        blk_read(part_offset + fat_start + s, 1, sbuf);
         for (uint32_t i = 0; i < per; i++) {
             uint32_t cl = s * per + i;
             if (cl < 2)
@@ -1046,4 +1047,203 @@ int fat_move(const char *src83, const char *dst83)
 out:
     kfree(buf);
     return rc;
+}
+
+/* ---- POSIX-style file handles ----------------------------------------
+   A small handle table on top of the existing cluster machinery: open
+   resolves the directory entry once, and read/write walk the cluster chain
+   from the handle's current offset. Writes overwrite bytes inside the
+   existing file size; extending a file still goes through fat_write_file. */
+struct fat_fh {
+    int used;
+    char name[MAX_PATH];
+    uint32_t size;
+    uint32_t first;
+    uint32_t pos;
+    int writable;
+};
+
+static struct fat_fh fhs[FAT_FH_MAX];
+
+static uint32_t fh_cluster_at(uint32_t first, uint32_t index)
+{
+    uint32_t c = first;
+    uint32_t guard = cluster_count + 2;
+    while (index && cluster_valid(c) && guard--) {
+        c = fat_get(c);
+        index--;
+    }
+    return cluster_valid(c) ? c : 0;
+}
+
+int fat_open_h(const char *name, int writable)
+{
+    uint8_t nm[11];
+    uint32_t dirc;
+    dpos_t dp;
+    uint8_t *e;
+    int slot = -1;
+
+    if (!is_mounted || !name)
+        return -1;
+    if (resolve_path(name, nm, &dirc, 0) < 0)
+        return -1;
+    if (dir_find(dirc, nm, 0, &dp) < 0)
+        return -1;
+    e = cbuf + dp.off;
+    if (e[11] & 0x10)
+        return -1;                      /* directories are not openable */
+
+    for (int i = 0; i < FAT_FH_MAX; i++)
+        if (!fhs[i].used) {
+            slot = i;
+            break;
+        }
+    if (slot < 0)
+        return -1;
+
+    {
+        struct fat_fh *f = &fhs[slot];
+        int n = 0;
+        f->used = 1;
+        while (name[n] && n < MAX_PATH - 1) {
+            f->name[n] = name[n];
+            n++;
+        }
+        f->name[n] = 0;
+        f->size = rd32(e + 28);
+        f->first = (uint32_t)rd16(e + 26) | ((uint32_t)rd16(e + 20) << 16);
+        f->pos = 0;
+        f->writable = writable ? 1 : 0;
+    }
+    return slot;
+}
+
+int fat_read_h(int h, void *buf, uint32_t len)
+{
+    struct fat_fh *f;
+    uint32_t csize, done = 0;
+
+    if (h < 0 || h >= FAT_FH_MAX || !buf)
+        return -1;
+    f = &fhs[h];
+    if (!f->used)
+        return -1;
+    if (f->pos >= f->size || len == 0)
+        return 0;
+    if (len > f->size - f->pos)
+        len = f->size - f->pos;
+    csize = (uint32_t)spc * bps;
+
+    while (done < len) {
+        uint32_t idx = f->pos / csize;
+        uint32_t off = f->pos % csize;
+        uint32_t chunk = csize - off;
+        uint32_t c = fh_cluster_at(f->first, idx);
+        if (!c)
+            return done ? (int)done : -1;
+        if (read_cluster(c, dbuf) < 0)
+            return done ? (int)done : -1;
+        if (chunk > len - done)
+            chunk = len - done;
+        mymemcpy((uint8_t *)buf + done, dbuf + off, chunk);
+        f->pos += chunk;
+        done += chunk;
+    }
+    return (int)done;
+}
+
+int fat_write_h(int h, const void *buf, uint32_t len)
+{
+    struct fat_fh *f;
+    uint32_t csize, done = 0;
+
+    if (h < 0 || h >= FAT_FH_MAX || !buf)
+        return -1;
+    f = &fhs[h];
+    if (!f->used || !f->writable)
+        return -1;
+    if (len == 0)
+        return 0;
+    if (f->pos >= f->size)
+        return -1;                      /* extending needs fat_write_file */
+    if (len > f->size - f->pos)
+        len = f->size - f->pos;
+    csize = (uint32_t)spc * bps;
+
+    while (done < len) {
+        uint32_t idx = f->pos / csize;
+        uint32_t off = f->pos % csize;
+        uint32_t chunk = csize - off;
+        uint32_t c = fh_cluster_at(f->first, idx);
+        if (!c)
+            return done ? (int)done : -1;
+        if (read_cluster(c, dbuf) < 0)
+            return done ? (int)done : -1;
+        if (chunk > len - done)
+            chunk = len - done;
+        mymemcpy(dbuf + off, (const uint8_t *)buf + done, chunk);
+        if (write_cluster(c, dbuf) < 0)
+            return done ? (int)done : -1;
+        f->pos += chunk;
+        done += chunk;
+    }
+    return (int)done;
+}
+
+int fat_lseek_h(int h, int32_t off, int whence)
+{
+    struct fat_fh *f;
+    int32_t base;
+
+    if (h < 0 || h >= FAT_FH_MAX)
+        return -1;
+    f = &fhs[h];
+    if (!f->used)
+        return -1;
+    if (whence == FAT_SEEK_SET)
+        base = 0;
+    else if (whence == FAT_SEEK_CUR)
+        base = (int32_t)f->pos;
+    else if (whence == FAT_SEEK_END)
+        base = (int32_t)f->size;
+    else
+        return -1;
+    {
+        int32_t np = base + off;
+        if (np < 0)
+            return -1;
+        f->pos = (uint32_t)np;
+    }
+    return (int)f->pos;
+}
+
+int fat_close_h(int h)
+{
+    if (h < 0 || h >= FAT_FH_MAX || !fhs[h].used)
+        return -1;
+    fhs[h].used = 0;
+    fhs[h].pos = 0;
+    return 0;
+}
+
+int fat_stat_h(const char *name, uint32_t *size, int *is_dir)
+{
+    uint8_t nm[11];
+    uint32_t dirc;
+    dpos_t dp;
+    uint8_t *e;
+
+    if (!is_mounted || !name)
+        return -1;
+    if (resolve_path(name, nm, &dirc, 0) < 0)
+        return -1;
+    if (dir_find(dirc, nm, 0, &dp) < 0)
+        return -1;
+    e = cbuf + dp.off;
+    if (size)
+        *size = rd32(e + 28);
+    if (is_dir)
+        *is_dir = (e[11] & 0x10) ? 1 : 0;
+    return 0;
 }

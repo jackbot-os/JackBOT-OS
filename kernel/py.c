@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <kernel/py.h>
 #include <kernel/heap.h>
+#include <kernel/kstring.h>
 #include <kernel/serial.h>
 
 void *kmalloc(size_t n);
@@ -647,6 +648,38 @@ static V method_call(Lex *L, V recv, const char *m)
             }
             r = vint(found);
         }
+        else if (name_eq(m, "find") && ac >= 1 && args[0].t == T_STR) {
+            const char *p = args[0].s;
+            int lp = slen(p), found = -1;
+            for (int i = 0; s[i] && lp; i++) {
+                int ok = 1;
+                for (int k = 0; k < lp; k++) if (s[i+k] != p[k]) { ok = 0; break; }
+                if (ok) { found = i; break; }
+            }
+            r = vint(found);
+        }
+        else if (name_eq(m, "join") && ac == 1 && args[0].t == T_LIST) {
+            char *out = (char *)kmalloc(MAX_STR);
+            if (!out) {
+                fail("out of memory");
+            } else {
+                int oi = 0;
+                for (int i = 0; i < args[0].n && oi < MAX_STR - 2; i++) {
+                    if (args[0].a[i].t != T_STR || !args[0].a[i].s)
+                        continue;
+                    if (i > 0) {
+                        for (const char *q = s; *q && oi < MAX_STR - 2; q++)
+                            out[oi++] = *q;
+                    }
+                    for (const char *q = args[0].a[i].s;
+                         *q && oi < MAX_STR - 2; q++)
+                        out[oi++] = *q;
+                }
+                out[oi] = 0;
+                r = vstr(out);
+                kfree(out);
+            }
+        }
         else { fail("unknown str method"); }
     } else if (recv.t == T_LIST) {
         if (name_eq(m, "index") && ac >= 1) {
@@ -657,7 +690,51 @@ static V method_call(Lex *L, V recv, const char *m)
             int c = 0;
             for (int i = 0; i < recv.n; i++) if (vals_eq(recv.a[i], args[0])) c++;
             r = vint(c);
+        } else if (name_eq(m, "sort") && ac == 0) {
+            /* in-place bubble sort of int/str items (list is shared) */
+            for (int i = 0; i + 1 < recv.n; i++)
+                for (int j = 0; j + 1 < recv.n - i; j++) {
+                    int swap = 0;
+                    V a = recv.a[j], b = recv.a[j + 1];
+                    if (a.t == T_INT && b.t == T_INT)
+                        swap = a.i > b.i;
+                    else if (a.t == T_STR && b.t == T_STR && a.s && b.s)
+                        swap = strcmp(a.s, b.s) > 0;
+                    if (swap) {
+                        V t = recv.a[j];
+                        recv.a[j] = recv.a[j + 1];
+                        recv.a[j + 1] = t;
+                    }
+                }
+            r = vnone();
         } else { fail("unknown list method"); }
+    } else if (recv.t == T_DICT) {
+        int idx = -1;
+        if (ac >= 1)
+            for (int i = 0; i < recv.dn; i++)
+                if (vals_eq(recv.dk[i], args[0])) { idx = i; break; }
+        if (name_eq(m, "get") && ac >= 1) {
+            if (idx >= 0)
+                r = vcopy(recv.dv[idx]);
+            else if (ac >= 2)
+                r = vcopy(args[1]);
+            else
+                r = vnone();
+        } else if (name_eq(m, "keys") && ac == 0) {
+            V out = vlist(recv.dn);
+            for (int i = 0; i < recv.dn; i++) {
+                vfree(&out.a[i]);
+                out.a[i] = vcopy(recv.dk[i]);
+            }
+            r = out;
+        } else if (name_eq(m, "values") && ac == 0) {
+            V out = vlist(recv.dn);
+            for (int i = 0; i < recv.dn; i++) {
+                vfree(&out.a[i]);
+                out.a[i] = vcopy(recv.dv[i]);
+            }
+            r = out;
+        } else { fail("unknown dict method"); }
     } else {
         fail("method on non-object");
     }
@@ -1467,6 +1544,165 @@ static void exec_if(int headInd)
     }
 }
 
+/* ---- try / except / finally -------------------------------------------
+   The interpreter keeps one error channel (g_err/g_errmsg) that runtime
+   failures and `raise` both write to. A try block executes with that channel
+   cleared, and if it ended in an error the first matching handler runs; any
+   finally clause always runs, including after return. */
+
+static const char *line_after_kw(const char *txt, const char *kw)
+{
+    const char *p = txt + slen(kw);
+    while (*p == ' ' || *p == '\t') p++;
+    return p;
+}
+
+static void bind_as_name(const char *header, const char *msg)
+{
+    /* "except ValueError as e" binds the message to e */
+    const char *p = header;
+    while (*p) {
+        if (p[0] == 'a' && p[1] == 's' && (p[2] == ' ' || p[2] == '\t')) {
+            p += 2;
+            while (*p == ' ' || *p == '\t') p++;
+            char nm[40];
+            int n = 0;
+            while ((isal(*p) || isdg(*p)) && n < 39) nm[n++] = *p++;
+            nm[n] = 0;
+            if (n) assign_var(nm, vstr(msg));
+            return;
+        }
+        p++;
+    }
+}
+
+static void exec_try(int headInd)
+{
+    int head = gline;
+    int bodyStart = head + 1;
+    int bodyIndent = (bodyStart < nlines) ? lines[bodyStart].indent : headInd + 1;
+    if (bodyIndent <= headInd) { fail("expected indented block"); return; }
+
+    g_err = 0;
+    g_errmsg[0] = 0;
+    gline = bodyStart;
+    exec_block(bodyIndent);
+
+    int raised = g_err;
+    char msg[96];
+    int mi = 0;
+    while (g_errmsg[mi] && mi < 94) { msg[mi] = g_errmsg[mi]; mi++; }
+    msg[mi] = 0;
+    g_err = 0;
+    g_errmsg[0] = 0;
+
+    /* move to the clause line at the try's own indent */
+    while (gline < nlines && lines[gline].indent > headInd)
+        gline++;
+
+    int handled = 0;
+    int finally_done = 0;
+    while (gline < nlines && lines[gline].indent == headInd) {
+        const char *t = lines[gline].text;
+        int is_except = starts_kw(t, "except");
+        int is_else = starts_kw(t, "else");
+        int is_finally = starts_kw(t, "finally");
+        if (!is_except && !is_else && !is_finally)
+            break;
+
+        int run = 0;
+        if (is_finally) {
+            run = 1;
+            finally_done = 1;
+        } else if (is_except && raised && !handled) {
+            run = 1;
+            handled = 1;
+            raised = 0;
+        } else if (is_else && !raised && !handled) {
+            run = 1;
+            handled = 1;
+        }
+
+        int body = gline + 1;
+        int bi = (body < nlines) ? lines[body].indent : headInd + 1;
+
+        if (run && bi > headInd) {
+            if (is_except && msg[0])
+                bind_as_name(t, msg);
+            int saved_ret = g_ret;
+            if (is_finally) g_ret = 0;
+            gline = body;
+            exec_block(bi);
+            if (is_finally) g_ret = g_ret | saved_ret;
+            /* an error raised inside a handler propagates out of try */
+            if (g_err && !is_finally && !finally_done) {
+                int saved = g_err;
+                /* let a later finally clause run, then re-raise */
+                while (gline < nlines && lines[gline].indent > headInd)
+                    gline++;
+                while (gline < nlines && lines[gline].indent == headInd &&
+                       starts_kw(lines[gline].text, "finally")) {
+                    int fb = gline + 1;
+                    int fi = (fb < nlines) ? lines[fb].indent : headInd + 1;
+                    gline = fb;
+                    if (fi > headInd) exec_block(fi);
+                    while (gline < nlines && lines[gline].indent > headInd) gline++;
+                }
+                g_err = saved;
+                return;
+            }
+        } else {
+            /* skip this clause body */
+            gline = body;
+            while (gline < nlines && lines[gline].indent > headInd)
+                gline++;
+            continue;
+        }
+        /* after running, skip to the next clause at the same indent */
+        while (gline < nlines && lines[gline].indent > headInd)
+            gline++;
+    }
+
+    if (raised)
+        fail(msg[0] ? msg : "unhandled exception");
+}
+
+static void exec_raise(void)
+{
+    const char *p = line_after_kw(lines[gline].text, "raise");
+    char msg[96];
+    int n = 0;
+    if (*p == '\'' || *p == '"') {
+        char q = *p++;
+        while (*p && *p != q && n < 94) msg[n++] = *p++;
+    } else {
+        /* ExceptionName("text") or ExceptionName */
+        while (isal(*p) || isdg(*p)) p++;
+        while (*p == ' ' || *p == '\t') p++;
+        if (*p == '(') {
+            p++;
+            while (*p == ' ' || *p == '\t') p++;
+            if (*p == '\'' || *p == '"') {
+                char q = *p++;
+                while (*p && *p != q && n < 94) msg[n++] = *p++;
+            }
+        }
+    }
+    msg[n] = 0;
+    if (!n) {
+        /* keep the exception type as the message */
+        const char *t = line_after_kw(lines[gline].text, "raise");
+        while ((isal(*t) || isdg(*t)) && n < 94) msg[n++] = *t++;
+        msg[n] = 0;
+    }
+    if (!n) {
+        msg[0] = 'e'; msg[1] = 'r'; msg[2] = 'r'; msg[3] = 0;
+    }
+    g_errmsg[0] = 0;
+    fail(msg);
+    gline++;
+}
+
 static void exec_line(void)
 {
     const char *txt = lines[gline].text;
@@ -1481,8 +1717,17 @@ static void exec_line(void)
             exec_if(ind);
             return;
         }
-        if (starts_kw(txt, "elif") || starts_kw(txt, "else")) {
-            fail("unexpected elif/else");
+        if (starts_kw(txt, "try")) {
+            exec_try(ind);
+            return;
+        }
+        if (starts_kw(txt, "raise")) {
+            exec_raise();
+            return;
+        }
+        if (starts_kw(txt, "elif") || starts_kw(txt, "else") ||
+            starts_kw(txt, "except") || starts_kw(txt, "finally")) {
+            fail("unexpected elif/else/except/finally");
             gline++;
             return;
         }
@@ -1881,6 +2126,12 @@ void py_self_test(void)
     ok &= check("chr(65)", "A\n");
     ok &= check("ord('A')", "65\n");
     ok &= check("list('ab')", "['a', 'b']\n");
+    /* CPython exception semantics */
+    ok &= check("x=0\ntry:\n    x=1/0\nexcept:\n    x=99\nx", "99\n");
+    ok &= check("def f(n):\n    if n<0:\n        raise ValueError('neg')\n    return n\ntry:\n    f(-1)\nexcept ValueError as e:\n    y=e\ny", "neg\n");
+    ok &= check("x=0\ntry:\n    x=1\nfinally:\n    x=x+10\nx", "11\n");
+    ok &= check("try:\n    a=1\nexcept:\n    a=2\na", "1\n");
+    ok &= check("r=0\ntry:\n    try:\n        r=1/0\n    except:\n        r=7\nfinally:\n    r=r+1\nr", "8\n");
     {
         char out[200];
         int rc = py_exec("1/0", out, sizeof(out));

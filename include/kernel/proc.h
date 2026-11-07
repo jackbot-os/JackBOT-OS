@@ -32,6 +32,9 @@ typedef struct thread {
     struct thread *next;
     void *entry;
     void *arg;
+    uint64_t user_entry;
+    int recover_count;
+    uint64_t recover_tick;
 } thread_t;
 
 #define DEFAULT_QUOTA_MEM_BYTES (256ull * 1024 * 1024)

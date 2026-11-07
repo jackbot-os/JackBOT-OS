@@ -101,6 +101,9 @@ int dev_count(uint8_t class_code)
     return n;
 }
 
+int dev_driver_count(void) { return g_ndrv; }
+int dev_instance_count(void) { return g_ninst; }
+
 void dev_print_all(void)
 {
     serial_puts("[DEV] device tree:\n");

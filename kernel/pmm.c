@@ -9,6 +9,8 @@
 #define MAX_PFN (MAX_PHYS_BYTES / PAGE_SIZE)
 #define LOW_RESERVE_END 0x400000ull
 
+extern uint8_t kernel_end[];
+
 static uint8_t bitmap_storage[MAX_PFN / 8];
 static uint8_t *bitmap;
 static uint64_t max_pfn;
@@ -108,8 +110,11 @@ void pmm_init(uint64_t mb_info)
         tag = mb2_next_tag(tag);
     }
 
-    /* 低 4MB 保留：内核镜像、multiboot info 与早期模块 */
-    pmm_reserve(0, LOW_RESERVE_END);
+    /* 保留整个内核镜像（含 .bss）、multiboot info 与早期模块 */
+    uint64_t k_end = (uint64_t)(uintptr_t)kernel_end;
+    if (k_end < LOW_RESERVE_END)
+        k_end = LOW_RESERVE_END;
+    pmm_reserve(0, k_end);
 
     /* 显式保留 multiboot info 结构本身（可能位于 4MB 之后，含 tags） */
     {
@@ -127,7 +132,7 @@ void pmm_init(uint64_t mb_info)
         tag = mb2_next_tag(tag);
     }
 
-    hint_pfn = LOW_RESERVE_END / PAGE_SIZE;
+    hint_pfn = (k_end + PAGE_SIZE - 1) / PAGE_SIZE;
 }
 
 void *pmm_alloc_page(void)

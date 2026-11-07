@@ -61,6 +61,19 @@ int firewall_frame(int mx, int my, int clicked)
     int py = hy + 54 * S;
     gfx_draw_string(x, py, fb_rgb(150, 210, 255), fb_rgb(30, 34, 46),
                     "Honeypot probes:");
+    {
+        char tbuf[28]; int p = 0;
+        const char *pre = "Total observations: ";
+        while (pre[p]) { tbuf[p] = pre[p]; p++; }
+        uint64_t v = honeypot_total_hits();
+        char dig[20]; int m = 0;
+        if (v == 0) dig[m++] = '0';
+        while (v > 0) { dig[m++] = (char)('0' + v % 10); v /= 10; }
+        while (m > 0) tbuf[p++] = dig[--m];
+        tbuf[p] = 0;
+        gfx_draw_string(x + 300 * S, py, fb_rgb(180, 220, 255),
+                        fb_rgb(30, 34, 46), tbuf);
+    }
     py += 26 * S;
     int n = honeypot_entry_count();
     if (n == 0) {

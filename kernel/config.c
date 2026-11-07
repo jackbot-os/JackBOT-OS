@@ -10,6 +10,14 @@ static int fw;
 static int oobe;
 static int kb;
 static int hp;
+static int region;
+static int volume;
+static int mic_perm;
+static int voice_perm;
+static int cam_perm;
+static int loc_perm;
+static int net_perm;
+static int glass = 1;
 
 static int contains(const char *h, const char *n)
 {
@@ -51,6 +59,11 @@ static int num_after(const char *b, int i, int *out)
     return got;
 }
 
+static int bit_after(const char *b, int i)
+{
+    return b[i + 2] == '1' ? 1 : 0;
+}
+
 static void parse(const char *b)
 {
     for (int i = 0; b[i]; i++) {
@@ -58,24 +71,32 @@ static void parse(const char *b)
             num_after(b, i, &lang);
         if (b[i] == 'F' && b[i + 1] == '=' && b[i + 2] >= '0')
             num_after(b, i, &font);
-        if (b[i] == 'T' && b[i + 1] == '=') {
-            int v = 0, k = i + 2, got = 0;
-            while (b[k] >= '0' && b[k] <= '9') {
-                v = v * 10 + b[k] - '0';
-                k++;
-                got = 1;
-            }
-            if (got)
-                tz = v;
-        }
+        if (b[i] == 'T' && b[i + 1] == '=' && b[i + 2] >= '0')
+            num_after(b, i, &tz);
         if (b[i] == 'W' && b[i + 1] == '=' && b[i + 2] >= '0')
-            fw = b[i + 2] - '0';
+            fw = bit_after(b, i);
         if (b[i] == 'O' && b[i + 1] == '=' && b[i + 2] >= '0')
-            oobe = b[i + 2] - '0';
+            oobe = bit_after(b, i);
         if (b[i] == 'K' && b[i + 1] == '=' && b[i + 2] >= '0')
             num_after(b, i, &kb);
         if (b[i] == 'H' && b[i + 1] == '=' && b[i + 2] >= '0')
-            num_after(b, i, &hp);
+            hp = bit_after(b, i);
+        if (b[i] == 'R' && b[i + 1] == '=' && b[i + 2] >= '0')
+            num_after(b, i, &region);
+        if (b[i] == 'V' && b[i + 1] == '=' && b[i + 2] >= '0')
+            num_after(b, i, &volume);
+        if (b[i] == 'M' && b[i + 1] == '=' && b[i + 2] >= '0')
+            mic_perm = bit_after(b, i);
+        if (b[i] == 'P' && b[i + 1] == '=' && b[i + 2] >= '0')
+            voice_perm = bit_after(b, i);
+        if (b[i] == 'C' && b[i + 1] == '=' && b[i + 2] >= '0')
+            cam_perm = bit_after(b, i);
+        if (b[i] == 'A' && b[i + 1] == '=' && b[i + 2] >= '0')
+            loc_perm = bit_after(b, i);
+        if (b[i] == 'N' && b[i + 1] == '=' && b[i + 2] >= '0')
+            net_perm = bit_after(b, i);
+        if (b[i] == 'G' && b[i + 1] == '=' && b[i + 2] >= '0')
+            glass = bit_after(b, i);
     }
 }
 
@@ -88,6 +109,14 @@ void config_init(void)
     oobe = 0;
     kb = 0;
     hp = 0;
+    region = 0;
+    volume = 70;
+    mic_perm = 0;
+    voice_perm = 0;
+    cam_perm = 0;
+    loc_perm = 0;
+    net_perm = 1;
+    glass = 1;
     if (fat_exists("JBOT.CFG")) {
         char b[256];
         uint32_t n = 0;
@@ -107,26 +136,63 @@ int config_fw(void) { return fw; }
 int config_oobe_done(void) { return oobe; }
 int config_keyboard(void) { return kb; }
 int config_honeypot(void) { return hp; }
+int config_region(void) { return region; }
+int config_volume(void) { return volume; }
+int config_mic_perm(void) { return mic_perm; }
+int config_voice_perm(void) { return voice_perm; }
+int config_cam_perm(void) { return cam_perm; }
+int config_loc_perm(void) { return loc_perm; }
+int config_net_perm(void) { return net_perm; }
+int config_glass(void) { return glass; }
 
 void config_set_language(int l) { lang = l; }
 void config_set_font(int f) { font = f; }
 void config_set_tz(int v) { tz = v; }
-void config_set_fw(int v) { fw = v; }
-void config_set_oobe_done(int v) { oobe = v; }
+void config_set_fw(int v) { fw = v ? 1 : 0; }
+void config_set_oobe_done(int v) { oobe = v ? 1 : 0; }
 void config_set_keyboard(int v) { kb = v; }
 void config_set_honeypot(int v) { hp = v ? 1 : 0; }
+void config_set_region(int v) { region = v; }
+void config_set_volume(int v)
+{
+    if (v < 0) v = 0;
+    if (v > 100) v = 100;
+    volume = v;
+}
+void config_set_mic_perm(int v) { mic_perm = v ? 1 : 0; }
+void config_set_voice_perm(int v) { voice_perm = v ? 1 : 0; }
+void config_set_cam_perm(int v) { cam_perm = v ? 1 : 0; }
+void config_set_loc_perm(int v) { loc_perm = v ? 1 : 0; }
+void config_set_net_perm(int v) { net_perm = v ? 1 : 0; }
+void config_set_glass(int v) { glass = v ? 1 : 0; }
+
+static void put_line(char *b, int *p, char tag, int v)
+{
+    b[(*p)++] = tag;
+    b[(*p)++] = '=';
+    *p += u2s(v, b + *p);
+    b[(*p)++] = '\n';
+}
 
 void config_save(void)
 {
-    char b[80];
+    char b[160];
     int p = 0;
-    b[p++] = 'L'; b[p++] = '='; p += u2s(lang, b + p); b[p++] = '\n';
-    b[p++] = 'F'; b[p++] = '='; p += u2s(font, b + p); b[p++] = '\n';
-    b[p++] = 'T'; b[p++] = '='; p += u2s(tz, b + p); b[p++] = '\n';
-    b[p++] = 'W'; b[p++] = '='; p += u2s(fw, b + p); b[p++] = '\n';
-    b[p++] = 'O'; b[p++] = '='; b[p++] = oobe ? '1' : '0'; b[p++] = '\n';
-    b[p++] = 'K'; b[p++] = '='; p += u2s(kb, b + p); b[p++] = '\n';
-    b[p++] = 'H'; b[p++] = '='; b[p++] = hp ? '1' : '0'; b[p++] = '\n';
+    put_line(b, &p, 'L', lang);
+    put_line(b, &p, 'F', font);
+    put_line(b, &p, 'T', tz);
+    put_line(b, &p, 'W', fw);
+    put_line(b, &p, 'O', oobe);
+    put_line(b, &p, 'K', kb);
+    put_line(b, &p, 'H', hp);
+    put_line(b, &p, 'R', region);
+    put_line(b, &p, 'V', volume);
+    put_line(b, &p, 'M', mic_perm);
+    put_line(b, &p, 'P', voice_perm);
+    put_line(b, &p, 'C', cam_perm);
+    put_line(b, &p, 'A', loc_perm);
+    put_line(b, &p, 'N', net_perm);
+    put_line(b, &p, 'G', glass);
     fat_write_file("JBOT.CFG", b, p);
 }
 

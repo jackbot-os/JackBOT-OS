@@ -35,3 +35,4 @@ void net_fmt_ip(uint32_t host, uint8_t out[4])
 
 void serial_putc(char c) { putchar(c); }
 void serial_puts(const char *s) { fputs(s, stdout); }
+void serial_puthex(uint64_t v) { printf("%016llx", (unsigned long long)v); }

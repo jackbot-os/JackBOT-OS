@@ -68,3 +68,12 @@ thread_t *spawn_crash_user(void)
 {
     return spawn_from(ucrash_bin, ucrash_bin_len);
 }
+
+/* Load an arbitrary machine-code image (e.g. a JCAN payload produced by
+   tools/jcacc.py) as a ring-3 process at USER_BASE. */
+thread_t *spawn_user_image(const uint8_t *code, uint64_t len)
+{
+    if (!code || len == 0 || len > 0x100000)
+        return 0;
+    return spawn_from(code, len);
+}

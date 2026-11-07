@@ -44,6 +44,8 @@ void honeypot_observe_icmp(uint32_t src, uint8_t type);
 
 int  honeypot_entry_count(void);
 const struct honeypot_entry *honeypot_entries(void);
+uint64_t honeypot_total_hits(void);
+int  honeypot_passive(void);
 void honeypot_clear(void);
 void honeypot_self_test(void);
 

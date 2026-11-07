@@ -11,6 +11,7 @@ uint64_t timer_get_ticks(void);
 static int g_on;
 static struct honeypot_entry g_table[HONEYPOT_MAX_ENTRIES];
 static int g_count;
+static uint64_t g_total_hits;
 
 static uint32_t hp_tick(void)
 {
@@ -21,6 +22,7 @@ void honeypot_init(void)
 {
     g_on = config_honeypot() ? 1 : 0;
     g_count = 0;
+    g_total_hits = 0;
     for (int i = 0; i < HONEYPOT_MAX_ENTRIES; i++) {
         g_table[i].used = 0;
         g_table[i].hits = 0;
@@ -39,6 +41,7 @@ void honeypot_set(int on)
 void honeypot_clear(void)
 {
     g_count = 0;
+    g_total_hits = 0;
     for (int i = 0; i < HONEYPOT_MAX_ENTRIES; i++) {
         g_table[i].used = 0;
         g_table[i].hits = 0;
@@ -62,6 +65,7 @@ static void record(uint32_t src, uint16_t sport, uint16_t dport,
 {
     if (!g_on)
         return;
+    g_total_hits++;
     struct honeypot_entry *e = find(src, dport, proto, action);
     uint32_t now = hp_tick();
     if (e) {
@@ -82,6 +86,19 @@ static void record(uint32_t src, uint16_t sport, uint16_t dport,
     e->hits = 1;
     e->first_tick = now;
     e->last_tick = now;
+    /* Passive audit trail: log each newly observed probe once (hits on an
+       existing entry are only counted, so a flood cannot spam the log). */
+    serial_puts("[HP] probe src=");
+    serial_puthex(src);
+    serial_puts(" sport=");
+    serial_puthex(sport);
+    serial_puts(" dport=");
+    serial_puthex(dport);
+    serial_puts(" proto=");
+    serial_puthex(proto);
+    serial_puts(" act=");
+    serial_puthex(action);
+    serial_putc('\n');
 }
 
 void honeypot_observe_udp(uint32_t src, uint16_t sport, uint16_t dport,
@@ -116,6 +133,12 @@ void honeypot_observe_icmp(uint32_t src, uint8_t type)
 }
 
 int honeypot_entry_count(void) { return g_count; }
+
+uint64_t honeypot_total_hits(void) { return g_total_hits; }
+
+/* Always passive: the module binds no socket and emits no packet, so it
+   presents no attack surface of its own. Exposed for the GUI/audit view. */
+int honeypot_passive(void) { return 1; }
 
 const struct honeypot_entry *honeypot_entries(void) { return g_table; }
 

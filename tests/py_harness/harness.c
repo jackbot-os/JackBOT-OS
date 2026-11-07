@@ -1,4 +1,4 @@
-/* Per-case Python subset regression. Prints PASS/FAIL and actual output per case. */
+﻿/* Per-case Python subset regression. Prints PASS/FAIL and actual output per case. */
 #include <stdio.h>
 #include <string.h>
 #include <kernel/py.h>
@@ -106,3 +106,4 @@ int main(void)
     py_self_test();
     return n_fail ? 1 : 0;
 }
+

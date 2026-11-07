@@ -20,6 +20,31 @@
 #define PART_SYS 0
 #define PART_DATA 1
 
+/* A partition found by scanning the whole disk: primary MBR slots, every
+   logical partition behind an extended partition, or GPT entries. */
+#define PART_SCAN_MAX 24
+#define PART_SCHEME_MBR 0
+#define PART_SCHEME_GPT 1
+
+struct part_info {
+    uint8_t  scheme;      /* PART_SCHEME_MBR / PART_SCHEME_GPT */
+    uint8_t  boot;        /* 0x80 when flagged bootable */
+    uint8_t  type;        /* MBR type byte, or 0 for GPT */
+    uint8_t  is_logical;  /* MBR logical partition (inside extended) */
+    uint8_t  is_fat;      /* recognised FAT / GPT basic-data */
+    uint32_t start_lba;
+    uint32_t num_sectors;
+    char     name[40];    /* GPT partition name, UTF-8 best effort */
+};
+
+/* Enumerate every partition on the disk, MBR (with EBR chain) or GPT.
+   part_scan_reader() takes a sector-0..N reader so the same parser can be
+   driven by the ATA driver, the AHCI driver, or a test harness. */
+typedef int (*part_reader_t)(uint64_t lba, uint8_t *out512);
+int part_scan(struct part_info *out, int max);
+int part_scan_reader(part_reader_t rd, struct part_info *out, int max);
+const char *part_scheme_name(uint8_t scheme);
+
 struct part_entry {
     uint8_t boot;
     uint8_t type;

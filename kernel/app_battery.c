@@ -4,6 +4,8 @@
 #include <kernel/gfxtext.h>
 #include <kernel/ui.h>
 #include <kernel/acpi.h>
+#include <kernel/i18n.h>
+#include "i18n_data.h"
 
 static struct ui_win W;
 static int inited;
@@ -77,65 +79,65 @@ int battery_frame(int mx, int my, int clicked)
             ui_rect(x0, y, W.w - 52 * S, 56 * S, fb_rgb(40, 56, 44));
             gfx_draw_string_wide(x0 + 12 * S, y + 10 * S,
                                  fb_rgb(120, 222, 140), bg,
-                                 "检测到电池设备（控制法电池 PNP0C0A）");
+                                 tr(STR_BAT_DETECTED));
             gfx_draw_string_wide(x0 + 12 * S, y + 34 * S,
                                  fb_rgb(200, 210, 220), bg,
-                                 "电量百分比/充电状态需要 AML 解释器，开发中");
+                                 tr(STR_BAT_AML));
         } else {
             ui_rect(x0, y, W.w - 52 * S, 56 * S, fb_rgb(44, 48, 58));
             gfx_draw_string_wide(x0 + 12 * S, y + 10 * S,
                                  fb_rgb(150, 210, 255), bg,
-                                 "未检测到电池：台式机 / 虚拟机，使用外接电源");
+                                 tr(STR_BAT_NO_BATTERY));
             gfx_draw_string_wide(x0 + 12 * S, y + 34 * S,
                                  fb_rgb(160, 170, 190), bg,
-                                 "笔记本实机上会在此显示电池与充电状态");
+                                 tr(STR_BAT_LAPTOP_HINT));
         }
     } else {
         gfx_draw_string_wide(x0, y, fb_rgb(232, 178, 104), bg,
-                             "未找到 ACPI 表（电源信息不可用）");
+                             tr(STR_BAT_NO_ACPI));
     }
     y += 76 * S;
 
     if (a->found) {
         line[0] = 0;
-        append(line, "ACPI 修订 ");
+        append(line, tr(STR_BAT_REV));
         char t[8];
         u2dec((uint32_t)a->revision, t);
         append(line, t);
-        append(line, "，表数量 ");
+        append(line, tr(STR_BAT_TABLES));
         u2dec((uint32_t)a->table_count, t);
         append(line, t);
-        append(line, "，SCI 中断 ");
+        append(line, tr(STR_BAT_SCI));
         u2dec((uint32_t)a->sci_int, t);
         append(line, t);
         gfx_draw_string_wide(x0, y, fb_rgb(200, 210, 226), bg, line);
         y += 26 * S;
 
         line[0] = 0;
-        append(line, "嵌入式控制器(EC)：");
-        append(line, a->has_ec ? "检测到" : "无");
-        append(line, "    交流电源：");
-        append(line, a->has_ac_adapter ? "检测到" : "无");
+        append(line, tr(STR_BAT_EC));
+        append(line, a->has_ec ? tr(STR_BAT_PRESENT) : tr(STR_BAT_NONE));
+        append(line, tr(STR_BAT_AC));
+        append(line, a->has_ac_adapter ? tr(STR_BAT_PRESENT) : tr(STR_BAT_NONE));
         gfx_draw_string_wide(x0, y, fb_rgb(200, 210, 226), bg, line);
         y += 26 * S;
 
         line[0] = 0;
-        append(line, "PM1 电源控制块：");
+        append(line, tr(STR_BAT_PM1));
         if (a->pm1a_cnt) {
             char mm[16];
             u2dec(a->pm1a_cnt, mm);
             append(line, "0x");
             append(line, mm);
         } else {
-            append(line, "未取得");
+            append(line, tr(STR_BAT_UNAVAILABLE));
         }
         gfx_draw_string_wide(x0, y, fb_rgb(200, 210, 226), bg, line);
         y += 26 * S;
 
         line[0] = 0;
-        append(line, "软关机方式：");
-        append(line, a->slp_typa != 0xFF ? "ACPI S5 睡眠寄存器（真实）"
-                                        : "ACPI 枚举 SLP_TYP（兼容）");
+        append(line, tr(STR_BAT_WAY));
+        append(line, a->slp_typa != 0xFF ? tr(STR_BAT_S5)
+                                        : tr(STR_BAT_ENUM));
         gfx_draw_string_wide(x0, y, fb_rgb(120, 222, 140), bg, line);
         y += 40 * S;
     }
@@ -148,6 +150,6 @@ int battery_frame(int mx, int my, int clicked)
         do_reboot();
 
     gfx_draw_string_wide(x0, W.y + W.h - 36 * S, fb_rgb(140, 150, 168), bg,
-                         "关机优先向 FADT 的 PM1 控制块写 SLP_TYP|SLP_EN，兼容虚拟机与真机。");
+                         tr(STR_BAT_FOOTER));
     return 0;
 }

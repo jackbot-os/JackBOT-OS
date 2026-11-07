@@ -4,6 +4,8 @@
 #include <kernel/gfxtext.h>
 #include <kernel/ui.h>
 #include <kernel/gpu3d.h>
+#include <kernel/i18n.h>
+#include "i18n_data.h"
 
 #define VW 400
 #define VH 270
@@ -24,7 +26,7 @@ int gpu3d_frame(int mx, int my, int clicked)
     if (!inited)
         gpu3d_open();
     int S = ui_scale();
-    if (ui_window(&W, "3D Studio - Software GPU", mx, my, clicked))
+    if (ui_window(&W, tr(STR_WT_3D), mx, my, clicked))
         return 1;
 
     int vx = W.x + (W.w - VW) / 2;
@@ -40,12 +42,12 @@ int gpu3d_frame(int mx, int my, int clicked)
     } else {
         gfx_draw_string(vx + 20, vy + VH / 2,
                         fb_rgb(230, 120, 120), fb_rgb(12, 14, 22),
-                        "3D: out of memory");
+                        tr(STR_3D_OOM));
     }
 
     if (ready)
         gfx_draw_string(vx, vy + VH + 12 * S,
                         fb_rgb(170, 190, 220), fb_rgb(30, 34, 46),
-                        "JackBOT 3D pipeline  Q16.16 fixed-point  z-buffer");
+                        tr(STR_3D_PIPELINE));
     return 0;
 }

@@ -4,6 +4,8 @@
 #include <kernel/gfxtext.h>
 #include <kernel/ui.h>
 #include <kernel/pmm.h>
+#include <kernel/i18n.h>
+#include "i18n_data.h"
 
 uint64_t timer_get_ticks(void);
 
@@ -66,18 +68,28 @@ int monitor_frame(int mx, int my, int clicked)
     int pct = total ? (int)(used * 100 / total) : 0;
 
     char line[64];
+    char num[24];
 
-    line[0] = 0; append(line, "总内存 "); u64dec(tmb, line + 9);
+    line[0] = 0;
+    append(line, tr(STR_MON_TOTAL));
+    u64dec(tmb, num);
+    append(line, num);
     append(line, " MB");
     gfx_draw_string_wide(x0, y, fb_rgb(210, 220, 240), bg, line);
     y += 30 * S;
 
-    line[0] = 0; append(line, "已用 "); u64dec(umb, line + 6);
+    line[0] = 0;
+    append(line, tr(STR_MON_USED));
+    u64dec(umb, num);
+    append(line, num);
     append(line, " MB");
     gfx_draw_string_wide(x0, y, fb_rgb(210, 220, 240), bg, line);
     y += 30 * S;
 
-    line[0] = 0; append(line, "可用 "); u64dec(fmb, line + 6);
+    line[0] = 0;
+    append(line, tr(STR_MON_FREE));
+    u64dec(fmb, num);
+    append(line, num);
     append(line, " MB");
     gfx_draw_string_wide(x0, y, fb_rgb(120, 222, 140), bg, line);
     y += 36 * S;
@@ -88,11 +100,11 @@ int monitor_frame(int mx, int my, int clicked)
     int barcol = pct > 85 ? fb_rgb(230, 120, 110) : fb_rgb(90, 160, 255);
     if (fill > 0)
         ui_rect(x0 + 2, y + 2, fill - 4, 24 * S - 4, barcol);
-    line[0] = 0; append(line, "使用率 ");
-    char pp[12]; u64dec(pct, pp);
-    int p = 9;
-    for (int k = 0; pp[k]; k++) line[p++] = pp[k];
-    line[p++] = '%'; line[p] = 0;
+    line[0] = 0;
+    append(line, tr(STR_MON_USAGE));
+    u64dec(pct, num);
+    append(line, num);
+    append(line, "%");
     gfx_draw_string_wide(x0, y + 34 * S, fb_rgb(200, 210, 226), bg, line);
     y += 70 * S;
 
@@ -100,21 +112,23 @@ int monitor_frame(int mx, int my, int clicked)
     int hh = (int)(sec / 3600);
     int mm = (int)((sec % 3600) / 60);
     int ss = (int)(sec % 60);
-    line[0] = 0; append(line, "运行时间 ");
-    int tp = 10;
+    line[0] = 0;
+    append(line, tr(STR_MON_UPTIME));
     two(line, hh);
     append(line, ":");
     two(line, mm);
     append(line, ":");
     two(line, ss);
-    (void)tp;
     gfx_draw_string_wide(x0, y, fb_rgb(210, 220, 240), bg, line);
     y += 30 * S;
 
-    line[0] = 0; append(line, "分辨率 ");
-    u64dec(fb_width(), line + 9);
+    line[0] = 0;
+    append(line, tr(STR_MON_RESOLUTION));
+    u64dec(fb_width(), num);
+    append(line, num);
     append(line, " x ");
-    u64dec(fb_height(), line + 16);
+    u64dec(fb_height(), num);
+    append(line, num);
     gfx_draw_string_wide(x0, y, fb_rgb(210, 220, 240), bg, line);
     return 0;
 }

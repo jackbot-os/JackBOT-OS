@@ -211,7 +211,7 @@ static void resolve_url(const char *rel, char *out, int osz)
     if (osz <= 1)
         return;
     out[0] = 0;
-    if (!strncmp(rel,"http://",7)) {
+    if (!strncmp(rel,"http://",7) || !strncmp(rel,"https://",8)) {
         strncpy(out, rel, (size_t)osz - 1);
         out[osz - 1] = 0;
         return;
@@ -225,6 +225,24 @@ static void resolve_url(const char *rel, char *out, int osz)
     }
     bcat(out, osz, curbase);
     bcat(out, osz, rel);
+}
+
+/* Address-bar input is a full location, not a relative link: "www.x.com" or
+   "10.0.2.2/page" must become an absolute http URL, otherwise resolve_url()
+   glues it onto the current page base and the user can never leave the
+   first site. */
+static void resolve_input(const char *in, char *out, int osz)
+{
+    if (osz <= 1)
+        return;
+    out[0] = 0;
+    if (!strncmp(in,"http://",7) || !strncmp(in,"https://",8)) {
+        strncpy(out, in, (size_t)osz - 1);
+        out[osz - 1] = 0;
+        return;
+    }
+    bcat(out, osz, "http://");
+    bcat(out, osz, in);
 }
 
 static void load_url(const char *url, int addhist)
@@ -292,7 +310,7 @@ static void key_input(void)
         if (!addr_focus)
             continue;
         if (c=='\r'||c=='\n') {
-            if (addrlen) { char full[180]; resolve_url(addr,full,sizeof full);
+            if (addrlen) { char full[180]; resolve_input(addr,full,sizeof full);
                 load_url(full,1); addr_focus=0; }
         } else if (c=='\b'||c==0x7f) {
             if (addrlen>0) addr[--addrlen]=0;

@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <kernel/ps2.h>
 #include <kernel/fb.h>
+#include <kernel/serial.h>
 
 #define KBD_BUF 64
 static char kbuf[KBD_BUF];
@@ -10,12 +11,15 @@ static int khead, ktail;
 static int shift, caps, e0, ctrl_down;
 
 static int mx, my;
-static int left_prev;
+static int left_prev, right_prev;
 static int mouse_primed;
 static int click_pending, click_x, click_y;
-static int left_down;
-static uint8_t cycle[3];
+static int rclick_pending, rclick_x, rclick_y;
+static int left_down, right_down;
+static uint8_t cycle[4];
 static int cyc_idx;
+static int wheel_enabled;
+static int wheel_delta;
 
 static uint8_t inb(uint16_t p)
 {
@@ -135,6 +139,9 @@ void ps2_kbd_irq(void)
         caps ^= 1;
         return;
     }
+    if (sc == 0x3b) { enqueue(JB_KEY_F1); return; }
+    if (sc == 0x3c) { enqueue(JB_KEY_F2); return; }
+    if (sc == 0x3d) { enqueue(JB_KEY_F3); return; }
     char c = 0;
     if (shift && smap[sc])
         c = smap[sc];
@@ -161,13 +168,20 @@ void ps2_mouse_irq(void)
     if (cyc_idx == 0 && !(d & 0x08))
         return;
     cycle[cyc_idx++] = d;
-    if (cyc_idx < 3)
+    if (cyc_idx < (wheel_enabled ? 4 : 3))
         return;
     cyc_idx = 0;
 
     uint8_t flags = cycle[0];
     int dx = (int8_t)cycle[1];
     int dy = (int8_t)cycle[2];
+    if (wheel_enabled) {
+        /* The IntelliMouse wheel byte carries a 4-bit signed delta. */
+        int m = cycle[3] & 0x0f;
+        if (m & 0x08)
+            m -= 16;
+        wheel_delta += m;
+    }
 
     mx += dx;
     my -= dy;
@@ -179,15 +193,30 @@ void ps2_mouse_irq(void)
     }
 
     left_down = flags & 0x01;
+    right_down = flags & 0x02;
     if (!mouse_primed) {
         left_prev = left_down;
+        right_prev = right_down;
         mouse_primed = 1;
-    } else if (!left_down && left_prev) {
-        click_pending = 1;
-        click_x = mx;
-        click_y = my;
+    } else {
+        if (!left_down && left_prev) {
+            click_pending = 1;
+            click_x = mx;
+            click_y = my;
+        }
+        if (!right_down && right_prev) {
+            rclick_pending = 1;
+            rclick_x = mx;
+            rclick_y = my;
+        }
     }
     left_prev = left_down;
+    right_prev = right_down;
+}
+
+int ps2_key_pending(void)
+{
+    return khead != ktail;
 }
 
 int ps2_read_key(char *out)
@@ -238,7 +267,24 @@ int ps2_mouse_click(int *x, int *y)
     return 1;
 }
 
+int ps2_mouse_right_click(int *x, int *y)
+{
+    if (!rclick_pending)
+        return 0;
+    rclick_pending = 0;
+    *x = rclick_x;
+    *y = rclick_y;
+    return 1;
+}
+
 int ps2_mouse_down(void) { return left_down; }
+
+int ps2_mouse_wheel(void)
+{
+    int d = wheel_delta;
+    wheel_delta = 0;
+    return d;
+}
 
 /* Discard every input event accumulated before a GUI starts: the firmware
    and early boot emit spurious mouse packets whose button edge would
@@ -246,9 +292,12 @@ int ps2_mouse_down(void) { return left_down; }
 void ps2_mouse_flush(void)
 {
     click_pending = 0;
+    rclick_pending = 0;
     mouse_primed = 0;
     left_prev = 0;
+    right_prev = 0;
     left_down = 0;
+    right_down = 0;
     khead = 0;
     ktail = 0;
 }
@@ -269,6 +318,23 @@ void ps2_init(void)
     ctrl(0xae);
 
     mouse_send(0xf6);
+    /* Enable the IntelliMouse wheel: magic sample-rate sequence, then ask
+       for the device id (3 = 4-byte packets with a wheel byte). */
+    mouse_send(0xf3); mouse_send(200);
+    mouse_send(0xf3); mouse_send(100);
+    mouse_send(0xf3); mouse_send(80);
+    mouse_send(0xf2);
+    {
+        uint8_t id = dev_read();
+        wheel_enabled = (id == 3 || id == 4) ? 1 : 0;
+        serial_puts("[PS2] mouse id=");
+        serial_puthex(id);
+        serial_puts(wheel_enabled ? " wheel=on\n" : " wheel=off\n");
+    }
+    /* 200 reports/s instead of the usual 100: the pointer is sampled twice as
+       often, so fast flicks land on the right pixel instead of being rounded
+       to a coarse 10 ms step. Every mouse that speaks PS/2 accepts 200. */
+    mouse_send(0xf3); mouse_send(200);
     mouse_send(0xf4);
 
     mx = fb_present() ? (int)fb_width() / 2 : 512;

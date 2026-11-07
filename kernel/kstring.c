@@ -4,6 +4,23 @@ void *memcpy(void *dst, const void *src, size_t n)
 {
     uint8_t *d = dst;
     const uint8_t *s = src;
+    /* Word-at-a-time copy: framebuffer blits move megabytes per frame, and
+       a byte loop was the main cost that made the UI and the mouse feel
+       sluggish. Handles unaligned buffers by copying a few head bytes. */
+    while (n && ((uintptr_t)d & 7)) {
+        *d++ = *s++;
+        n--;
+    }
+    if (((uintptr_t)s & 7) == 0) {
+        uint64_t *dw = (uint64_t *)d;
+        const uint64_t *sw = (const uint64_t *)s;
+        while (n >= 8) {
+            *dw++ = *sw++;
+            n -= 8;
+        }
+        d = (uint8_t *)dw;
+        s = (const uint8_t *)sw;
+    }
     while (n--)
         *d++ = *s++;
     return dst;
@@ -12,8 +29,22 @@ void *memcpy(void *dst, const void *src, size_t n)
 void *memset(void *dst, int v, size_t n)
 {
     uint8_t *d = dst;
+    uint8_t b = (uint8_t)v;
+    uint64_t pattern = (uint64_t)b * 0x0101010101010101ull;
+    while (n && ((uintptr_t)d & 7)) {
+        *d++ = b;
+        n--;
+    }
+    {
+        uint64_t *dw = (uint64_t *)d;
+        while (n >= 8) {
+            *dw++ = pattern;
+            n -= 8;
+        }
+        d = (uint8_t *)dw;
+    }
     while (n--)
-        *d++ = (uint8_t)v;
+        *d++ = b;
     return dst;
 }
 

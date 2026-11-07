@@ -23,6 +23,8 @@ int tls_engine_ready(void);
 int tls_connect(int sock, const char *host);
 int tls_send(int s, const void *data, uint16_t len);
 int tls_recv(int s, void *buf, uint16_t cap);
+void tls_close(int s);
+int tls_state(void);
 const char *tls_state_name(int state);
 
 #endif

@@ -162,7 +162,11 @@ static void raster(int ox, int oy, struct spoint a, struct spoint b,
 
     int ys = a.y < 0 ? 0 : a.y;
     int ye = c.y > VH - 1 ? VH - 1 : c.y;
+    int screen_w = (int)fb_width();
     for (int y = ys; y <= ye; y++) {
+        uint32_t *row = fb_back_row(oy + y);
+        if (!row)
+            continue;
         int upper = (y < b.y) || (b.y == a.y);
         int x_long = lerpi(a.x, c.x, y - a.y, total);
         int32_t z_long = lerpz(a.z, c.z, y - a.y, total);
@@ -202,7 +206,12 @@ static void raster(int ox, int oy, struct spoint a, struct spoint b,
             int32_t *zp = &zbuf[y * VW + x];
             if (z < *zp) {
                 *zp = z;
-                fb_putpixel(ox + x, oy + y, color);
+                /* Direct row write: no per-pixel bounds check, no per-pixel
+                   dirty-rect merge. The whole viewport is marked dirty once
+                   at the end of g3d_render. */
+                int ax = ox + x;
+                if ((unsigned)ax < (unsigned)screen_w)
+                    row[ax] = color;
             }
             z += dz;
         }
@@ -289,4 +298,8 @@ void g3d_render(const struct g3d_mesh *m, int ox, int oy,
         raster(ox, oy, p0, p1, p2,
                shade_color(fc->cr, fc->cg, fc->cb, (int32_t)k));
     }
+
+    /* Every pixel of the viewport may have been touched, so commit the whole
+       rectangle once instead of once per drawn pixel. */
+    fb_mark_dirty(ox, oy, VW, VH);
 }

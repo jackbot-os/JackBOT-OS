@@ -193,9 +193,14 @@ static void parse_fadt(uint64_t fadt_phys)
     g.pm1a_cnt = rd32(f + 64);
     g.pm1b_cnt = rd32(f + 68);
 
+    uint32_t fadt_len = rd32(f + 4);
     uint32_t dsdt32 = rd32(f + 40);
-    uint64_t dsdt64 = rd64(f + 140);
-    uint64_t dsdt = dsdt64 ? dsdt64 : (uint64_t)dsdt32;
+    uint64_t dsdt = (uint64_t)dsdt32;
+    if (fadt_len >= 148) {
+        uint64_t dsdt64 = rd64(f + 140);
+        if (dsdt64)
+            dsdt = dsdt64;
+    }
     if (dsdt)
         scan_dsdt(dsdt);
 }

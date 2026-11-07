@@ -29,6 +29,8 @@ enum {
     APP_DEVICES,
     APP_VOICE,
     APP_BLUETOOTH,
+    APP_SNAKE,
+    APP_G2048,
     APP_LIMIT
 };
 

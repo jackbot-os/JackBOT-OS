@@ -121,8 +121,8 @@ static void watchdog_loop(void *arg)
                 continue;
             if (t->quota_cpu_ticks && t->cpu_ticks > t->quota_cpu_ticks) {
                 serial_puts("[watchdog] pid "); serial_puthex(id);
-                serial_puts(" exceeded CPU quota\n");
-                process_kill(t, "cpu quota exceeded");
+                serial_puts(" CPU quota reset (process kept alive)\n");
+                t->cpu_ticks = 0;
             }
         }
     }

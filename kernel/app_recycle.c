@@ -5,6 +5,8 @@
 #include <kernel/ui.h>
 #include <kernel/fat32.h>
 #include <kernel/recycle.h>
+#include <kernel/i18n.h>
+#include "i18n_data.h"
 
 static struct ui_win W;
 static struct recycle_item items[RECYCLE_MAX];
@@ -90,9 +92,9 @@ int recycleapp_frame(int mx, int my, int clicked)
     if (ui_button(W.x + W.w - 206 * S, W.y + 42 * S, 88 * S, 30 * S,
                   "Empty", 0, mx, my, clicked)) {
         if (recycle_empty() == 0)
-            setmsg("回收站已清空");
+            setmsg(tr(STR_REC_EMPTIED));
         else
-            setmsg("清空失败（磁盘未就绪）");
+            setmsg(tr(STR_REC_EMPTY_FAIL));
         reload();
     }
 
@@ -104,20 +106,20 @@ int recycleapp_frame(int mx, int my, int clicked)
     char sz[24];
     fmt_size((uint32_t)total, sz);
     line[0] = 0;
-    append(line, "回收站项目 ");
+    append(line, tr(STR_REC_ITEMS));
     char t[12];
     u2dec((uint32_t)nitems, t);
     append(line, t);
-    append(line, " 个，占用 ");
+    append(line, tr(STR_REC_USING));
     append(line, sz);
     gfx_draw_string_wide(x0, y, fb_rgb(150, 210, 255), bg, line);
     y += 26 * S;
 
     if (nitems == 0) {
         gfx_draw_string_wide(x0, y + 30 * S, fb_rgb(150, 160, 180), bg,
-                             "回收站是空的");
+                             tr(STR_REC_EMPTY));
         gfx_draw_string_wide(x0, y + 58 * S, fb_rgb(130, 140, 158), bg,
-                             "在文件管理器里删除的文件会先放到这里，可随时还原。");
+                             tr(STR_REC_HINT));
         if (msg[0])
             gfx_draw_string_wide(x0, W.y + W.h - 36 * S,
                                  fb_rgb(120, 222, 140), bg, msg);
@@ -141,9 +143,9 @@ int recycleapp_frame(int mx, int my, int clicked)
         if (ui_button(x0 + roww - 120 * S, ry + 2 * S, 104 * S, 26 * S,
                       "Restore", 0, mx, my, clicked)) {
             if (recycle_restore(idx) == 0)
-                setmsg("已还原文件");
+                setmsg(tr(STR_REC_RESTORED));
             else
-                setmsg("还原失败（目标可能已存在或磁盘问题）");
+                setmsg(tr(STR_REC_RESTORE_FAIL));
             reload();
         }
     }

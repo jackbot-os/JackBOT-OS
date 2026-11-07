@@ -10,7 +10,7 @@
 #include <kernel/serial.h>
 
 #define UPDATE_SRC "http://10.0.2.2/version.json"
-#define CURRENT_VER "1.0.2"
+#define CURRENT_VER "1.0.9"
 
 enum {
     U_IDLE, U_CHECKING, U_CURRENT, U_AVAILABLE,

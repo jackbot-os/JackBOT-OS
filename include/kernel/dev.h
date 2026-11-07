@@ -48,6 +48,8 @@ int dev_probe_all(void);
 /* ---- 按类别查询已识别设备 ---- */
 struct dev_instance *dev_find(uint8_t class_code, int idx);
 int dev_count(uint8_t class_code);
+int dev_driver_count(void);
+int dev_instance_count(void);
 void dev_print_all(void);
 
 #endif

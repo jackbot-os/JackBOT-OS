@@ -10,6 +10,8 @@
 #define TCP_PSH 0x08
 #define TCP_ACK 0x10
 
+struct ip_hdr;
+
 struct tcp_hdr {
     uint16_t sport;
     uint16_t dport;

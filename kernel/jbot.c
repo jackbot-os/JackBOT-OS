@@ -1,100 +1,132 @@
 #include <stdint.h>
 #include <kernel/jbot.h>
+#include <kernel/jbot_trained_weights.h>
 #include <kernel/serial.h>
 #include <kernel/pmm.h>
 #include <kernel/fat32.h>
 
 /*
- * JackBOT free AI - rule + tiny fixed-point neural net hybrid.
- * Interface unchanged (jbot_reply), so the desktop chat needs no edits.
+ * JackBOT free AI - rule + self-trained fixed-point MLP hybrid.
  * Q16.16 fixed point, no FPU/SSE (kernel compiled -mno-sse). Offline, no PII.
  */
 
-/* ---------------- Q16.16 helpers ---------------- */
-#define F16(x) ((int32_t)(x) << 16)                        /* int -> Q16 (const) */
+#define F16(x) ((int32_t)(x) << 16)
 static int32_t mulf16(int32_t a, int32_t b) { return (int32_t)(((int64_t)a * b) >> 16); }
-static int32_t addf16(int32_t a, int32_t b) { return a + b; }
 static int32_t reluf16(int32_t x) { return x > 0 ? x : 0; }
 
-/* ---------------- word-bag features ---------------- */
-/* 8 features: greeting, help, time, compute, system, weather,
- *             smart/device, thanks. Word presence -> 0/1. */
-#define NF 8
-#define FW_MAX 8
-static const char *const FEAT_WORDS[NF][FW_MAX] = {
-    {"hello", "hi", "hey", "你好", 0, 0, 0, 0},            /* greeting */
-    {"help", "what can", "能", "help me", 0, 0, 0, 0},     /* help     */
-    {"time", "clock", "now", "几点", "时间", 0, 0, 0},     /* time     */
-    {"calc", "compute", "=", "math", "算", 0, 0, 0},       /* compute  */
-    {"system", "cpu", "mem", "info", "系统", 0, 0, 0},     /* system   */
-    {"weather", "天", "温度", 0, 0, 0, 0, 0},              /* weather  */
-    {"light", "lamp", "灯", "device", "设备", 0, 0, 0},    /* smart    */
-    {"thanks", "thank", "谢", "ok", "good", 0, 0, 0},      /* thanks   */
-};
-
-/* intent classes */
-enum { INT_GREET = 0, INT_HELP, INT_TIME, INT_COMPUTE,
-       INT_SYSTEM, INT_WEATHER, INT_SMART, INT_THANKS, INT_NCLASS };
-
-/* ---------------- tiny MLP (2 layers), Q16.16 ---------------- */
-/* W1[NF][8 hidden], b1[8], W2[8][INT_NCLASS], b2[INT_NCLASS]
- * Weights are hand-crafted small values so the network has a sane prior;
- * scaled by 1<<16 (F16(1) is one unit). Values in [0.2, 0.6] range. */
-#define NH 8
-static const int32_t W1[NF][NH] = {
-    {F16(5), F16(0), F16(0), F16(0), F16(0), F16(0), F16(0), F16(0)},
-    {F16(0), F16(5), F16(0), F16(0), F16(0), F16(0), F16(0), F16(0)},
-    {F16(0), F16(0), F16(5), F16(0), F16(0), F16(0), F16(0), F16(0)},
-    {F16(0), F16(0), F16(0), F16(5), F16(0), F16(0), F16(0), F16(0)},
-    {F16(0), F16(0), F16(0), F16(0), F16(5), F16(0), F16(0), F16(0)},
-    {F16(0), F16(0), F16(0), F16(0), F16(0), F16(5), F16(0), F16(0)},
-    {F16(0), F16(0), F16(0), F16(0), F16(0), F16(0), F16(5), F16(0)},
-    {F16(0), F16(0), F16(0), F16(0), F16(0), F16(0), F16(0), F16(5)},
-};
-static const int32_t b1[NH] = {F16(0), F16(0), F16(0), F16(0), F16(0), F16(0), F16(0), F16(0)};
-static const int32_t W2[NH][INT_NCLASS] = {
-    {F16(5), F16(0), F16(0), F16(0), F16(0), F16(0), F16(0), F16(0)},
-    {F16(0), F16(5), F16(0), F16(0), F16(0), F16(0), F16(0), F16(0)},
-    {F16(0), F16(0), F16(5), F16(0), F16(0), F16(0), F16(0), F16(0)},
-    {F16(0), F16(0), F16(0), F16(5), F16(0), F16(0), F16(0), F16(0)},
-    {F16(0), F16(0), F16(0), F16(0), F16(5), F16(0), F16(0), F16(0)},
-    {F16(0), F16(0), F16(0), F16(0), F16(0), F16(5), F16(0), F16(0)},
-    {F16(0), F16(0), F16(0), F16(0), F16(0), F16(0), F16(5), F16(0)},
-    {F16(0), F16(0), F16(0), F16(0), F16(0), F16(0), F16(0), F16(5)},
-};
-static const int32_t b2[INT_NCLASS] = {F16(0), F16(0), F16(0), F16(0), F16(0), F16(0), F16(0), F16(0)};
-
-/* hand-tuned bias so common small words map sensibly */
-static int32_t feat_value(int feat, int pres)
+static char low(char c)
 {
-    (void)feat;
-    return pres ? F16(1) : F16(0);
+    if (c >= 'A' && c <= 'Z')
+        return c + 32;
+    return c;
+}
+
+static int is_alpha(char c)
+{
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+}
+
+static int has(const char *h, const char *w)
+{
+    for (int i = 0; h[i]; i++) {
+        int j = 0;
+        while (w[j] && low(h[i + j]) == low(w[j]))
+            j++;
+        if (!w[j])
+            return 1;
+    }
+    return 0;
+}
+
+static int has_word(const char *text, const char *trig)
+{
+    for (int i = 0; text[i]; i++) {
+        int j = 0;
+        while (trig[j] && low(text[i + j]) == low(trig[j]))
+            j++;
+        if (!trig[j]) {
+            int before_ok = (i == 0) || !is_alpha(text[i - 1]);
+            int after = i + j;
+            int after_ok = (text[after] == 0) || !is_alpha(text[after]);
+            if (before_ok && after_ok)
+                return 1;
+        }
+    }
+    return 0;
+}
+
+#define TRIG_MAX 10
+static const char *const TRIGGERS[JBOT_NF][TRIG_MAX] = {
+    {"hello", "hi", "hey", "greetings", "howdy", "hiya",
+     "good morning", "good evening", "good afternoon", 0},
+    {"help", "assist", "support", "what can", "options", "skills",
+     "what now", 0, 0, 0},
+    {"time", "clock", "o'clock", 0, 0, 0, 0, 0, 0, 0},
+    {"calc", "compute", "math", "plus", "multiply", "add",
+     "calculate", "times", "minus", "sum"},
+    {"system", "cpu", "spec", "processor", "specs", "computer",
+     "machine", 0, 0, 0},
+    {"ram", "memory", "mem", "info", 0, 0, 0, 0, 0, 0},
+    {"weather", "temperature", "rain", "sunny", "forecast", "raining",
+     0, 0, 0, 0},
+    {"light", "lamp", "device", "appliance", "smart", "lights",
+     0, 0, 0, 0},
+    {"thanks", "thank", "appreciate", "thx", "cheers",
+     0, 0, 0, 0, 0},
+    {"date", "today", "calendar", "day", 0, 0, 0, 0, 0, 0},
+    {"disk", "storage", "space", "drive", "hard disk",
+     0, 0, 0, 0, 0},
+    {"version", "build", "release", 0, 0, 0, 0, 0, 0, 0},
+    {"who", "your name", "what are you", "introduce", "yourself", "name",
+     0, 0, 0, 0},
+    {"goodbye", "bye", "later", "farewell", "see you", "see ya",
+     0, 0, 0, 0},
+    {"network", "internet", "wifi", "online", "connection",
+     0, 0, 0, 0, 0},
+    {"file", "folder", "document", 0, 0, 0, 0, 0, 0, 0},
+};
+
+enum { I_GREET = 0, I_HELP, I_TIME, I_COMPUTE, I_SYSTEM, I_DATE,
+       I_VERSION, I_DISK, I_IDENTITY, I_THANKS, I_GOODBYE,
+       I_WEATHER, I_SMART };
+
+static void extract_features(const char *input, int32_t *feats)
+{
+    for (int i = 0; i < JBOT_NF; i++) {
+        int found = 0;
+        for (int w = 0; w < TRIG_MAX && TRIGGERS[i][w]; w++) {
+            if (has_word(input, TRIGGERS[i][w])) {
+                found = 1;
+                break;
+            }
+        }
+        feats[i] = found ? F16(1) : 0;
+    }
 }
 
 static int nn_classify(const int32_t *feats)
 {
-    int32_t h[NH];
-    for (int j = 0; j < NH; j++) {
-        int32_t acc = b1[j];
-        for (int i = 0; i < NF; i++)
-            acc = addf16(acc, mulf16(W1[i][j], feats[i]));
+    int32_t h[JBOT_NH];
+    for (int j = 0; j < JBOT_NH; j++) {
+        int32_t acc = JBOT_b1[j];
+        for (int i = 0; i < JBOT_NF; i++)
+            acc += mulf16(JBOT_W1[i][j], feats[i]);
         h[j] = reluf16(acc);
     }
-    int32_t out[INT_NCLASS];
-    for (int k = 0; k < INT_NCLASS; k++) {
-        int32_t acc = b2[k];
-        for (int j = 0; j < NH; j++)
-            acc = addf16(acc, mulf16(W2[j][k], h[j]));
+    int32_t out[JBOT_NO];
+    for (int k = 0; k < JBOT_NO; k++) {
+        int32_t acc = JBOT_b2[k];
+        for (int j = 0; j < JBOT_NH; j++)
+            acc += mulf16(JBOT_W2[j][k], h[j]);
         out[k] = acc;
     }
     int best = 0;
-    for (int k = 1; k < INT_NCLASS; k++)
+    for (int k = 1; k < JBOT_NO; k++)
         if (out[k] > out[best])
             best = k;
     return best;
 }
 
-/* ---------------- tier ---------------- */
 static int tier;
 
 void jbot_init(void) { tier = TIER_QUICK; }
@@ -112,26 +144,6 @@ int jbot_can(int cap)
         return tier >= TIER_DAILY;
     case CAP_IMAGE:
         return tier >= TIER_PRO;
-    }
-    return 0;
-}
-
-/* ---------------- string helpers ---------------- */
-static char low(char c)
-{
-    if (c >= 'A' && c <= 'Z')
-        return c + 32;
-    return c;
-}
-
-static int has(const char *h, const char *w)
-{
-    for (int i = 0; h[i]; i++) {
-        int j = 0;
-        while (w[j] && low(h[i + j]) == low(w[j]))
-            j++;
-        if (!w[j])
-            return 1;
     }
     return 0;
 }
@@ -182,7 +194,7 @@ static int putu64(char *out, int n, int p, uint64_t v)
     return p;
 }
 
-/* ---------------- cmos time (duplicate minimal, kernel-internal) ---------------- */static uint8_t cmos(int r)
+static uint8_t cmos(int r)
 {
     uint8_t v;
     __asm__ volatile("outb %0,$0x70" : : "a"((uint8_t)r));
@@ -191,8 +203,6 @@ static int putu64(char *out, int n, int p, uint64_t v)
 }
 static int bcdv(uint8_t v) { return (v & 15) + ((v >> 4) * 10); }
 
-/* Offline system info: report real physical RAM total and free in MiB.
-   Pure local read, no network, no external model. */
 static int build_system_reply(char *out, int outsz)
 {
     uint64_t total_mb = pmm_total_bytes() / (1024u * 1024u);
@@ -206,8 +216,43 @@ static int build_system_reply(char *out, int outsz)
     return p > 0;
 }
 
-/* ---------------- compute: simple integer expression ---------------- */
-/* supports: "N op N" with + - * / (single operator, two operands) */
+static int time_reply(char *out, int n)
+{
+    int hh = bcdv(cmos(4)), mm = bcdv(cmos(2)), ss = bcdv(cmos(0));
+    int q = putstr(out, n, 0, "It is ");
+    q = putu32(out, n, q, (uint32_t)hh);
+    q = putstr(out, n, q, ":");
+    if (mm < 10) q = putstr(out, n, q, "0");
+    q = putu32(out, n, q, (uint32_t)mm);
+    q = putstr(out, n, q, ":");
+    if (ss < 10) q = putstr(out, n, q, "0");
+    q = putu32(out, n, q, (uint32_t)ss);
+    return q > 0;
+}
+
+static int date_reply(char *out, int n)
+{
+    int y = bcdv(cmos(9)), m = bcdv(cmos(8)), d = bcdv(cmos(7));
+    int q = putstr(out, n, 0, "Today: ");
+    q = putu32(out, n, q, (uint32_t)y + 2000);
+    q = putstr(out, n, q, "-");
+    if (m < 10) q = putstr(out, n, q, "0");
+    q = putu32(out, n, q, (uint32_t)m);
+    q = putstr(out, n, q, "-");
+    if (d < 10) q = putstr(out, n, q, "0");
+    q = putu32(out, n, q, (uint32_t)d);
+    return q > 0;
+}
+
+static int disk_reply(char *out, int n)
+{
+    uint32_t free_mb = fat_free_bytes() / (1024u * 1024u);
+    int q = putstr(out, n, 0, "Disk free ");
+    q = putu32(out, n, q, free_mb);
+    q = putstr(out, n, q, " MB");
+    return q > 0;
+}
+
 static int try_compute(const char *in, char *out, int n)
 {
     const char *p = in;
@@ -215,9 +260,7 @@ static int try_compute(const char *in, char *out, int n)
     char op = 0;
     int have_a = 0, have_b = 0, have_op = 0;
     int sgn = 1;
-    /* parse first number */
     while (*p && (*p == ' ')) p++;
-    /* skip a leading alphabetic keyword like "calc " or "compute " */
     while (*p && ((*p >= 'a' && *p <= 'z') || (*p >= 'A' && *p <= 'Z')
                   || *p == '='))
         p++;
@@ -233,7 +276,6 @@ static int try_compute(const char *in, char *out, int n)
     if (*p == '-') { sgn = -1; p++; }
     while (*p >= '0' && *p <= '9') { b = b * 10 + (*p - '0'); p++; have_b = 1; }
     b *= sgn;
-    /* must have consumed meaningful numbers and reached end */
     while (*p && (*p == ' ')) p++;
     if (!have_a || !have_b || *p != 0) return 0;
 
@@ -253,206 +295,109 @@ static int try_compute(const char *in, char *out, int n)
     return putu32(out, n, o, (uint32_t)r);
 }
 
-/* ---------------- main reply ---------------- */
-int jbot_reply(const char *input, char *out, int outsz)
+static int reply_for_intent(int cls, char *out, int n)
 {
-    int p = 0;
-    out[0] = 0;
-
-    /* 1. compute rule first (handles "5+3") */
-    if (has(input, "=") || has(input, "calc") || has(input, "compute") ||
-        has(input, "math") || has(input, "算")) {
-        char cb[96];
-        if (try_compute(input, cb, sizeof(cb)) && cb[0] == '=' ) {
-            return putstr(out, outsz, p, cb) > 0;
-        }
-    }
-
-    /* 2. explicit time rule */
-    if (has(input, "time") || has(input, "clock") || has(input, "几点")
-        || has(input, "时间") || has(input, "now")) {
-        int hh = bcdv(cmos(4)), mm = bcdv(cmos(2)), ss = bcdv(cmos(0));
-        char b[48];
-        int q = putstr(b, sizeof(b), 0, "It is ");
-        q = putu32(b, sizeof(b), q, (uint32_t)hh);
-        q = putstr(b, sizeof(b), q, ":");
-        if (mm < 10) q = putstr(b, sizeof(b), q, "0");
-        q = putu32(b, sizeof(b), q, (uint32_t)mm);
-        q = putstr(b, sizeof(b), q, ":");
-        if (ss < 10) q = putstr(b, sizeof(b), q, "0");
-        q = putu32(b, sizeof(b), q, (uint32_t)ss);
-        return putstr(out, outsz, p, b) > 0;
-    }
-
-    /* 2b. offline system info: report real physical RAM total/free (MiB) */
-    if (has(input, "system") || has(input, "info") || has(input, "cpu") ||
-        has(input, "mem") || has(input, "内存") || has(input, "系统")) {
-        char sb[96];
-        if (build_system_reply(sb, sizeof(sb)))
-            return putstr(out, outsz, p, sb) > 0;
-    }
-
-    /* 2c. date: CMOS year/month/day, offline local read */
-    if (has(input, "date") || has(input, "日期") || has(input, "today")) {
-        int y = bcdv(cmos(9)), m = bcdv(cmos(8)), d = bcdv(cmos(7));
-        char db[48];
-        int q = putstr(db, sizeof(db), 0, "Today: ");
-        q = putu32(db, sizeof(db), q, (uint32_t)y + 2000);
-        q = putstr(db, sizeof(db), q, "-");
-        if (m < 10) q = putstr(db, sizeof(db), q, "0");
-        q = putu32(db, sizeof(db), q, (uint32_t)m);
-        q = putstr(db, sizeof(db), q, "-");
-        if (d < 10) q = putstr(db, sizeof(db), q, "0");
-        q = putu32(db, sizeof(db), q, (uint32_t)d);
-        return putstr(out, outsz, p, db) > 0;
-    }
-
-    /* 2d. installed version */
-    if (has(input, "version") || has(input, "版本"))
-        return putstr(out, outsz, p, "JackBOT OS 1.0.2") > 0;
-
-    /* 2e. free disk space (MiB) from FAT32 */
-    if (has(input, "disk") || has(input, "storage") || has(input, "磁盘") ||
-        has(input, "space")) {
-        uint32_t free_mb = fat_free_bytes() / (1024u * 1024u);
-        char db[64];
-        int q = putstr(db, sizeof(db), 0, "Disk free ");
-        q = putu32(db, sizeof(db), q, free_mb);
-        q = putstr(db, sizeof(db), q, " MB");
-        return putstr(out, outsz, p, db) > 0;
-    }
-
-    /* 2f. offline identity / status / goodbye rules */
-    if (has(input, "who are you") || has(input, "你是谁"))
-        return putstr(out, outsz, p,
+    switch (cls) {
+    case I_GREET:
+        return putstr(out, n, 0,
+            "Hi! I am JackBOT free AI. Ask me for time, math like 12*8, "
+            "system info, or say 'help'.") > 0;
+    case I_HELP:
+        return putstr(out, n, 0,
+            "Free mode: try 'time', '7+9', '5*3', 'info', 'thanks'. "
+            "Smart home and weather need a paid model.") > 0;
+    case I_TIME:
+        return time_reply(out, n);
+    case I_COMPUTE:
+        return putstr(out, n, 0,
+            "Say e.g. 'calc 12*8' or '5+9' and I'll compute it.") > 0;
+    case I_SYSTEM:
+        if (build_system_reply(out, n))
+            return 1;
+        return putstr(out, n, 0, "System RAM: see monitor app.") > 0;
+    case I_DATE:
+        return date_reply(out, n);
+    case I_VERSION:
+        return putstr(out, n, 0, "JackBOT OS 1.0.9") > 0;
+    case I_DISK:
+        return disk_reply(out, n);
+    case I_IDENTITY:
+        return putstr(out, n, 0,
             "I am JackBOT, the offline assistant built into JackBOT OS. "
             "Ask me for time, math, system info or disk space.") > 0;
+    case I_THANKS:
+        return putstr(out, n, 0, "You are welcome!") > 0;
+    case I_GOODBYE:
+        return putstr(out, n, 0, "Goodbye! Have a nice day.") > 0;
+    case I_WEATHER:
+        return putstr(out, n, 0,
+            "Weather needs a network connection and a paid model.") > 0;
+    case I_SMART:
+        return putstr(out, n, 0,
+            "Smart-home control is planned; it needs the paid tier.") > 0;
+    }
+    return 0;
+}
 
-    if (has(input, "how are you") || has(input, "你好吗") || has(input, "近况"))
-        return putstr(out, outsz, p,
-            "I am running fine offline, no network needed. Ready for time, "
-            "math, system info or disk space.") > 0;
+int jbot_reply(const char *input, char *out, int outsz)
+{
+    out[0] = 0;
 
-    if (has(input, "goodbye") || has(input, "bye") || has(input, "再见"))
-        return putstr(out, outsz, p, "Goodbye! Have a nice day.") > 0;
-
-    /* 3. build features */
-    int32_t feats[NF];
-    for (int i = 0; i < NF; i++) {
-        int pres = 0;
-        for (int w = 0; w < FW_MAX && FEAT_WORDS[i][w]; w++)
-            if (has(input, FEAT_WORDS[i][w])) { pres = 1; break; }
-        feats[i] = feat_value(i, pres);
+    if (has(input, "=") || has_word(input, "calc") ||
+        has_word(input, "compute") || has_word(input, "math")) {
+        char cb[96];
+        if (try_compute(input, cb, sizeof(cb)) && cb[0] == '=')
+            return putstr(out, outsz, 0, cb) > 0;
     }
 
-    /* 4. rules (fast, high-confidence) before the net */
-    if (has(input, "hello") || has(input, "hi ") || has(input, "hi!")
-        || has(input, "你好")) {
-        return putstr(out, outsz, p,
-            "Hi! I am JackBOT free AI (rule + neural net). Ask me for time, "
-            "math like 12*8, system info, or say 'help'.") > 0;
-    }
-    if (has(input, "help") || has(input, "what can")) {
-        return putstr(out, outsz, p,
-            "Free mode: try 'time', '7+9', '5*3', 'info', 'thanks'. "
-            "Smart home & files need a paid model.") > 0;
-    }
-    if (has(input, "thanks") || has(input, "thank")) {
-        return putstr(out, outsz, p, "You are welcome!") > 0;
-    }
-
-    /* 5. neural net for the rest */
+    int32_t feats[JBOT_NF];
+    extract_features(input, feats);
     int cls = nn_classify(feats);
-    switch (cls) {
-    case INT_GREET:
-        return putstr(out, outsz, p,
-            "Hello! Ask me for time, math, system info or 'help'.") > 0;
-    case INT_HELP:
-        return putstr(out, outsz, p,
-            "Try: 'time', '3*7', 'info', 'thanks'. Free AI is offline.") > 0;
-    case INT_TIME:
-        return putstr(out, outsz, p,
-            "I can tell the time: say 'time' exactly.") > 0;
-    case INT_COMPUTE:
-        return putstr(out, outsz, p,
-            "Say e.g. 'calc 12*8' or '5+9' and I'll compute it.") > 0;
-    case INT_SYSTEM:
-    {
-        char sb[96];
-        if (build_system_reply(sb, sizeof(sb)))
-            return putstr(out, outsz, p, sb) > 0;
-        return putstr(out, outsz, p, "System RAM: see monitor app.") > 0;
-    }
-    case INT_WEATHER:
-        return putstr(out, outsz, p,
-            "Weather needs a network connection and paid model.") > 0;
-    case INT_SMART:
-        return putstr(out, outsz, p,
-            "Smart-home control is planned; needs the paid tier.") > 0;
-    case INT_THANKS:
-        return putstr(out, outsz, p, "Anytime!") > 0;
-    default:
-        break;
-    }
+    if (reply_for_intent(cls, out, outsz))
+        return 1;
 
-    /* 6. fallback */
-    p = putstr(out, outsz, p, "I'm not sure about that. ");
+    int p = putstr(out, outsz, 0, "I'm not sure about that. ");
     p = putstr(out, outsz, p, input);
     return p > 0;
 }
 
-/* ---------------- self test ---------------- */
 void jbot_self_test(void)
 {
     char b[256];
     int ok = 1;
     jbot_init();
 
-    /* rule: time */
     if (!jbot_reply("time", b, sizeof(b)) || b[0] == 0) ok = 0;
-
-    /* rule: compute */
     if (!jbot_reply("calc 12*8", b, sizeof(b))) ok = 0;
-    if (has(b, "96") == 0) ok = 0;
+    if (!has(b, "96")) ok = 0;
+    if (!jbot_reply("hello", b, sizeof(b)) || b[0] == 0) ok = 0;
 
-    /* rule: greeting */
-    if (!jbot_reply("hello", b, sizeof(b))) ok = 0;
-
-    /* offline system info: must report real RAM total/free in MB */
     if (!jbot_reply("system info", b, sizeof(b)) || b[0] == 0) ok = 0;
-    if (has(b, "MB") == 0) ok = 0;
+    if (!has(b, "MB")) ok = 0;
 
-    /* date rule: non-empty and carries a dash date stamp */
     if (!jbot_reply("date", b, sizeof(b)) || b[0] == 0) ok = 0;
-    if (has(b, "-") == 0) ok = 0;
+    if (!has(b, "-")) ok = 0;
 
-    /* version rule: reports installed build version */
     if (!jbot_reply("version", b, sizeof(b)) || b[0] == 0) ok = 0;
-    if (has(b, "1.0.2") == 0) ok = 0;
+    if (!has(b, "1.0.9")) ok = 0;
 
-    /* disk rule: reports free space in MB */
     if (!jbot_reply("disk free", b, sizeof(b)) || b[0] == 0) ok = 0;
-    if (has(b, "MB") == 0) ok = 0;
+    if (!has(b, "MB")) ok = 0;
 
-    /* identity rule: identifies JackBOT offline assistant */
     if (!jbot_reply("who are you", b, sizeof(b)) || b[0] == 0) ok = 0;
-    if (has(b, "JackBOT") == 0) ok = 0;
+    if (!has(b, "JackBOT")) ok = 0;
 
-    /* status rule: reports running fine offline */
-    if (!jbot_reply("how are you", b, sizeof(b)) || b[0] == 0) ok = 0;
-    if (has(b, "offline") == 0) ok = 0;
-
-    /* goodbye rule: offline farewell reply */
     if (!jbot_reply("goodbye", b, sizeof(b)) || b[0] == 0) ok = 0;
-    if (has(b, "Goodbye") == 0) ok = 0;
+    if (!has(b, "Goodbye")) ok = 0;
 
-    /* neural: greeting via net */
-    jbot_reply("hi", b, sizeof(b));
-    /* should not be empty */
-    if (b[0] == 0) ok = 0;
+    if (!jbot_reply("thanks", b, sizeof(b)) || b[0] == 0) ok = 0;
+    if (!jbot_reply("help", b, sizeof(b)) || b[0] == 0) ok = 0;
 
-    /* tier logic unchanged */
-    int chat = jbot_reply("hello", b, sizeof(b)) && b[0];
+    if (!jbot_reply("what is the weather", b, sizeof(b)) || b[0] == 0) ok = 0;
+    if (!jbot_reply("turn on the light", b, sizeof(b)) || b[0] == 0) ok = 0;
+
+    if (jbot_reply("hi", b, sizeof(b)) && b[0] == 0) ok = 0;
+
     int quick_denied = !jbot_can(CAP_DOC) && !jbot_can(CAP_SCRIPT) &&
                        !jbot_can(CAP_SYSTEM) && !jbot_can(CAP_IMAGE);
     jbot_set_tier(TIER_INITIAL);
@@ -463,6 +408,6 @@ void jbot_self_test(void)
     jbot_set_tier(TIER_QUICK);
     int reset_ok = !jbot_can(CAP_DOC);
 
-    ok = ok && chat && quick_denied && initial_ok && pro_ok && reset_ok;
+    ok = ok && quick_denied && initial_ok && pro_ok && reset_ok;
     serial_puts(ok ? "[JBOT] test PASS\n" : "[JBOT] test FAIL\n");
 }

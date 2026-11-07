@@ -1,6 +1,6 @@
 # JackBOT OS
 
-Version: 1.0.0 (concept)
+Version: 1.0.9 (concept)
 Target: x86_64, BIOS + UEFI boot
 
 ## Build
@@ -9,7 +9,7 @@ Target: x86_64, BIOS + UEFI boot
 make iso
 ```
 
-Output: `build/JackBOT-1.0.0.iso`
+Output: `build/JackBOT-1.0.9.iso`
 
 ## Test
 

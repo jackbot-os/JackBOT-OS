@@ -26,6 +26,15 @@ void fb_putpixel_blend(int x, int y, uint32_t fg, uint8_t cover);
 void fb_fill_rect(int x, int y, int w, int h, uint32_t packed);
 void fb_blit(int dx, int dy, int w, int h, const uint32_t *pixels);
 void fb_blit_full(const uint32_t *pixels);
+/* Copy one rectangle out of a wider source surface straight into the back
+   buffer and mark only that area dirty. The desktop uses it to repaint the
+   strip a window is dragged across instead of the whole screen. */
+void fb_blit_rect(int dx, int dy, int w, int h, const uint32_t *src,
+                  int src_stride);
+/* Raw row pointer into the back buffer, for renderers that draw a whole
+   rectangle and mark it dirty once (the 3D rasterizer). Returns 0 when the
+   row is off-screen. */
+uint32_t *fb_back_row(int y);
 
 void fb_mark_dirty(int x, int y, int w, int h);
 void fb_invalidate(void);

@@ -274,7 +274,7 @@ static int build_request(struct http_client *c, char *req)
     a = c->path; while(*a) req[i++]=*a++;
     a = " HTTP/1.1\r\nHost: "; while(*a) req[i++]=*a++;
     a = c->host; while(*a) req[i++]=*a++;
-    a = "\r\nUser-Agent: JackBOT-OS/1.0.2\r\n"
+    a = "\r\nUser-Agent: JackBOT-OS/1.0.9\r\n"
         "Accept: text/html,text/plain\r\nConnection: close\r\n\r\n";
     while(*a) req[i++]=*a++;
     return i;
@@ -317,7 +317,8 @@ static int find_header(const struct http_client *c, const char *name,
 }
 
 static void begin_request(struct http_client *p, const char *host,
-                          const char *path, uint16_t port, int secure);
+                          const char *path, uint16_t port, int secure,
+                          int inherit_tls);
 static int resolve_location(const char *loc, struct http_client *base,
                             char *host, int hsz, char *path, int psz,
                             uint16_t *port);
@@ -346,7 +347,7 @@ static int finish_response(struct http_client *p, int c)
                 serial_puts(nhost);
                 serial_puts(npath);
                 serial_putc('\n');
-                begin_request(p, nhost, npath, nport, 0);
+                begin_request(p, nhost, npath, nport, 0, 1); /* redirect inherits TLS */
                 p->redirects++;
                 p->dnsid = (uint16_t)(0x2000 + c * 0x100 +
                                       (timer_get_ticks() & 0xFF));
@@ -497,10 +498,11 @@ static int resolve_location(const char *loc, struct http_client *base,
 }
 
 static void begin_request(struct http_client *p, const char *host,
-                          const char *path, uint16_t port, int secure)
+                          const char *path, uint16_t port, int secure,
+                          int inherit_tls)
 {
     int red = p->redirects;
-    int keep_tls = p->tls;
+    int keep_tls = inherit_tls ? p->tls : 0;
     int sock_keep = p->sock;
     memset(p, 0, sizeof(*p));
     p->redirects = red;
@@ -526,7 +528,7 @@ int http_get(int c, const char *host, const char *path, uint16_t port)
     if (c < 0 || c >= HCLIENTS)
         return -1;
     struct http_client *p = &cl[c];
-    begin_request(p, host, path, port, 0);
+    begin_request(p, host, path, port, 0, 0);
     p->dnsid = (uint16_t)(0x1000 + c * 0x100 +
                           (timer_get_ticks() & 0xFF));
     return 0;
@@ -544,11 +546,11 @@ int http_get_url(int c, const char *url)
     if (!secure)
         return -1;
     struct http_client *p = &cl[c];
-    begin_request(p, host, pathbuf, port, secure == 2);
+    begin_request(p, host, pathbuf, port, secure == 2, 0);
     p->dnsid = (uint16_t)(0x1000 + c * 0x100 +
                           (timer_get_ticks() & 0xFF));
     if (p->tls)
-        serial_puts("[HTTP] https target recorded on port 443 (TLS engine off)\n");
+        serial_puts("[HTTP] https target on port 443 (TLS 1.2 client)\n");
     return 0;
 }
 
@@ -602,7 +604,19 @@ void http_poll_client(int c)
                 p->state = H_FAIL;
                 break;
             }
-            tcp_send(p->sock, req, (uint16_t)n);
+            if (p->tls) {
+                if (tls_connect(p->sock, p->host) != 0) {
+                    serial_puts("[HTTP] TLS handshake failed\n");
+                    p->state = H_FAIL;
+                    break;
+                }
+                if (tls_send(p->sock, req, (uint16_t)n) < 0) {
+                    p->state = H_FAIL;
+                    break;
+                }
+            } else {
+                tcp_send(p->sock, req, (uint16_t)n);
+            }
             p->state = H_RECV;
             p->t0 = now;
         } else if (tcp_failed(p->sock) || now - p->t0 > 300) {
@@ -611,7 +625,8 @@ void http_poll_client(int c)
         break;
     case H_RECV: {
         static uint8_t tmp[1500];
-        int n = tcp_recv(p->sock, tmp, sizeof tmp);
+        int n = p->tls ? tls_recv(p->sock, tmp, sizeof tmp)
+                       : tcp_recv(p->sock, tmp, sizeof tmp);
         if (n > 0) {
             if (p->resp_len + n > RESPCAP) {
                 serial_puts("[HTTP] response exceeds buffer, abort\n");
@@ -660,8 +675,11 @@ void http_close_client(int c)
     if (c < 0 || c >= HCLIENTS)
         return;
     struct http_client *p = &cl[c];
-    if (p->sock >= 0)
+    if (p->sock >= 0) {
+        if (p->tls)
+            tls_close(p->sock);
         tcp_close(p->sock);
+    }
     p->state = H_IDLE;
     p->resp_len = 0;
 }
@@ -701,3 +719,4 @@ int http_is_tls(int c)
 {
     return (c >= 0 && c < HCLIENTS) && cl[c].tls;
 }
+

@@ -19,8 +19,15 @@
  *   fb_present_dirty();
  */
 
+#define CUR_ARROW 0
+#define CUR_HAND  1
+#define CUR_TEXT  2
+#define CUR_MOVE  3
+
 void cursor_init(void);
 void cursor_set_scale(int s);
+void cursor_set_shape(int shape);   /* CUR_ARROW / CUR_HAND / CUR_TEXT / CUR_MOVE */
+int  cursor_shape(void);
 void cursor_begin_frame(void);
 void cursor_end_frame(int mx, int my);
 void cursor_show(int visible);

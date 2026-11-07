@@ -5,6 +5,8 @@
 #include <kernel/hal.h>
 #include <kernel/vmm.h>
 #include <kernel/serial.h>
+#include <kernel/i18n.h>
+#include "i18n_data.h"
 
 /*
  * USB 主控制器发现 + 根集线器端口状态读取。
@@ -239,21 +241,21 @@ const char *usb_kind_name(int kind)
 const char *usb_kind_full_name(int kind)
 {
     switch (kind) {
-    case USB_KIND_UHCI: return "UHCI  USB 1.1 主控";
-    case USB_KIND_OHCI: return "OHCI  USB 1.1 主控";
-    case USB_KIND_EHCI: return "EHCI  USB 2.0 主控";
-    case USB_KIND_XHCI: return "xHCI  USB 3.x 主控";
-    default: return "USB 主控（接口未知）";
+    case USB_KIND_UHCI: return tr(STR_UK_UHCI);
+    case USB_KIND_OHCI: return tr(STR_UK_OHCI);
+    case USB_KIND_EHCI: return tr(STR_UK_EHCI);
+    case USB_KIND_XHCI: return tr(STR_UK_XHCI);
+    default: return tr(STR_UK_UNKNOWN);
     }
 }
 
 const char *usb_speed_name(int s)
 {
     switch (s) {
-    case USB_SPD_LOW: return "低速 1.5M";
-    case USB_SPD_FULL: return "全速 12M";
-    case USB_SPD_HIGH: return "高速 480M";
-    case USB_SPD_SUPER: return "超高速 5G";
-    default: return "空";
+    case USB_SPD_LOW: return tr(STR_SP_LOW);
+    case USB_SPD_FULL: return tr(STR_SP_FULL);
+    case USB_SPD_HIGH: return tr(STR_SP_HIGH);
+    case USB_SPD_SUPER: return tr(STR_SP_SUPER);
+    default: return tr(STR_SP_EMPTY);
     }
 }

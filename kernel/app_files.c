@@ -1,11 +1,16 @@
-#include <stdint.h>
+﻿#include <stdint.h>
 #include <stddef.h>
 #include <kernel/fb.h>
 #include <kernel/gfxtext.h>
 #include <kernel/ui.h>
 #include <kernel/fat32.h>
 #include <kernel/recycle.h>
+#include <kernel/i18n.h>
+#include "i18n_data.h"
 #include <kernel/kstring.h>
+#include <kernel/jca.h>
+#include <kernel/ps2.h>
+#include <kernel/serial.h>
 
 static struct ui_win W;
 static struct fat_dirent dent[128];
@@ -15,6 +20,14 @@ static int scroll;
 static char cwd[128];
 static char msg[96];
 static int inited;
+
+/* New-entry dialog: a filename is typed straight into this window, so the
+   explorer needs its own keyboard capture (the desktop only reads keys while
+   no application window is open). */
+static char nm[32];
+static int nmlen;
+static int naming;
+static int naming_dir;
 
 static char viewbuf[4096];
 static int viewing;
@@ -112,6 +125,127 @@ static int text_ext(const char *name)
     return 0;
 }
 
+/* Turn whatever the user typed into a FAT 8.3 name: uppercase, illegal
+   characters folded to '_', base <= 8 and extension <= 3, and ".TXT" added
+   when no extension was given so the result opens in the text viewer. */
+static void make83(const char *in, char *out, int osz)
+{
+    char base[9];
+    char ext[5];
+    int bn = 0, en = 0, hasext = 0;
+    const char *dot = strrchr(in, '.');
+    if (dot && dot != in && dot[1])
+        hasext = 1;
+
+    for (const char *p = in; *p; p++) {
+        if (hasext && p == dot)
+            break;
+        if (*p == '.')
+            continue;
+        char c = *p;
+        if (c >= 'a' && c <= 'z')
+            c -= 32;
+        if (!((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_' ||
+              c == '-'))
+            c = '_';
+        if (bn < 8)
+            base[bn++] = c;
+    }
+    if (bn == 0) {
+        base[bn++] = 'N';
+        base[bn++] = 'E';
+        base[bn++] = 'W';
+    }
+    base[bn] = 0;
+
+    if (hasext) {
+        for (const char *p = dot + 1; *p; p++) {
+            char c = *p;
+            if (c >= 'a' && c <= 'z')
+                c -= 32;
+            if (!((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')))
+                c = '_';
+            if (en < 3)
+                ext[en++] = c;
+        }
+        ext[en] = 0;
+    } else {
+        ext[0] = 'T';
+        ext[1] = 'X';
+        ext[2] = 'T';
+        ext[3] = 0;
+    }
+
+    out[0] = 0;
+    append(out, osz, base);
+    append(out, osz, ".");
+    append(out, osz, ext);
+}
+
+static void create_named(void)
+{
+    if (!nmlen) {
+        setmsg("Name is empty");
+        return;
+    }
+    if (!fat_mounted()) {
+        setmsg("No FAT32 volume mounted");
+        naming = 0;
+        return;
+    }
+    char name83[24];
+    make83(nm, name83, sizeof name83);
+    char fp[160];
+    full_path(name83, fp, sizeof fp);
+    int rc;
+    if (naming_dir)
+        rc = fat_mkdir(fp);
+    else
+        rc = fat_write_file(fp, "", 0);
+    naming = 0;
+    if (rc == 0) {
+        msg[0] = 0;
+        append(msg, sizeof msg, naming_dir ? "Folder created: " : "File created: ");
+        append(msg, sizeof msg, name83);
+    } else {
+        setmsg("Create failed (write-protected or disk full?)");
+    }
+    reload();
+}
+
+static int name_key(char c)
+{
+    if (c == '\r' || c == '\n') {
+        create_named();
+        return 1;
+    }
+    if (c == 27) {
+        naming = 0;
+        return 1;
+    }
+    if (c == '\b' || c == 0x7f) {
+        if (nmlen > 0)
+            nm[--nmlen] = 0;
+        return 1;
+    }
+    if (c >= 32 && c < 127 && nmlen < (int)sizeof nm - 1) {
+        nm[nmlen++] = c;
+        nm[nmlen] = 0;
+    }
+    return 1;
+}
+
+/* Keyboard is consumed here because the desktop only reads keys while no
+   application window is open. */
+static void name_input(void)
+{
+    char c;
+    while (ps2_read_key(&c)) {
+        if (!name_key(c))
+            break;
+    }
+}
+
 static void open_entry(int idx)
 {
     if (idx < 0 || idx >= ndent)
@@ -131,14 +265,27 @@ static void open_entry(int idx)
         full_path(dent[idx].short83, fp, sizeof fp);
         uint32_t got = 0;
         if (fat_read_file(fp, viewbuf, sizeof(viewbuf) - 1, &got) == 0) {
+            /* A .jca file that starts with the JCAN magic is a native
+               payload (C code compiled by tools/jcacc.py): run it instead
+               of showing its bytes as text. */
+            if (got >= 12 && viewbuf[0] == 'J' && viewbuf[1] == 'C' &&
+                viewbuf[2] == 'A' && viewbuf[3] == 'N') {
+                if (jca_run_native((const unsigned char *)viewbuf,
+                                   (int)got) == 0) {
+                    setmsg("Native JCA payload started");
+                } else {
+                    setmsg("Native JCA payload rejected");
+                }
+                return;
+            }
             viewbuf[got] = 0;
             strcpy(viewname, dent[idx].name);
             viewing = 1;
             return;
         }
-        setmsg("无法读取该文件");
+        setmsg(tr(STR_FILE_READ_FAIL));
     } else {
-        setmsg("该文件类型暂不支持打开（可打开文本/源码/脚本）");
+        setmsg(tr(STR_FILE_UNSUPPORTED));
     }
 }
 
@@ -199,6 +346,9 @@ int files_frame(int mx, int my, int clicked)
     if (viewing)
         return frame_view(mx, my, clicked);
 
+    if (naming)
+        name_input();
+
     int S = ui_scale();
     if (ui_window(&W, "File Explorer", mx, my, clicked))
         return 1;
@@ -210,6 +360,22 @@ int files_frame(int mx, int my, int clicked)
     if (ui_button(W.x + W.w - 110 * S, W.y + 42 * S, 90 * S, 30 * S,
                   "Refresh", 0, mx, my, clicked))
         reload();
+    if (ui_button(x0 + 300 * S, W.y + 42 * S, 90 * S, 30 * S, "New File",
+                  0, mx, my, clicked) && !naming) {
+        naming = 1;
+        naming_dir = 0;
+        nmlen = 0;
+        nm[0] = 0;
+        msg[0] = 0;
+    }
+    if (ui_button(x0 + 400 * S, W.y + 42 * S, 90 * S, 30 * S, "New Folder",
+                  0, mx, my, clicked) && !naming) {
+        naming = 1;
+        naming_dir = 1;
+        nmlen = 0;
+        nm[0] = 0;
+        msg[0] = 0;
+    }
     if (ui_button(x0, W.y + 42 * S, 90 * S, 30 * S, "Up", 0, mx, my,
                   clicked)) {
         char *sl = strrchr(cwd, '\\');
@@ -224,17 +390,17 @@ int files_frame(int mx, int my, int clicked)
     if (ui_button(x0 + 200 * S, W.y + 42 * S, 90 * S, 30 * S, "Delete",
                   0, mx, my, clicked) && sel >= 0) {
         if (dent[sel].is_dir) {
-            setmsg("回收站只处理文件，暂不支持删除文件夹");
+            setmsg(tr(STR_FILE_NO_FOLDER));
         } else {
             char fp[160];
             full_path(dent[sel].short83, fp, sizeof fp);
             int rc = recycle_delete(fp);
             if (rc == 0)
-                setmsg("已移入回收站");
+                setmsg(tr(STR_FILE_MOVED));
             else if (rc == -2)
-                setmsg("文件超过 8MB 或受保护，无法送入回收站");
+                setmsg(tr(STR_FILE_TOO_BIG));
             else
-                setmsg("删除失败（受保护或磁盘问题）");
+                setmsg(tr(STR_FILE_DEL_FAIL));
             reload();
         }
     }
@@ -242,8 +408,8 @@ int files_frame(int mx, int my, int clicked)
     int y = W.y + 84 * S;
     char path[140];
     path[0] = 0;
-    append(path, sizeof path, "位置：");
-    append(path, sizeof path, cwd[0] ? cwd : "\\ 根目录");
+    append(path, sizeof path, tr(STR_FILE_LOCATION));
+    append(path, sizeof path, cwd[0] ? cwd : tr(STR_FILE_ROOT));
     gfx_draw_string_wide(x0, y, fb_rgb(150, 210, 255), bg, path);
     y += 24 * S;
 
@@ -274,7 +440,7 @@ int files_frame(int mx, int my, int clicked)
             gfx_draw_string(x0 + roww - 120 * S, ty, fb_rgb(168, 180, 204),
                             bg, sz);
         }
-        if (clicked && ui_inside(mx, my, x0, ry, roww, rh - 3 * S)) {
+        if (!naming && clicked && ui_inside(mx, my, x0, ry, roww, rh - 3 * S)) {
             if (sel == idx)
                 open_entry(idx);
             else
@@ -284,7 +450,7 @@ int files_frame(int mx, int my, int clicked)
 
     if (ndent == 0)
         gfx_draw_string_wide(x0, top + 20 * S, fb_rgb(150, 160, 180), bg,
-                             "（空目录）");
+                             tr(STR_FILE_EMPTY));
 
     int by = top + ROWS * rh + 2 * S;
     if (ui_button(x0, by, 90 * S, 26 * S, "Up", 0, mx, my, clicked)) {
@@ -297,11 +463,36 @@ int files_frame(int mx, int my, int clicked)
     char t[12];
     u2dec((uint32_t)ndent, t);
     gfx_draw_string(x0 + 210 * S, by + 4 * S, fb_rgb(160, 172, 194), bg,
-                    "项目数 ");
+                    tr(STR_FILE_COUNT));
     gfx_draw_string(x0 + 270 * S, by + 4 * S, fb_rgb(160, 172, 194), bg, t);
+
+    if (naming) {
+        int dw = 420 * S;
+        int dh = 120 * S;
+        int dx = W.x + (W.w - dw) / 2;
+        int dy = W.y + W.h / 2 - dh / 2;
+        ui_rect(dx, dy, dw, dh, fb_rgb(22, 26, 36));
+        ui_round_border(dx, dy, dw, dh, 6 * S, fb_rgb(120, 170, 240));
+        gfx_draw_string(dx + 14 * S, dy + 12 * S, fb_rgb(235, 242, 255),
+                        fb_rgb(22, 26, 36),
+                        naming_dir ? "New folder name:" : "New file name:");
+        ui_rect(dx + 14 * S, dy + 40 * S, dw - 28 * S, 26 * S,
+                fb_rgb(14, 17, 26));
+        char shown[40];
+        int k = 0;
+        for (int i = 0; i < nmlen && k < 38; i++)
+            shown[k++] = nm[i];
+        shown[k++] = '_';
+        shown[k] = 0;
+        gfx_draw_string(dx + 20 * S, dy + 45 * S, fb_rgb(235, 242, 255),
+                        fb_rgb(14, 17, 26), shown);
+        gfx_draw_string(dx + 14 * S, dy + 78 * S, fb_rgb(150, 160, 180),
+                        fb_rgb(22, 26, 36), "Enter = create, Esc = cancel");
+    }
 
     if (msg[0])
         gfx_draw_string_wide(x0, W.y + W.h - 32 * S,
                              fb_rgb(240, 200, 120), bg, msg);
     return 0;
 }
+

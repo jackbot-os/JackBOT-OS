@@ -4,20 +4,21 @@ CC := gcc
 NASM := nasm
 
 CFLAGS := -ffreestanding -m64 -mno-red-zone -mno-mmx -mno-sse -mno-sse2 \
-          -mcmodel=large -std=c11 -Wall -Wextra -g -Iinclude -Ibuild \
+          -mcmodel=large -std=c11 -Wall -Wextra -g -fno-strict-aliasing \
+          -Iinclude -Ibuild \
           -Ithird_party/stb -DNET_SELFTEST -MMD -MP
 NASMFLAGS := -f elf64
 LDFLAGS := -n -T arch/x86_64/linker.ld
 
 BUILD := build
-KERN_SRCS := main idt pic timer serial trap apic pmm vmm heap kstring sched userproc crash pci ac97 dev compat nic nic_rtl8139 fb svga cursor ata fat32 part mkfat payload grub_install installer installer_gui protect persist config oobe jbot i18n gfxtext ttf py jca ps2 desktop ui apps app_power app_store app_firewall app_backup app_capture app_clock app_fontmgr app_region app_network app_audio e1000 net tcp http sha256 app_update app_browser gpu3d app_3d app_diskmgr app_about app_calc app_notepad app_monitor app_pyconsole app_jca usb acpi recycle app_usb app_battery app_recycle app_files app_devices selftest splash hal bluetooth voice app_voice app_bluetooth hmac_sha256 tls ahci honeypot
+KERN_SRCS := main idt pic timer serial trap apic pmm vmm heap kstring sched userproc crash pci ac97 dev compat nic nic_rtl8139 nic_pcnet fb svga gpu gpu_nv gpu_intel gpu_amd cursor ata blk fat32 part mkfat payload grub_install installer installer_gui protect persist config oobe jbot i18n gfxtext ttf py jca jcac posix ps2 hwd hwcompat desktop ui apps app_power app_store app_firewall app_backup app_capture app_clock app_fontmgr app_region app_network app_audio e1000 net tcp http sha256 x25519 aes_gcm app_update app_browser gpu3d app_3d app_diskmgr app_about app_calc app_notepad app_monitor app_pyconsole app_jca usb acpi recycle app_usb app_battery app_recycle app_files app_devices selftest splash hal bluetooth voice app_voice app_bluetooth hmac_sha256 tls ahci honeypot wallpaper_image app_games perm
 ARCH_ASM := boot gdt vectors switch
 OBJS := $(addprefix $(BUILD)/,$(addsuffix .o,$(KERN_SRCS))) \
         $(addprefix $(BUILD)/,$(addsuffix .o,$(ARCH_ASM)))
 DEPS := $(OBJS:.o=.d)
 -include $(DEPS)
 KERNEL := iso/boot/kernel
-ISO := $(BUILD)/JackBOT-1.0.2.iso
+ISO := $(BUILD)/JackBOT-1.0.9.iso
 DISK := $(BUILD)/disk.img
 USER_BIN := $(BUILD)/ustest.bin
 USER_H := $(BUILD)/ustest.h
@@ -74,16 +75,34 @@ TTF_CFLAGS := $(filter-out -mno-mmx -mno-sse -mno-sse2,$(CFLAGS)) -msse2
 $(BUILD)/ttf.o: kernel/ttf.c | $(BUILD)
 	$(CC) $(TTF_CFLAGS) -w -c $< -o $@
 
+# Default wallpaper: the East Lake photo is linked into the kernel image as
+# a read-only binary blob (symbols _binary_assets_donghu_1600x900_bmp_*).
+WALLPAPER_BMP := assets/donghu_1600x900.bmp
+WALLPAPER_OBJ := $(BUILD)/donghu_bmp.o
+$(WALLPAPER_OBJ): $(WALLPAPER_BMP) | $(BUILD)
+	objcopy -I binary -O elf64-x86-64 -B i386:x86-64 \
+	    --rename-section .data=.rodata,alloc,load,readonly,data,contents \
+	    $< $@
+
 $(BUILD)/%.o: kernel/%.c | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
+
+# Rendering and desktop code compiled with optimisation. These are the files
+# that run per frame (pixel loops, blending, text, 3D rasteriser), so -O2 buys
+# the smoothness the whole UI is judged on. Hardware drivers deliberately stay
+# at the default level: their busy-wait polling loops were written assuming
+# unoptimised code and must not be reordered.
+RENDER_OPT_SRCS := desktop fb cursor ui gfxtext ttf gpu3d app_3d apps \
+                   app_files app_browser app_games wallpaper_image splash
+$(foreach f,$(RENDER_OPT_SRCS),$(eval $(BUILD)/$(f).o: CFLAGS += -O2))
 
 $(BUILD)/userproc.o: $(USER_H) $(CRASH_USER_H)
 
 $(BUILD)/%.o: arch/x86_64/%.asm | $(BUILD)
 	$(NASM) $(NASMFLAGS) $< -o $@
 
-$(KERNEL): $(OBJS) arch/x86_64/linker.ld
-	ld $(LDFLAGS) -o $@ $(OBJS)
+$(KERNEL): $(OBJS) $(WALLPAPER_OBJ) arch/x86_64/linker.ld
+	ld $(LDFLAGS) -o $@ $(OBJS) $(WALLPAPER_OBJ)
 
 iso: $(ISO)
 
@@ -121,3 +140,4 @@ $(DISK): assets/logo.png $(DISK_FONTS) | $(BUILD)
 
 clean:
 	rm -f $(BUILD)/*.o $(BUILD)/*.d $(KERNEL) $(BUILD)/*.iso $(DISK)
+

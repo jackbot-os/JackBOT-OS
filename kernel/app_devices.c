@@ -4,6 +4,8 @@
 #include <kernel/gfxtext.h>
 #include <kernel/ui.h>
 #include <kernel/pci.h>
+#include <kernel/i18n.h>
+#include "i18n_data.h"
 
 static struct ui_win W;
 static int inited;
@@ -50,43 +52,43 @@ static const char *class_name(uint8_t c, uint8_t s)
 {
     switch (c) {
     case 0x01:
-        if (s == 0x01) return "IDE 存储控制器";
-        if (s == 0x06) return "SATA/AHCI 控制器";
-        if (s == 0x08) return "NVMe 存储控制器";
-        return "存储控制器";
+        if (s == 0x01) return tr(STR_PC_IDE);
+        if (s == 0x06) return tr(STR_PC_SATA);
+        if (s == 0x08) return tr(STR_PC_NVME);
+        return tr(STR_PC_STORAGE);
     case 0x02:
-        return s == 0x00 ? "以太网控制器" : "网络控制器";
+        return s == 0x00 ? tr(STR_PC_ETHERNET) : tr(STR_PC_NETWORK);
     case 0x03:
-        if (s == 0x00) return "VGA 显示控制器";
-        if (s == 0x02) return "3D 显示控制器";
-        return "显示控制器";
+        if (s == 0x00) return tr(STR_PC_VGA);
+        if (s == 0x02) return tr(STR_PC_3D);
+        return tr(STR_PC_DISPLAY);
     case 0x04:
-        return "音频/多媒体控制器";
+        return tr(STR_PC_AUDIO);
     case 0x05:
-        return "内存控制器";
+        return tr(STR_PC_MEMORY);
     case 0x06:
-        if (s == 0x00) return "主机桥（Host Bridge）";
-        if (s == 0x01) return "ISA 桥";
-        if (s == 0x04) return "PCI-PCI 桥";
-        return "桥设备";
+        if (s == 0x00) return tr(STR_PC_HOST_BRIDGE);
+        if (s == 0x01) return tr(STR_PC_ISA);
+        if (s == 0x04) return tr(STR_PC_PCI_BRIDGE);
+        return tr(STR_PC_BRIDGE);
     case 0x07:
-        return "通信控制器";
+        return tr(STR_PC_COMM);
     case 0x08:
-        return "通用系统外设";
+        return tr(STR_PC_SYS_PERIPH);
     case 0x09:
-        return "输入控制器";
+        return tr(STR_PC_INPUT);
     case 0x0C:
-        if (s == 0x03) return "USB 控制器";
-        if (s == 0x05) return "SMBus 总线";
-        return "串行总线控制器";
+        if (s == 0x03) return tr(STR_PC_USB);
+        if (s == 0x05) return tr(STR_PC_SMBUS);
+        return tr(STR_PC_SERIAL_BUS);
     case 0x0D:
-        return "无线控制器";
+        return tr(STR_PC_WIRELESS);
     case 0x11:
-        return "加密控制器";
+        return tr(STR_PC_CRYPTO);
     case 0x12:
-        return "信号处理控制器";
+        return tr(STR_PC_SIGNAL);
     default:
-        return "其他设备";
+        return tr(STR_PC_OTHER);
     }
 }
 
@@ -115,10 +117,10 @@ int devices_frame(int mx, int my, int clicked)
     char line[128];
     char t[12];
     line[0] = 0;
-    append(line, "PCI 设备 ");
+    append(line, tr(STR_DEV_PCI));
     u2dec((uint32_t)nd, t);
     append(line, t);
-    append(line, " 个（点击查看资源）");
+    append(line, tr(STR_DEV_CLICK));
     gfx_draw_string_wide(x0, y, fb_rgb(150, 210, 255), bg, line);
     y += 8 * S;
 
@@ -216,7 +218,7 @@ int devices_frame(int mx, int my, int clicked)
             }
         }
         if (!line[0])
-            append(line, "无 I/O / 内存资源");
+            append(line, tr(STR_DEV_NO_RES));
         gfx_draw_string_wide(x0, dy, fb_rgb(160, 176, 204), bg, line);
     }
     return 0;

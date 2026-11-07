@@ -4,9 +4,14 @@
 #include <kernel/proc.h>
 #include <kernel/crash.h>
 #include <kernel/ps2.h>
+#include <kernel/posix.h>
 
 void timer_irq(void);
 void pic_send_eoi(uint8_t irq);
+uint64_t timer_get_ticks(void);
+
+#define RECOVER_LIMIT 5
+#define RECOVER_GAP_TICKS 100
 
 #define IRQ_SHARED 4
 
@@ -111,6 +116,7 @@ static void syscall_dispatch(struct trap_frame *f)
         thread_exit();
         break;
     default:
+        posix_syscall(f);       /* POSIX subset (>= SYS_WRITE) */
         break;
     }
 }
@@ -148,8 +154,28 @@ void trap_dispatch(struct trap_frame *f)
         return;
 
     if (f->vector < 32 && (f->cs & 3) == 3) {
-        crash_log_frame(f, "user exception");
-        process_kill(current_thread(), "user exception");
+        thread_t *t = current_thread();
+        if (t && t->user_entry) {
+            uint64_t now = timer_get_ticks();
+            if (now - t->recover_tick >= RECOVER_GAP_TICKS)
+                t->recover_count = 1;
+            else
+                t->recover_count++;
+            t->recover_tick = now;
+            if (t->recover_count > RECOVER_LIMIT) {
+                crash_log_frame(f, "repeated user exception, giving up");
+                process_kill(t, "repeated user exception");
+                return;
+            }
+            crash_log_frame(f, "user exception recovered");
+            /* The fault came from user code, so the kernel is intact. Rewind the
+               task to its entry point and let it run again; a task that keeps
+               faulting immediately is killed after RECOVER_LIMIT attempts. */
+            f->rip = t->user_entry;
+        } else {
+            crash_log_frame(f, "user exception unrecoverable");
+            process_kill(t, "user exception unrecoverable");
+        }
         return;
     }
 

@@ -11,8 +11,11 @@
 #include <kernel/crash.h>
 #include <kernel/fb.h>
 #include <kernel/ata.h>
+#include <kernel/ahci.h>
 #include <kernel/fat32.h>
 #include <kernel/part.h>
+#include <kernel/posix.h>
+#include <kernel/blk.h>
 #include <kernel/mkfat.h>
 #include <kernel/payload.h>
 #include <kernel/installer.h>
@@ -24,6 +27,9 @@
 #include <kernel/jbot.h>
 #include <kernel/py.h>
 #include <kernel/jca.h>
+#include <kernel/jcac.h>
+#include <kernel/hwcompat.h>
+#include <kernel/hwd.h>
 #include <kernel/honeypot.h>
 #include <kernel/i18n.h>
 #include "i18n_data.h"
@@ -38,12 +44,17 @@
 #include <kernel/net.h>
 #include <kernel/selftest.h>
 #include <kernel/svga.h>
+#include <kernel/gpu.h>
+#include <kernel/gpu_nv.h>
 #include <kernel/acpi.h>
 #include <kernel/usb.h>
 #include <kernel/recycle.h>
 #include <kernel/bluetooth.h>
 #include <kernel/voice.h>
 #include <kernel/hmac_sha256.h>
+#include "native_demo.h"
+#include "native_demo_cxx.h"
+#include "native_libc.h"
 
 #define VGA_MEM ((volatile uint16_t *)0xb8000)
 #define VGA_W 80
@@ -138,16 +149,62 @@ static void mem_selftest(void)
 
 static int boot_mount_system(void)
 {
-    static uint8_t mbr[512];
-    if (part_read_mbr(mbr) != 0)
+    struct part_info pi[PART_SCAN_MAX];
+    int n = part_scan(pi, PART_SCAN_MAX);
+    if (n <= 0)
         return -1;
-    struct part_layout pl;
-    if (part_parse(mbr, &pl) != 0)
+
+    serial_puts("[PART] scheme=");
+    serial_puts(part_scheme_name(pi[0].scheme));
+    serial_puts(" count=");
+    serial_puthex((uint32_t)n);
+    serial_putc('\n');
+    for (int i = 0; i < n; i++) {
+        serial_puts("[PART] ");
+        serial_puthex((uint32_t)i);
+        serial_puts(" start=");
+        serial_puthex(pi[i].start_lba);
+        serial_puts(" sectors=");
+        serial_puthex(pi[i].num_sectors);
+        serial_puts(" fat=");
+        serial_puthex(pi[i].is_fat ? 1u : 0u);
+        serial_putc('\n');
+    }
+
+    /* Mount the first FAT partition; that is the system volume. */
+    int sys_idx = -1;
+    for (int i = 0; i < n; i++) {
+        if (!pi[i].is_fat)
+            continue;
+        if (fat_mount_part(pi[i].start_lba, pi[i].num_sectors) == 0) {
+            sys_idx = i;
+            serial_puts("[PART] mounted partition ");
+            serial_puthex((uint32_t)i);
+            serial_putc('\n');
+            break;
+        }
+    }
+    if (sys_idx < 0)
         return -1;
-    uint32_t s = 0, n = 0;
-    if (part_find_system(&pl, &s, &n) != 0)
-        return -1;
-    return fat_mount_part(s, n);
+
+    /* Every FAT volume on the disk is reachable: mount each in turn and
+       count its root entries, then put the system volume back so the rest
+       of the boot keeps running on it. */
+    for (int i = 0; i < n; i++) {
+        if (i == sys_idx || !pi[i].is_fat)
+            continue;
+        static struct fat_dirent de[8];
+        if (fat_mount_part(pi[i].start_lba, pi[i].num_sectors) != 0)
+            continue;
+        int cnt = fat_list_dir("", de, 8);
+        serial_puts("[PART] volume ");
+        serial_puthex((uint32_t)i);
+        serial_puts(" entries=");
+        serial_puthex((uint32_t)(cnt < 0 ? 0 : cnt));
+        serial_putc('\n');
+    }
+    fat_mount_part(pi[sys_idx].start_lba, pi[sys_idx].num_sectors);
+    return 0;
 }
 
 /* Headless real-disk FAT32 regression: partitions, formats, mounts the
@@ -261,8 +318,8 @@ void kmain(uint64_t magic, uint64_t mb_info)
     hal_early_init();
     vga_clear();
 
-    vga_puts("JackBOT OS 1.0.2\n");
-    serial_puts("JackBOT OS 1.0.2\n");
+    vga_puts("JackBOT OS 1.0.9\n");
+    serial_puts("JackBOT OS 1.0.9\n");
 
     hal_selftest();
 
@@ -291,13 +348,49 @@ void kmain(uint64_t magic, uint64_t mb_info)
     int live_install = payload_live_mode();
     int live_desktop = payload_live_desktop();
 
+    /* AHCI/SATA must be brought up before the block layer is initialised,
+       so ata_read/ata_write can route through it. */
+    serial_puts("[STEP] ahci_probe\n");
+    {
+        int ctrls = ahci_probe();
+        serial_puts("[AHCI] controllers=");
+        serial_puthex((uint32_t)ctrls);
+        serial_puts(" ports_online=");
+        serial_puthex((uint32_t)ahci_online_ports());
+        serial_putc('\n');
+        if (ahci_present()) {
+            int p = ahci_primary_port();
+            uint64_t secs = 0;
+            ahci_port_sectors(p, &secs);
+            serial_puts("[AHCI] primary port=");
+            serial_puthex((uint32_t)p);
+            serial_puts(" model='");
+            serial_puts(ahci_port_model(p));
+            serial_puts("' sectors=");
+            serial_puthex(secs);
+            serial_puts(" lba48=");
+            serial_puthex((uint32_t)ahci_port_lba48(p));
+            serial_putc('\n');
+            /* read-only verification: no writes are performed */
+            ahci_lba0_signature(p);
+        }
+    }
+
     serial_puts("[STEP] ata_init\n");
     ata_init();
     serial_puts("[STEP] ata_present=");
     serial_puthex(ata_present() ? 1 : 0);
     serial_putc('\n');
+
+    /* One block backend for FAT32 and the partition scanner: ATA when the
+       legacy controller owns the disk, AHCI otherwise. */
     static uint8_t ab[512];
-    if (ata_present() && ata_read(0, 1, ab) == 0) {
+    blk_init();
+    serial_puts("[BLK] read0=");
+    serial_puthex(blk_read(0, 1, ab) == 0 ? 1 : 0);
+    serial_putc('\n');
+
+    if (blk_present() && blk_read(0, 1, ab) == 0) {
         serial_puts("[ATA] oem=");
         for (int i = 3; i < 11; i++) {
             char c = (char)ab[i];
@@ -305,24 +398,34 @@ void kmain(uint64_t magic, uint64_t mb_info)
         }
         serial_putc('\n');
 
-        static uint8_t wb[512], rb2[512];
-        uint64_t tlba = ata_sector_count() - 2;
-        for (int i = 0; i < 512; i++)
-            wb[i] = (uint8_t)(i * 31 + 7);
-        int wok = 1;
-        if (ata_write(tlba, 1, wb) != 0)
-            wok = 0;
-        if (ata_read(tlba, 1, rb2) != 0)
-            wok = 0;
-        for (int i = 0; i < 512; i++)
-            if (rb2[i] != wb[i])
+        /* Raw last-sector write test is destructive by nature, so it only
+           runs in the explicit headless regression mode, or on a disk with
+           no MBR signature at all (nothing on it to damage). */
+        if (payload_fattest() || ab[510] != 0x55 || ab[511] != 0xAA) {
+            static uint8_t wb[512], rb2[512];
+            uint64_t tlba = blk_sectors() - 2;
+            for (int i = 0; i < 512; i++)
+                wb[i] = (uint8_t)(i * 31 + 7);
+            int wok = 1;
+            if (blk_write(tlba, 1, wb) != 0)
                 wok = 0;
-        serial_puts(wok ? "[ATA] write PASS\n" : "[ATA] write FAIL\n");
+            if (blk_read(tlba, 1, rb2) != 0)
+                wok = 0;
+            for (int i = 0; i < 512; i++)
+                if (rb2[i] != wb[i])
+                    wok = 0;
+            serial_puts(wok ? "[ATA] write PASS\n" : "[ATA] write FAIL\n");
+        }
     }
 
+    /* Enumerate the partitions and mount the first FAT volume even in live
+       mode: the disk manager lists them, and the POSIX file helpers need a
+       real volume to read and write. */
+    if (blk_present() && !fat_mounted())
+        boot_mount_system();
+
     if (payload_fattest()) {
-        serial_puts("[B] FAT disk headless regression\n");
-        fat_disk_selftest();
+        serial_puts("[B] FAT disk headless regression\n");        fat_disk_selftest();
         serial_puts("[FAT-TEST] halt\n");
         for (;;)
             __asm__ volatile("hlt");
@@ -405,6 +508,7 @@ void kmain(uint64_t magic, uint64_t mb_info)
         py_init();
         py_self_test();
         jca_self_test();
+        jcac_self_test();
     }
     recycle_init();
 
@@ -450,6 +554,7 @@ void kmain(uint64_t magic, uint64_t mb_info)
            device rejects the hand-off we stay on the working VBE path. */
         serial_puts("[STEP] gpu takeover\n");
         pci_enumerate();
+        gpu_probe_all();
         {
             uint64_t gphys = 0;
             uint32_t gpitch = 0, gsize = 0;
@@ -511,6 +616,8 @@ void kmain(uint64_t magic, uint64_t mb_info)
         serial_puthex((uint32_t)n);
         serial_putc('\n');
     }
+    hwcompat_self_test();
+    hwd_self_test();
 
     serial_puts("[B] net\n");
     compat_register_nics();
@@ -525,7 +632,51 @@ void kmain(uint64_t magic, uint64_t mb_info)
     watchdog_init();
     serial_puts("[B] spawn\n");
     thread_t *user = spawn_test_user();
+    if (!user) {
+        serial_puts("[FATAL] user self-test process spawn failed\n");
+        __asm__ volatile("cli");
+        for (;;)
+            __asm__ volatile("hlt");
+    }
     tss_set_rsp0(user->kstack_top);
+    /* The scheduler now loads CR3 per thread (kernel threads run on the
+       kernel page table, user threads on their own), so the main loop no
+       longer needs a manual CR3 switch here. */
+
+    /* Native payload demos: hello-world images built by tools/jcacc.py.
+       The C one goes through chibicc, the C++ one through g++ in
+       freestanding mode; both run as ring-3 processes and use the JackBOT
+       syscall ABI (0 = print a character, 2 = exit). */
+    serial_puts("[B] native C demo\n");
+    if (jca_run_native(native_demo, (int)native_demo_len) == 0)
+        thread_yield();
+    else
+        serial_puts("[NAT] native C payload rejected\n");
+
+    serial_puts("[B] native C++ demo\n");
+    if (jca_run_native(native_demo_cxx, (int)native_demo_cxx_len) == 0)
+        thread_yield();
+    else
+        serial_puts("[NAT] native C++ payload rejected\n");
+
+    /* libc + POSIX syscall self-test: the payload below is linked against
+       user/libc (printf, malloc, fopen/fread) and talks to kernel/posix.c
+       through int 0x80. It needs a mounted FAT32 volume for the file test,
+       so live mode mounts it here when a disk is present. */
+    serial_puts("[B] libc demo\n");
+    if (!fat_mounted() && boot_mount_system() == 0)
+        serial_puts("[LIBC] disk mounted for the libc self-test\n");
+    if (fat_mounted() && !fat_exists("LC.TXT"))
+        fat_write_file("LC.TXT", "libc file io ok\n", 16);
+    if (jca_run_native(native_libc, (int)native_libc_len) == 0)
+        thread_yield();
+    else
+        serial_puts("[NAT] libc payload rejected\n");
+
+    /* The POSIX surface the libc payload talks to: prove mkdir/rename/
+       access/unlink/stat and console input really work on this machine. */
+    posix_selftest();
+
 
     serial_puts("[B] desktop\n");
     desktop_init();
@@ -559,11 +710,13 @@ void kmain(uint64_t magic, uint64_t mb_info)
                                       : "[I18N] test FAIL\n");
     }
 
-    __asm__ volatile("mov %0, %%cr3" : : "r"(user->p4phys));
-
     for (;;) {
         desktop_run();
         thread_yield();
         __asm__ volatile("hlt");
     }
 }
+
+
+
+

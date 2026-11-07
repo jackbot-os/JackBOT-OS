@@ -1,0 +1,16 @@
+{
+  "samples": 161,
+  "features": 16,
+  "hidden": 12,
+  "intents": 13,
+  "epochs": 260,
+  "optimizer": "Adam",
+  "matching": "word-boundary",
+  "train_accuracy": 1.0,
+  "held_out_accuracy": 1.0,
+  "max_abs_weight": 5.112227471786902,
+  "distinct_vectors": 17,
+  "all_zero_vectors": 0,
+  "conflicting_vectors": 0,
+  "seed": 20261031
+}

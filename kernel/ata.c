@@ -1,6 +1,7 @@
-#include <stdint.h>
+﻿#include <stdint.h>
 #include <stddef.h>
 #include <kernel/ata.h>
+#include <kernel/ahci.h>
 #include <kernel/serial.h>
 
 #define BASE 0x1F0
@@ -46,6 +47,14 @@ static inline void outsw(uint16_t port, const void *buf, uint32_t cnt)
 
 static int present;
 static uint64_t total_sectors;
+
+/* Block layer routing: when an AHCI controller brought a disk online the
+   reads/writes below go through it instead of legacy IDE PIO. */
+static int ahci_target(void)
+{
+    int p = ahci_primary_port();
+    return (ahci_present() && p >= 0) ? p : -1;
+}
 
 static uint8_t wait_not_bsy(void)
 {
@@ -127,11 +136,15 @@ int ata_init(void)
 
 int ata_present(void)
 {
-    return present;
+    return ahci_target() >= 0 || present;
 }
 
 uint64_t ata_sector_count(void)
 {
+    int p = ahci_target();
+    uint64_t s = 0;
+    if (p >= 0 && ahci_port_sectors(p, &s) == 0)
+        return s;
     return total_sectors;
 }
 
@@ -151,6 +164,9 @@ static void lba48_setup(uint64_t lba, uint8_t count, uint8_t cmd)
 
 int ata_read(uint64_t lba, uint8_t count, void *buf)
 {
+    int aport = ahci_target();
+    if (aport >= 0)
+        return ahci_read_sector(aport, lba, count, buf);
     if (!present)
         return -1;
     uint8_t *p = buf;
@@ -167,6 +183,9 @@ int ata_read(uint64_t lba, uint8_t count, void *buf)
 
 int ata_write(uint64_t lba, uint8_t count, const void *buf)
 {
+    int aport = ahci_target();
+    if (aport >= 0)
+        return ahci_write_sector(aport, lba, count, buf);
     if (!present)
         return -1;
     const uint8_t *p = buf;
@@ -185,6 +204,9 @@ int ata_write(uint64_t lba, uint8_t count, const void *buf)
 
 int ata_flush_cache(void)
 {
+    int aport = ahci_target();
+    if (aport >= 0)
+        return ahci_flush(aport);
     if (!present)
         return -1;
     select_master();
@@ -192,3 +214,4 @@ int ata_flush_cache(void)
     uint8_t s = wait_not_bsy();
     return (s & (ST_ERR | ST_DF)) ? -1 : 0;
 }
+

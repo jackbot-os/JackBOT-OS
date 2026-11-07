@@ -6,6 +6,7 @@
 #include <kernel/ps2.h>
 #include <kernel/voice.h>
 #include <kernel/ac97.h>
+#include <kernel/perm.h>
 
 static struct ui_win W;
 static int inited;
@@ -13,6 +14,7 @@ static char input[96];
 static int inlen;
 static char shown_reply[160];
 static int mic_ok;
+static int ask_perm;
 
 void voice_open(void)
 {
@@ -22,6 +24,7 @@ void voice_open(void)
     input[0] = 0;
     shown_reply[0] = 0;
     mic_ok = ac97_present();
+    ask_perm = 0;
 }
 
 static void read_keys(void)
@@ -108,8 +111,12 @@ int voice_frame(int mx, int my, int clicked)
     if (ui_button(x, btn_y, bw, 44 * S,
                   listening ? "Listening... (2 s)" : "Tap to talk",
                   listening, mx, my, clicked)) {
-        if (!listening)
-            voice_listen_start();
+        if (!listening) {
+            if (perm_granted(PERM_MIC))
+                voice_listen_start();
+            else
+                ask_perm = 1;
+        }
         return 0;
     }
 
@@ -161,6 +168,11 @@ int voice_frame(int mx, int my, int clicked)
     else
         gfx_draw_string(x + 8 * S, ry + 28 * S, dim, fb_rgb(22, 26, 38),
                         "Try: time / calc 8*9 / hello / help");
+
+    if (ask_perm) {
+        if (perm_prompt(PERM_MIC, W.x, W.y, W.w, W.h, mx, my, clicked) == 0)
+            ask_perm = 0;
+    }
 
     return 0;
 }

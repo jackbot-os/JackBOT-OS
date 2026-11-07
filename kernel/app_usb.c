@@ -4,6 +4,8 @@
 #include <kernel/gfxtext.h>
 #include <kernel/ui.h>
 #include <kernel/usb.h>
+#include <kernel/i18n.h>
+#include "i18n_data.h"
 
 static struct ui_win W;
 static int inited;
@@ -63,20 +65,20 @@ int usbdev_frame(int mx, int my, int clicked)
     int ndev = usb_total_connected();
     char line[96];
     line[0] = 0;
-    append(line, "控制器 ");
+    append(line, tr(STR_USB_CTRL));
     char t[12];
     u2dec((uint32_t)nhc, t);
     append(line, t);
-    append(line, " 个，已连接设备 ");
+    append(line, tr(STR_USB_CONN));
     u2dec((uint32_t)ndev, t);
     append(line, t);
-    append(line, " 台");
+    append(line, tr(STR_USB_UNITS));
     gfx_draw_string_wide(x0, y, fb_rgb(150, 210, 255), bg, line);
     y += 30 * S;
 
     if (nhc == 0) {
         gfx_draw_string_wide(x0, y + 20 * S, fb_rgb(232, 178, 104), bg,
-                             "未检测到 USB 主控制器（可在虚拟机设置里启用 USB 控制器）");
+                             tr(STR_USB_NO_HC));
         return 0;
     }
 
@@ -99,7 +101,7 @@ int usbdev_frame(int mx, int my, int clicked)
         y += 30 * S;
 
         line[0] = 0;
-        append(line, "总线 ");
+        append(line, tr(STR_USB_BUS));
         char n[8];
         u2dec(c->bus, n); append(line, n);
         append(line, ":");
@@ -129,33 +131,35 @@ int usbdev_frame(int mx, int my, int clicked)
             char num[8];
             u2dec((uint32_t)(p + 1), num);
             line[0] = 0;
-            append(line, "  端口 ");
+            append(line, tr(STR_USB_PORT));
             append(line, num);
             if (c->conn[p]) {
-                append(line, " ● 已连接  ");
+                append(line, tr(STR_USB_PORT_CONN));
                 append(line, usb_speed_name(c->speed[p]));
                 gfx_draw_string_wide(x0 + 8 * S, y,
                                      fb_rgb(120, 222, 140), bg, line);
             } else {
-                append(line, " ○ 空");
+                append(line, tr(STR_USB_PORT_EMPTY));
                 gfx_draw_string_wide(x0 + 8 * S, y,
                                      fb_rgb(120, 130, 146), bg, line);
             }
             if (c->oc[p]) {
                 gfx_draw_string_wide(x0 + roww - 90 * S, y,
-                                     fb_rgb(235, 110, 110), bg, "过流!");
+                                     fb_rgb(235, 110, 110), bg,
+                                     tr(STR_USB_OVERCURRENT));
             } else if (!c->pwr[p] && c->nports) {
                 gfx_draw_string_wide(x0 + roww - 100 * S, y,
-                                     fb_rgb(150, 150, 120), bg, "未供电");
+                                     fb_rgb(150, 150, 120), bg,
+                                     tr(STR_USB_NO_POWER));
             }
             y += 22 * S;
         }
         if (c->nports > shown) {
             line[0] = 0;
-            append(line, "  其余 ");
+            append(line, tr(STR_USB_OTHER));
             u2dec((uint32_t)(c->nports - shown), t);
             append(line, t);
-            append(line, " 个端口略");
+            append(line, tr(STR_USB_SKIP));
             gfx_draw_string_wide(x0 + 8 * S, y, fb_rgb(140, 150, 168), bg, line);
             y += 22 * S;
         }
@@ -163,6 +167,6 @@ int usbdev_frame(int mx, int my, int clicked)
     }
 
     gfx_draw_string_wide(x0, W.y + W.h - 40 * S, fb_rgb(140, 150, 168), bg,
-                         "说明：端口状态直接读取主控根集线器寄存器；完整设备枚举（HID/U盘）在后续阶段。");
+                         tr(STR_USB_FOOTER));
     return 0;
 }

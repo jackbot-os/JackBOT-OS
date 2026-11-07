@@ -15,15 +15,19 @@
 #include <kernel/e1000.h>
 #include <kernel/nic.h>
 #include <kernel/ps2.h>
+#include <kernel/hwd.h>
+#include <kernel/hwd.h>
 
 /* NIC 驱动注册（由其他模块实现） */
 void e1000_register_nic(void);
 void rtl8139_register(void);
+void pcnet_register_nic(void);
 
 void compat_register_nics(void)
 {
     e1000_register_nic();
     rtl8139_register();
+    pcnet_register_nic();
 }
 
 /* ================= 显示兼容 ================= */
@@ -112,9 +116,7 @@ static int drv_storage_ahci(struct pci_dev *d)
 
 static int drv_storage_nvme(struct pci_dev *d)
 {
-    (void)d;
-    serial_puts("[COMPAT] storage NVMe\n");
-    return 0;
+    return hwd_nvme_probe(d);
 }
 
 static int drv_storage_virtio(struct pci_dev *d)
@@ -135,9 +137,7 @@ static int drv_audio_ac97(struct pci_dev *d)
 
 static int drv_audio_hda(struct pci_dev *d)
 {
-    (void)d;
-    serial_puts("[COMPAT] audio HD Audio\n");
-    return 0;
+    return hwd_hda_probe(d);
 }
 
 static int drv_audio_sb16(struct pci_dev *d)
@@ -179,9 +179,7 @@ static int drv_usb_ehci(struct pci_dev *d)
 
 static int drv_usb_xhci(struct pci_dev *d)
 {
-    (void)d;
-    serial_puts("[COMPAT] USB xHCI (USB3.x) host controller\n");
-    return 0;
+    return hwd_xhci_probe(d);
 }
 
 /* ================= 输入/桥 兼容 ================= */

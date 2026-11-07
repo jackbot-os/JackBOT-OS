@@ -1,19 +1,9 @@
-#include <stdint.h>
+﻿#include <stdint.h>
 #include <stddef.h>
 #include <kernel/jca.h>
+#include <kernel/jca_op.h>
 #include <kernel/heap.h>
 #include <kernel/serial.h>
-
-enum {
-    OP_HALT = 0, OP_PUSHI, OP_PUSHS, OP_PUSHNIL,
-    OP_LOAD, OP_STORE, OP_POP,
-    OP_ADD, OP_SUB, OP_MUL, OP_DIV, OP_MOD, OP_NEG,
-    OP_LT, OP_GT, OP_LE, OP_GE, OP_EQ, OP_NE,
-    OP_AND, OP_OR, OP_NOT,
-    OP_JMP, OP_JZ, OP_JNZ,
-    OP_CALL, OP_RET,
-    OP_BPRINT, OP_BLEN, OP_BSTR, OP_BINT, OP_BABS
-};
 
 enum { T_NUM, T_STR, T_NAME, T_SYM };
 
@@ -1015,3 +1005,27 @@ void jca_self_test(void)
     ok &= check("var x = 0; var i = 0; while (i < 4) { if (i == 2) { x = x + 10; } else { x = x + i; } i = i + 1; } print(x);", "14\n");
     serial_puts(ok ? "[JCA] self-test OK\n" : "[JCA] self-test FAIL\n");
 }
+
+/* ---- native JCAN payloads (C code compiled with tools/jcacc.py) ---- */
+struct thread;
+struct thread *spawn_user_image(const uint8_t *code, uint64_t len);
+
+int jca_run_native(const unsigned char *bin, int len)
+{
+    if (!bin || len < 12)
+        return -1;
+    if (!(bin[0] == 'J' && bin[1] == 'C' && bin[2] == 'A' && bin[3] == 'N'))
+        return -1;
+    {
+        unsigned int plen = (unsigned int)bin[4] | ((unsigned int)bin[5] << 8)
+                          | ((unsigned int)bin[6] << 16)
+                          | ((unsigned int)bin[7] << 24);
+        unsigned int entry = (unsigned int)bin[8] | ((unsigned int)bin[9] << 8)
+                           | ((unsigned int)bin[10] << 16)
+                           | ((unsigned int)bin[11] << 24);
+        if (entry != 0 || plen == 0 || (int)plen > len - 12)
+            return -1;
+        return spawn_user_image(bin + 12, (uint64_t)plen) ? 0 : -1;
+    }
+}
+

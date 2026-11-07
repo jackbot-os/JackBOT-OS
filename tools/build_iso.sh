@@ -9,5 +9,5 @@ grep -nE "error|No such|not found|Error" build_iso.log | head -30
 echo "--- tail ---"
 tail -12 build_iso.log
 echo "--- artifacts ---"
-ls -l build/JackBOT-1.0.0.iso build/disk.img 2>&1
+ls -l build/JackBOT-1.0.9.iso build/disk.img 2>&1
 exit $RC

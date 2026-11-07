@@ -3,6 +3,8 @@
 #include <kernel/fb.h>
 #include <kernel/gfxtext.h>
 #include <kernel/serial.h>
+#include <kernel/i18n.h>
+#include "i18n_data.h"
 
 uint64_t timer_get_ticks(void);
 
@@ -38,7 +40,7 @@ void splash_show(void)
     gfx_draw_string_wide(x, y, white, black, msg);
 
     gfx_set_scale(2);
-    const char *sub = "欢迎使用 JackBOT OS";
+    const char *sub = tr(STR_SPLASH_SUBTITLE);
     int sw = gfx_text_width_wide(sub);
     int sh = gfx_text_height();
     gfx_draw_string_wide((W - sw) / 2, y + th + sh + 18, white, black, sub);

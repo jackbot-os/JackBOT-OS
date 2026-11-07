@@ -68,14 +68,57 @@ static struct {
 } g_fb;
 
 static uint32_t *g_back;
-static int g_dx0, g_dy0, g_dx1, g_dy1;
-static int g_dirty;
+
+/* Up to DIRTY_MAX independent dirty rectangles. A single merged rectangle was
+   what made the whole desktop flicker: the pointer, an icon and the taskbar
+   clock sit far apart, so their bounding box covered almost the entire screen
+   and every frame copied it to the scanout. */
+#define DIRTY_MAX 12
+struct dirty_rect { int x0, y0, x1, y1; };
+static struct dirty_rect g_rects[DIRTY_MAX];
+static int g_nr;
+static int g_last = -1;
+
+static void dirty_add(int x0, int y0, int x1, int y1)
+{
+    if (g_nr > 0 && g_last >= 0) {
+        struct dirty_rect *r = &g_rects[g_last];
+        if (x0 >= r->x0 && y0 >= r->y0 && x1 <= r->x1 && y1 <= r->y1)
+            return;
+    }
+    for (int i = 0; i < g_nr; i++) {
+        struct dirty_rect *r = &g_rects[i];
+        if (x0 <= r->x1 && x1 >= r->x0 && y0 <= r->y1 && y1 >= r->y0) {
+            if (x0 < r->x0) r->x0 = x0;
+            if (y0 < r->y0) r->y0 = y0;
+            if (x1 > r->x1) r->x1 = x1;
+            if (y1 > r->y1) r->y1 = y1;
+            g_last = i;
+            return;
+        }
+    }
+    if (g_nr < DIRTY_MAX) {
+        g_rects[g_nr].x0 = x0; g_rects[g_nr].y0 = y0;
+        g_rects[g_nr].x1 = x1; g_rects[g_nr].y1 = y1;
+        g_last = g_nr;
+        g_nr++;
+        return;
+    }
+    /* Full: fold this one into the first slot. Costs a bigger copy but keeps
+       the screen correct. */
+    struct dirty_rect *r = &g_rects[0];
+    if (x0 < r->x0) r->x0 = x0;
+    if (y0 < r->y0) r->y0 = y0;
+    if (x1 > r->x1) r->x1 = x1;
+    if (y1 > r->y1) r->y1 = y1;
+    g_last = 0;
+}
 
 static void fb_back_alloc(void)
 {
     size_t bytes = (size_t)g_fb.width * g_fb.height * 4;
     g_back = (uint32_t *)kmalloc(bytes);
-    g_dirty = 0;
+    g_nr = 0; g_last = -1;
     if (g_back)
         fb_invalidate();
 }
@@ -90,34 +133,39 @@ void fb_mark_dirty(int x, int y, int w, int h)
     int y1 = y + h; if (y1 > (int)g_fb.height) y1 = (int)g_fb.height;
     if (x0 >= x1 || y0 >= y1)
         return;
-    if (!g_dirty) {
-        g_dx0 = x0; g_dy0 = y0; g_dx1 = x1; g_dy1 = y1;
-        g_dirty = 1;
-    } else {
-        if (x0 < g_dx0) g_dx0 = x0;
-        if (y0 < g_dy0) g_dy0 = y0;
-        if (x1 > g_dx1) g_dx1 = x1;
-        if (y1 > g_dy1) g_dy1 = y1;
-    }
+    dirty_add(x0, y0, x1, y1);
 }
 
 void fb_invalidate(void)
 {
     if (!g_fb.present)
         return;
-    g_dx0 = 0; g_dy0 = 0;
-    g_dx1 = (int)g_fb.width; g_dy1 = (int)g_fb.height;
-    g_dirty = 1;
+    g_nr = 0; g_last = -1;
+    dirty_add(0, 0, (int)g_fb.width, (int)g_fb.height);
 }
 
 static void present_rect(int x0, int y0, int x1, int y1)
 {
     if (!g_back)
         return;
+    int n = x1 - x0;
+    if (n <= 0)
+        return;
+    /* Fast path: 32bpp scanout with no padding between rows, which is what
+       both the VBE frame buffer and the VMSVGA scanout give us. Copying a
+       whole row at once is several times cheaper than the per-pixel loop
+       and it is the single hottest loop while a window is being dragged. */
+    if (g_fb.bytes_pp == 4 && g_fb.pitch == g_fb.width * 4) {
+        for (int yy = y0; yy < y1; yy++) {
+            uint32_t *dst = (uint32_t *)(g_fb.addr + (uint64_t)yy * g_fb.pitch) + x0;
+            const uint32_t *src = g_back + (uint64_t)yy * g_fb.width + x0;
+            __builtin_memcpy(dst, src, (size_t)n * 4);
+        }
+        return;
+    }
     for (int yy = y0; yy < y1; yy++) {
         uint8_t *dst = g_fb.addr + (uint64_t)yy * g_fb.pitch;
         const uint32_t *src = g_back + (uint64_t)yy * g_fb.width + x0;
-        int n = x1 - x0;
         if (g_fb.bytes_pp == 4) {
             for (int i = 0; i < n; i++)
                 ((uint32_t *)dst)[x0 + i] = src[i];
@@ -138,14 +186,18 @@ static void present_rect(int x0, int y0, int x1, int y1)
 
 void fb_present_dirty(void)
 {
-    if (!g_fb.present || !g_dirty)
+    if (!g_fb.present || g_nr == 0)
         return;
-    int rx = g_dx0, ry = g_dy0;
-    int rw = g_dx1 - g_dx0, rh = g_dy1 - g_dy0;
-    present_rect(g_dx0, g_dy0, g_dx1, g_dy1);
-    g_dirty = 0;
-    if (g_fb.gpu)
-        svga_update_rect(rx, ry, rw, rh);
+    for (int i = 0; i < g_nr; i++) {
+        int rx = g_rects[i].x0, ry = g_rects[i].y0;
+        int rw = g_rects[i].x1 - rx, rh = g_rects[i].y1 - ry;
+        if (rw <= 0 || rh <= 0)
+            continue;
+        present_rect(rx, ry, g_rects[i].x1, g_rects[i].y1);
+        if (g_fb.gpu)
+            svga_update_rect(rx, ry, rw, rh);
+    }
+    g_nr = 0; g_last = -1;
 }
 
 void fb_present_all(void)
@@ -154,7 +206,7 @@ void fb_present_all(void)
         return;
     if (g_back)
         present_rect(0, 0, (int)g_fb.width, (int)g_fb.height);
-    g_dirty = 0;
+    g_nr = 0; g_last = -1;
     if (g_fb.gpu)
         svga_update_rect(0, 0, (int)g_fb.width, (int)g_fb.height);
 }
@@ -433,14 +485,7 @@ void fb_putpixel(int x, int y, uint32_t packed)
         || (uint32_t)x >= g_fb.width || (uint32_t)y >= g_fb.height)
         return;
     g_back[(uint64_t)y * g_fb.width + x] = packed;
-    if (!g_dirty) {
-        g_dx0 = x; g_dx1 = x + 1; g_dy0 = y; g_dy1 = y + 1; g_dirty = 1;
-    } else {
-        if (x < g_dx0) g_dx0 = x;
-        if (x + 1 > g_dx1) g_dx1 = x + 1;
-        if (y < g_dy0) g_dy0 = y;
-        if (y + 1 > g_dy1) g_dy1 = y + 1;
-    }
+    dirty_add(x, y, x + 1, y + 1);
 }
 
 uint32_t fb_getpixel(int x, int y)
@@ -449,6 +494,17 @@ uint32_t fb_getpixel(int x, int y)
         || (uint32_t)x >= g_fb.width || (uint32_t)y >= g_fb.height)
         return 0;
     return g_back[(uint64_t)y * g_fb.width + x];
+}
+
+/* Raw row pointer into the back buffer. The 3D rasterizer writes through it
+   instead of calling fb_putpixel per pixel (which re-checks the bounds and
+   merges the dirty rect every single pixel). The caller marks the dirty rect
+   once after the whole viewport is drawn. */
+uint32_t *fb_back_row(int y)
+{
+    if (!g_fb.present || !g_back || y < 0 || (uint32_t)y >= g_fb.height)
+        return 0;
+    return g_back + (uint64_t)y * g_fb.width;
 }
 
 static void unpack(uint32_t c, uint8_t *r, uint8_t *g, uint8_t *b)
@@ -525,8 +581,30 @@ void fb_blit_full(const uint32_t *pixels)
 {
     if (!g_fb.present || !g_back)
         return;
-    size_t n = (size_t)g_fb.width * g_fb.height;
-    for (size_t i = 0; i < n; i++)
-        g_back[i] = pixels[i];
+    __builtin_memcpy(g_back, pixels, (size_t)g_fb.width * g_fb.height * 4);
     fb_invalidate();
+}
+
+/* Rectangle copy from a source surface that may be wider than the rectangle.
+   Writes straight into the back buffer and marks one dirty rect, so a window
+   drag repaints only its own old+new footprint. */
+void fb_blit_rect(int dx, int dy, int w, int h, const uint32_t *src,
+                  int src_stride)
+{
+    if (!g_fb.present || !g_back || !src || w <= 0 || h <= 0)
+        return;
+    int W = (int)g_fb.width, H = (int)g_fb.height;
+    int sx = 0, sy = 0;
+    if (dx < 0) { sx = -dx; w += dx; dx = 0; }
+    if (dy < 0) { sy = -dy; h += dy; dy = 0; }
+    if (dx + w > W) w = W - dx;
+    if (dy + h > H) h = H - dy;
+    if (w <= 0 || h <= 0)
+        return;
+    for (int j = 0; j < h; j++) {
+        const uint32_t *s = src + (uint64_t)(sy + j) * src_stride + sx;
+        uint32_t *d = g_back + (uint64_t)(dy + j) * W + dx;
+        __builtin_memcpy(d, s, (size_t)w * 4);
+    }
+    fb_mark_dirty(dx, dy, w, h);
 }
