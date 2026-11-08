@@ -67,6 +67,8 @@ void gdt_init(void);
 void tss_set_rsp0(uint64_t rsp0);
 thread_t *spawn_test_user(void);
 thread_t *spawn_crash_user(void);
+int useriso_kernel_half(void);
+void sched_iso_report(void);
 void pic_remap(void);
 void pic_mask_all(void);
 void pic_clear_mask(uint8_t irq);
@@ -640,6 +642,7 @@ void kmain(uint64_t magic, uint64_t mb_info)
     serial_puts("[B] watchdog\n");
     watchdog_init();
     serial_puts("[B] spawn\n");
+    useriso_kernel_half();
     thread_t *user = spawn_test_user();
     if (!user) {
         serial_puts("[FATAL] user self-test process spawn failed\n");
@@ -648,6 +651,8 @@ void kmain(uint64_t magic, uint64_t mb_info)
             __asm__ volatile("hlt");
     }
     tss_set_rsp0(user->kstack_top);
+    serial_puts("[B] iso report\n");
+    sched_iso_report();
     /* The scheduler now loads CR3 per thread (kernel threads run on the
        kernel page table, user threads on their own), so the main loop no
        longer needs a manual CR3 switch here. */

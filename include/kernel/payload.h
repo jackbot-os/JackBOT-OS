@@ -16,6 +16,7 @@
 #define PAYLOAD_FAR       "FAR"
 #define PAYLOAD_FTH       "FTH"
 #define PAYLOAD_FHI       "FHI"
+#define PAYLOAD_LGFONT    "LGFONT"
 #define PAYLOAD_BOOTPCM   "BOOTPCM"
 #define PAYLOAD_WARNPCM   "WARNPCM"
 

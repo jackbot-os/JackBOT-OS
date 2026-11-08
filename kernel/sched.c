@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <kernel/proc.h>
 #include <kernel/heap.h>
+#include <kernel/serial.h>
 
 void context_switch(uint64_t *old_rsp, uint64_t *new_rsp);
 void thread_trampoline(void);
@@ -191,6 +192,39 @@ int thread_count_user(void)
             && threads[i].state != T_ZOMBIE)
             n++;
     return n;
+}
+
+/* Audit for user-mode isolation: every live user thread must own a
+   distinct page table, and no thread may share another's top-level
+   table. Prints one serial line so the property can be checked on real
+   hardware instead of being assumed. */
+void sched_iso_report(void)
+{
+    int procs = 0, distinct = 0, shared = 0;
+    uint64_t seen[16];
+
+    for (int i = 1; i < MAX_THREADS; i++) {
+        if (!threads[i].is_user || threads[i].state == T_UNUSED ||
+            threads[i].state == T_ZOMBIE || !threads[i].p4phys)
+            continue;
+        procs++;
+        int dup = 0;
+        for (int k = 0; k < distinct; k++)
+            if (seen[k] == threads[i].p4phys)
+                dup = 1;
+        if (dup)
+            shared++;
+        else if (distinct < 16)
+            seen[distinct++] = threads[i].p4phys;
+    }
+
+    serial_puts("[USERISO] procs=");
+    serial_puthex((uint64_t)procs);
+    serial_puts(" distinct_p4=");
+    serial_puthex((uint64_t)distinct);
+    serial_puts(" shared_p4=");
+    serial_puthex((uint64_t)shared);
+    serial_puts(shared ? " FAIL\n" : " OK\n");
 }
 
 void process_kill(thread_t *t, const char *reason)

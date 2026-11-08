@@ -23,7 +23,7 @@ uint64_t timer_get_ticks(void);
 #define USER_HEAP_BASE (USER_BASE_ADDR + 0x200000ull)   /* 2 MiB after the image */
 #define USER_HEAP_MAX  0x2000000ull                     /* 32 MiB */
 
-static uint64_t heap_cur = USER_HEAP_BASE;
+/* heap break now lives on each thread (see proc.h) */
 
 static int64_t sys_read_console(void *buf, uint32_t len);
 
@@ -59,27 +59,29 @@ static uint64_t brk_set(uint64_t addr)
     uint64_t want;
 
     if (!t || !t->is_user || !t->p4phys)
-        return heap_cur;
+        return 0;
+    if (t->heap_cur == 0)
+        t->heap_cur = USER_HEAP_BASE;
     if (addr == 0)
-        return heap_cur;
+        return t->heap_cur;
     if (addr < USER_HEAP_BASE)
-        return heap_cur;
+        return t->heap_cur;
     if (addr - USER_HEAP_BASE > USER_HEAP_MAX)
-        return heap_cur;
+        return t->heap_cur;
 
     want = (addr + 0xFFFull) & ~0xFFFull;
-    while (heap_cur < want) {
+    while (t->heap_cur < want) {
         void *frame = pmm_alloc_page_below(0x40000000ull);
         if (!frame)
             break;
         memset(frame, 0, 4096);
-        vmm_map_in(t->p4phys, heap_cur, (uint64_t)(uintptr_t)frame,
-                   PTE_PRESENT | PTE_WRITABLE | PTE_USER);
-        heap_cur += 4096;
+        /* heap is data, never code: NX keeps a ring-3 process from
+           turning its buffer overflow into executable shellcode */
+        vmm_map_in(t->p4phys, t->heap_cur, (uint64_t)(uintptr_t)frame,
+                   PTE_PRESENT | PTE_WRITABLE | PTE_USER | PTE_NX);
+        t->heap_cur += 4096;
     }
-    if (heap_cur < addr)
-        return heap_cur;
-    return heap_cur;
+    return t->heap_cur;
 }
 
 /* ---- file descriptors: 0..2 console, 3+ FAT handles ---- */

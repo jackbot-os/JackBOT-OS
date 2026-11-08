@@ -12,6 +12,9 @@ void *memcpy(void *dst, const void *src, size_t n);
 void *memset(void *dst, int v, size_t n);
 unsigned long strlen(const char *s);
 
+/* per-language font loader, defined further down but probed at init */
+static int dyn_load(void);
+
 /* ---- freestanding math shims (x87 doubles, no libm) ---- */
 
 static double ttf_floor(double x)
@@ -362,6 +365,34 @@ int ttf_init(void)
     }
     serial_puts(g_ready ? "[TTF] vector font engine ON\n"
                        : "[TTF] vector font engine OFF (bitmap fallback)\n");
+
+    /* Prove the per-language font bundle (205 TTFs, one multiboot module)
+       is really reachable from the kernel instead of only sitting in the
+       ISO: report the index and pre-load the font of the current UI
+       language. */
+    {
+        const struct payload_mod *bm = payload_find(PAYLOAD_LGFONT);
+        if (bm && bm->data && bm->size > 8) {
+            const uint8_t *b = (const uint8_t *)bm->data;
+            if (b[0] == 'L' && b[1] == 'G' && b[2] == 'F' && b[3] == '1') {
+                uint32_t cnt = 0;
+                memcpy(&cnt, b + 4, 4);
+                serial_puts("[TTF] bundle LGFONT fonts=");
+                serial_puthex((uint64_t)cnt);
+                serial_puts(" bytes=");
+                serial_puthex((uint64_t)bm->size);
+                serial_putc('\n');
+                int st = dyn_load();
+                serial_puts("[TTF] dyn language font state=");
+                serial_puthex((uint64_t)(st > 0 ? st : 0));
+                serial_putc('\n');
+            } else {
+                serial_puts("[TTF] bundle LGFONT bad magic\n");
+            }
+        } else {
+            serial_puts("[TTF] bundle LGFONT absent\n");
+        }
+    }
     return n;
 }
 
@@ -450,7 +481,50 @@ static int dyn_load(void)
     }
 
     uint32_t len = 0;
-    uint8_t *d = load_file(want, &len);
+    uint8_t *d = 0;
+
+    /* Live/ISO boots have no FAT disk, so the language fonts ride along as
+       one multiboot module: LGFONT = "LGF1" + count + {name[12]|off|size}...
+       Look the current language up there first, then fall back to the FAT. */
+    const struct payload_mod *bm = payload_find(PAYLOAD_LGFONT);
+    if (bm && bm->data && bm->size > 8) {
+        const uint8_t *base = (const uint8_t *)bm->data;
+        if (base[0] == 'L' && base[1] == 'G' && base[2] == 'F' && base[3] == '1') {
+            uint32_t cnt;
+            memcpy(&cnt, base + 4, 4);
+            if (cnt < 4096) {
+                for (uint32_t i = 0; i < cnt; i++) {
+                    const uint8_t *e = base + 8 + i * 20;
+                    const uint8_t *nm = e;
+                    uint32_t off, sz;
+                    memcpy(&off, e + 12, 4);
+                    memcpy(&sz, e + 16, 4);
+                    int match = 1, k = 0;
+                    for (; k < 12 && nm[k]; k++) {
+                        if (want[k] != (char)nm[k]) {
+                            match = 0;
+                            break;
+                        }
+                    }
+                    if (!match || want[k] != '.')
+                        continue;
+                    if (off + sz > bm->size || sz < 512)
+                        break;
+                    if (!open_face((uint8_t *)(uintptr_t)(base + off), &dyn_face)) {
+                        dyn_state = -1;
+                        return -1;
+                    }
+                    dyn_data = 0;
+                    dyn_state = 1;
+                    serial_puts("[TTF] lang font "); serial_puts(want);
+                    serial_puts(" from bundle\n");
+                    return 1;
+                }
+            }
+        }
+    }
+
+    d = load_file(want, &len);
     if (!d) {
         dyn_state = -1;
         return -1;

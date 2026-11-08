@@ -54,13 +54,14 @@ static char search_buf[24];
 static int search_len;
 static int fmap[32];
 static int fcount;
-#define CTX_ITEMS 4
+/* Wallpaper themes moved into Settings > Display, so the separate
+   wallpaper entry is gone from the context menu too. */
+#define CTX_ITEMS 3
 static const char *ctx_label(int i)
 {
     switch (i) {
-    case 0: return tr(STR_CTX_WALLPAPER);
-    case 1: return tr(STR_CTX_SETTINGS);
-    case 2: return tr(STR_CTX_REFRESH);
+    case 0: return tr(STR_CTX_SETTINGS);
+    case 1: return tr(STR_CTX_REFRESH);
     default: return tr(STR_CTX_ABOUT);
     }
 }
@@ -399,6 +400,62 @@ static void draw_glass_rect(int x, int y, int w, int h, uint32_t c,
     }
 }
 
+/* Rounded variant of draw_glass_rect: same wallpaper blend, but pixels
+   outside the corner radius are left untouched so the tile keeps the
+   rounded look of the design instead of a square glass plate. */
+static void draw_glass_round_rect(int x, int y, int w, int h, int rad,
+                                  uint32_t c, uint8_t cover)
+{
+    if (rad < 0)
+        rad = 0;
+    if (rad * 2 > w) rad = w / 2;
+    if (rad * 2 > h) rad = h / 2;
+    if (x < 0) { w += x; x = 0; }
+    if (y < 0) { h += y; y = 0; }
+    if (x + w > (int)fb_width()) w = (int)fb_width() - x;
+    if (y + h > (int)fb_height()) h = (int)fb_height() - y;
+    if (w <= 0 || h <= 0)
+        return;
+
+    int W = (int)fb_width();
+    uint32_t cr = (c >> 16) & 255, cg = (c >> 8) & 255, cb = c & 255;
+    for (int j = 0; j < h; j++) {
+        for (int i = 0; i < w; i++) {
+            /* corner test with a 1px soft edge */
+            int alpha = 255;
+            if (rad > 0) {
+                int dx = 0, dy = 0;
+                if (i < rad) dx = rad - i;
+                else if (i >= w - rad) dx = i - (w - rad - 1);
+                if (j < rad) dy = rad - j;
+                else if (j >= h - rad) dy = j - (h - rad - 1);
+                if (dx > 0 || dy > 0) {
+                    if (dx * dx + dy * dy > rad * rad + rad)
+                        continue;                     /* clearly outside */
+                    int d2 = dx * dx + dy * dy;
+                    int r2 = rad * rad;
+                    if (d2 > r2)
+                        alpha = (uint8_t)(255 - (d2 - r2) * 255 / (rad * 2 + 1));
+                }
+            }
+            uint32_t base;
+            if (wp_buf) {
+                base = wp_buf[(uint64_t)(y + j) * W + (x + i)];
+            } else {
+                fb_putpixel_blend(x + i, y + j, c,
+                                  (uint8_t)((cover * alpha) / 255));
+                continue;
+            }
+            int br = (base >> 16) & 255, bg = (base >> 8) & 255, bb = base & 255;
+            int mix = (cover * alpha) / 255;
+            int rr = (br * (255 - mix) + (int)cr * mix) / 255;
+            int gg = (bg * (255 - mix) + (int)cg * mix) / 255;
+            int bl = (bb * (255 - mix) + (int)cb * mix) / 255;
+            fb_putpixel(x + i, y + j, fb_rgb(rr, gg, bl));
+        }
+    }
+}
+
 /* Right-hand quick buttons inside the start menu. */
 #define M_QUICK 5
 static const char *m_quick_label(int i)
@@ -540,17 +597,16 @@ static void rtc_date(int *mo, int *dy, int *yr)
 }
 
 static void draw_taskbar(int mx, int my, int clicked, int *start_click,
-                         int *wp_click, int *set_click, int *jb_click)
+                         int *set_click, int *jb_click)
 {
     int w = (int)fb_width(), top = (int)fb_height() - BAR;
     int bh = BAR - 8 * S;
     /* the glyph layer no longer paints its own background, so the bar can
        keep the glass setting instead of forcing a solid pass */
 
-    int wp_x = w * 30 / 100, set_x = w * 42 / 100, jb_x = w * 54 / 100;
-    if (wp_x < 112 * S + 110 * S) wp_x = 112 * S + 110 * S;
-    set_x = wp_x + (128 * S);
-    jb_x = set_x + (118 * S);
+    int set_x = w * 32 / 100, jb_x = w * 44 / 100;
+    if (set_x < 112 * S + 110 * S) set_x = 112 * S + 110 * S;
+    jb_x = set_x + (128 * S);
     draw_rect(0, top, w, BAR, fb_rgb(16, 18, 28));
     /* accent line on the taskbar top edge */
     draw_rect(0, top, w, 2 * S, fb_rgb(46, 110, 200));
@@ -573,9 +629,8 @@ static void draw_taskbar(int mx, int my, int clicked, int *start_click,
     gfx_draw_string(112 * S, top + 6 * S, fb_rgb(90, 200, 255),
                     fb_rgb(16, 18, 28), "JackBOT OS");
     gfx_set_transparent(gl_on);
-    if (button2(wp_x, top + 4 * S, 120 * S, bh,
-                tr(STR_WALLPAPER), 0, mx, my, clicked))
-        *wp_click = 1;
+    /* Wallpaper themes now live in Settings > Display; the old standalone
+       wallpaper button is gone on purpose. */
     if (button2(set_x, top + 4 * S, 110 * S, bh,
                 tr(STR_SETTINGS), 0, mx, my, clicked))
         *set_click = 1;
@@ -1367,7 +1422,7 @@ static void draw_desktop_icons(int mx, int my, int clicked)
                       : (i == 1) ? fb_rgb(96, 146, 216)
                       : (i == 2) ? fb_rgb(52, 132, 120)
                                  : fb_rgb(120, 90, 190);
-        draw_glass_rect(x, y, w, w, tint, hover ? 210 : 150);
+        draw_glass_round_rect(x, y, w, w, 12 * S, tint, hover ? 210 : 150);
         ui_round_border(x, y, w, w, 12 * S,
                         hover ? fb_rgb(200, 220, 255) : fb_rgb(140, 170, 220));
         {
@@ -1382,8 +1437,8 @@ static void draw_desktop_icons(int mx, int my, int clicked)
                 lx = (int)fb_width() - 4 * S - tw;
             if (lx < 4 * S)
                 lx = 4 * S;
-            draw_glass_rect(lx - 4 * S, ly - 2 * S, tw + 8 * S, th + 4 * S,
-                            fb_rgb(12, 16, 26), 205);
+            draw_glass_round_rect(lx - 4 * S, ly - 2 * S, tw + 8 * S, th + 4 * S,
+                                  5 * S, fb_rgb(12, 16, 26), 205);
             gfx_draw_string(lx, ly, fb_rgb(240, 246, 255),
                             fb_rgb(12, 16, 26), nm);
         }
@@ -1455,6 +1510,13 @@ void desktop_run(void)
             if (start_open) {
                 if (wd > 0 && menu_sel > 0) menu_sel--;
                 else if (wd < 0 && menu_sel + 1 < fcount) menu_sel++;
+            } else if (win_id == 2 && inside(mx, my, sWX, sWY, sWW, sWH)) {
+                /* wheel inside the Settings window walks its tabs */
+                int nt = set_tab + (wd > 0 ? -1 : 1);
+                if (nt >= 0 && nt <= 4 && nt != set_tab) {
+                    set_tab = nt;
+                    need_redraw = 1;
+                }
             } else if (win_id == 0) {
                 wp_index = (wd > 0) ? (wp_index + N_WP - 1) % N_WP
                                     : (wp_index + 1) % N_WP;
@@ -1581,7 +1643,7 @@ void desktop_run(void)
         cursor_set_shape(shape);
     }
 
-    int start_click = 0, wp_click = 0, set_click = 0, jb_click = 0;
+    int start_click = 0, set_click = 0, jb_click = 0;
     if (need_redraw) {
         render_wallpaper();
         need_redraw = 0;
@@ -1601,7 +1663,7 @@ void desktop_run(void)
         drawn_win = -1;
         last_win_id = win_id;
     }
-    draw_taskbar(mx, my, clicked, &start_click, &wp_click,
+    draw_taskbar(mx, my, clicked, &start_click,
                  &set_click, &jb_click);
     if (start_click) {
         start_open ^= 1;
@@ -1611,9 +1673,7 @@ void desktop_run(void)
         if (start_open)
             restore_win = win_id;
     }
-    if (wp_click) {
-        win_id = 1; win_painted = 0; start_open = 0;
-    }
+
     if (set_click) {
         win_id = 2; win_painted = 0; start_open = 0;
     }
@@ -1654,9 +1714,8 @@ void desktop_run(void)
                 int ix, iy, iw, ih;
                 ctx_item_geom(i, bx, by, bw, &ix, &iy, &iw, &ih);
                 if (inside(mx, my, ix, iy, iw, ih)) {
-                    if (i == 0) { win_id = 1; win_painted = 0; }
-                    else if (i == 1) { win_id = 2; win_painted = 0; }
-                    else if (i == 2) { need_redraw = 1; }
+                    if (i == 0) { win_id = 2; win_painted = 0; }
+                    else if (i == 1) { need_redraw = 1; }
                     else { app_open(APP_ABOUT); win_id = APP_ABOUT;
                            win_painted = 1; }
                     ctx_open = 0;
@@ -1671,7 +1730,7 @@ void desktop_run(void)
         char kc;
         while (ps2_read_key(&kc)) {
             if (kc == JB_KEY_F1) {
-                win_id = 1; win_painted = 0; start_open = 0;
+                win_id = 2; win_painted = 0; start_open = 0;
                 break;
             } else if (kc == JB_KEY_F2) {
                 win_id = 2; win_painted = 0; start_open = 0;

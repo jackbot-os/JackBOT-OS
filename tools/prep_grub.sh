@@ -76,7 +76,11 @@ if [ -d assets/fonts/lang ]; then
     cp "$f" "$TTFDIR/$u" && n=$((n+1))
   done
   echo "lang fonts copied: $n"
+  python3 tools/mk_fontbundle.py iso/boot/LGFONT.BIN
 fi
+
+# 同一批字体再打成一个内核可索引的包，作为 multiboot2 模块给内核用
+python3 tools/mk_fontbundle.py iso/boot/LGFONT.BIN
 
 echo "GRUB payload prepared:"
 ls -l "$PCDIR/boot.img" "$PCDIR/core.img" iso/boot/GRUBMODS.BIN "$FONTDIR/unicode.pf2"

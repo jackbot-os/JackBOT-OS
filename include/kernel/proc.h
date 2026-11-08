@@ -21,6 +21,9 @@ typedef struct thread {
     uint64_t kstack;
     uint64_t kstack_top;
     uint64_t p4phys;
+    /* Per-process user heap break. Keeping it on the thread instead of a
+       global means two user processes cannot walk on each other's heap. */
+    uint64_t heap_cur;
     int is_user;
     uint64_t cpu_ticks;
     uint64_t mem_bytes;

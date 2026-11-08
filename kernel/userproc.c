@@ -3,6 +3,7 @@
 #include <kernel/pmm.h>
 #include <kernel/vmm.h>
 #include <kernel/proc.h>
+#include <kernel/serial.h>
 #include "../build/ustest.h"
 #include "../build/ucrash.h"
 
@@ -45,8 +46,10 @@ static thread_t *spawn_from(const uint8_t *code, uint64_t len)
 
     void *sf = pmm_alloc_page_below(0x40000000);
     zero_frame(sf);
+    /* stack is data: NX stops ring-3 from executing whatever it writes
+       into its own stack, so a shellcode buffer stays dead weight */
     vmm_map_in(p4phys, USER_STACK_VADDR, (uint64_t)(uintptr_t)sf,
-               PTE_PRESENT | PTE_WRITABLE | PTE_USER);
+               PTE_PRESENT | PTE_WRITABLE | PTE_USER | PTE_NX);
 
     thread_t *t = thread_create_user(p4phys, USER_BASE, USER_STACK_TOP);
     if (t) {
@@ -57,6 +60,21 @@ static thread_t *spawn_from(const uint8_t *code, uint64_t len)
         }
     }
     return t;
+}
+
+/* Kernel/user split audit: walk the kernel page table and make sure no
+   top-level entry carries PTE_USER. If one did, ring 3 could reach kernel
+   memory no matter how tightly user processes are separated. */
+int useriso_kernel_half(void)
+{
+    int bad = 0;
+    for (int i = 0; i < 512; i++)
+        if (p4_table[i] & PTE_USER)
+            bad++;
+    serial_puts("[USERISO] kernel_user_pages=");
+    serial_puthex((uint64_t)bad);
+    serial_puts(bad ? " FAIL\n" : " OK\n");
+    return bad ? 0 : 1;
 }
 
 thread_t *spawn_test_user(void)
