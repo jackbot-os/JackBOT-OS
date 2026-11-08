@@ -67,6 +67,17 @@ cp assets/fonts/AR.ttf    "$TTFDIR/AR.TTF"
 cp assets/fonts/TH.ttf    "$TTFDIR/TH.TTF"
 cp assets/fonts/HI.ttf    "$TTFDIR/HI.TTF"
 
+# 205 个按语言命名的 TTF：全部放进随 ISO 发布的字体目录
+if [ -d assets/fonts/lang ]; then
+  n=0
+  for f in assets/fonts/lang/*.ttf; do
+    b=$(basename "$f")
+    u=$(echo "$b" | tr 'a-z' 'A-Z')
+    cp "$f" "$TTFDIR/$u" && n=$((n+1))
+  done
+  echo "lang fonts copied: $n"
+fi
+
 echo "GRUB payload prepared:"
 ls -l "$PCDIR/boot.img" "$PCDIR/core.img" iso/boot/GRUBMODS.BIN "$FONTDIR/unicode.pf2"
 echo PREP_GRUB_DONE

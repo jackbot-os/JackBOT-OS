@@ -123,7 +123,8 @@ $(ISO): $(KERNEL) iso/boot/grub/grub.cfg iso/boot/grub/hd.cfg tools/prep_grub.sh
 DISK_FONTS := assets/fonts/SANS.ttf assets/fonts/MONO.ttf \
               assets/fonts/MONOB.ttf assets/fonts/CJK.ttf \
               assets/fonts/KR.ttf assets/fonts/AR.ttf \
-              assets/fonts/TH.ttf assets/fonts/HI.ttf
+              assets/fonts/TH.ttf assets/fonts/HI.ttf \
+              $(wildcard assets/fonts/lang/*.ttf)
 
 $(DISK): assets/logo.png $(DISK_FONTS) | $(BUILD)
 	dd if=/dev/zero of=$@ bs=1M count=64
@@ -137,6 +138,7 @@ $(DISK): assets/logo.png $(DISK_FONTS) | $(BUILD)
 	-mcopy -i $@ assets/fonts/AR.ttf   ::AR.TTF
 	-mcopy -i $@ assets/fonts/TH.ttf   ::TH.TTF
 	-mcopy -i $@ assets/fonts/HI.ttf   ::HI.TTF
+	@n=0; for f in assets/fonts/lang/*.ttf; do b=$$(basename $$f); u=$$(echo $$b | tr 'a-z' 'A-Z'); mcopy -o -i $@ $$f ::$$u >/dev/null 2>&1 && n=$$((n+1)); done; echo "  lang fonts on disk: $$n"
 
 clean:
 	rm -f $(BUILD)/*.o $(BUILD)/*.d $(KERNEL) $(BUILD)/*.iso $(DISK)

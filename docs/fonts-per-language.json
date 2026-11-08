@@ -1,0 +1,1849 @@
+{
+ "en": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 205,
+  "size": 33388,
+  "ok": true
+ },
+ "zh-CN": {
+  "src": "CJK.ttf",
+  "scripts": [
+   "Hani"
+  ],
+  "glyphs": 3591,
+  "size": 628592,
+  "ok": true
+ },
+ "zh-TW": {
+  "src": "CJK.ttf",
+  "scripts": [
+   "Hani"
+  ],
+  "glyphs": 3605,
+  "size": 645504,
+  "ok": true
+ },
+ "ja": {
+  "src": "CJK.ttf",
+  "scripts": [
+   "Hani"
+  ],
+  "glyphs": 3481,
+  "size": 606204,
+  "ok": true
+ },
+ "ko": {
+  "src": "KR.ttf",
+  "scripts": [
+   "Hang"
+  ],
+  "glyphs": 3444,
+  "size": 660820,
+  "ok": true
+ },
+ "es": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "fr": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 205,
+  "size": 33388,
+  "ok": true
+ },
+ "de": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 205,
+  "size": 33388,
+  "ok": true
+ },
+ "pt": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 205,
+  "size": 33388,
+  "ok": true
+ },
+ "it": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 205,
+  "size": 33388,
+  "ok": true
+ },
+ "ru": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Cyrl"
+  ],
+  "glyphs": 379,
+  "size": 62664,
+  "ok": true
+ },
+ "uk": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Cyrl"
+  ],
+  "glyphs": 379,
+  "size": 62664,
+  "ok": true
+ },
+ "pl": {
+  "src": "HI.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 293,
+  "size": 47032,
+  "ok": true
+ },
+ "nl": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 205,
+  "size": 33388,
+  "ok": true
+ },
+ "tr": {
+  "src": "HI.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 293,
+  "size": 47032,
+  "ok": true
+ },
+ "vi": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 1091,
+  "size": 136148,
+  "ok": true
+ },
+ "id": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 205,
+  "size": 33388,
+  "ok": true
+ },
+ "ar": {
+  "src": "AR.ttf",
+  "scripts": [
+   "Arab"
+  ],
+  "glyphs": 1298,
+  "size": 154860,
+  "ok": true
+ },
+ "th": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Thai"
+  ],
+  "glyphs": 185,
+  "size": 52220,
+  "ok": true
+ },
+ "hi": {
+  "src": "HI.ttf",
+  "scripts": [
+   "Deva"
+  ],
+  "glyphs": 252,
+  "size": 103092,
+  "ok": true
+ },
+ "sv": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 205,
+  "size": 33388,
+  "ok": true
+ },
+ "da": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 205,
+  "size": 33388,
+  "ok": true
+ },
+ "nb": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 205,
+  "size": 33388,
+  "ok": true
+ },
+ "fi": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 205,
+  "size": 33388,
+  "ok": true
+ },
+ "is": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 205,
+  "size": 33388,
+  "ok": true
+ },
+ "et": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 205,
+  "size": 33388,
+  "ok": true
+ },
+ "lv": {
+  "src": "HI.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 293,
+  "size": 47032,
+  "ok": true
+ },
+ "lt": {
+  "src": "HI.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 293,
+  "size": 47032,
+  "ok": true
+ },
+ "cs": {
+  "src": "HI.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 293,
+  "size": 47032,
+  "ok": true
+ },
+ "sk": {
+  "src": "HI.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 293,
+  "size": 47032,
+  "ok": true
+ },
+ "hu": {
+  "src": "HI.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 293,
+  "size": 47032,
+  "ok": true
+ },
+ "ro": {
+  "src": "HI.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 293,
+  "size": 47032,
+  "ok": true
+ },
+ "hr": {
+  "src": "HI.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 293,
+  "size": 47032,
+  "ok": true
+ },
+ "sl": {
+  "src": "HI.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 293,
+  "size": 47032,
+  "ok": true
+ },
+ "el": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Grek"
+  ],
+  "glyphs": 456,
+  "size": 49520,
+  "ok": true
+ },
+ "ca": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 205,
+  "size": 33388,
+  "ok": true
+ },
+ "bg": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Cyrl"
+  ],
+  "glyphs": 377,
+  "size": 62312,
+  "ok": true
+ },
+ "be": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Cyrl"
+  ],
+  "glyphs": 377,
+  "size": 62312,
+  "ok": true
+ },
+ "sr": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Cyrl"
+  ],
+  "glyphs": 377,
+  "size": 62312,
+  "ok": true
+ },
+ "sr-Latn": {
+  "src": "HI.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 293,
+  "size": 47032,
+  "ok": true
+ },
+ "mk": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Cyrl"
+  ],
+  "glyphs": 377,
+  "size": 62312,
+  "ok": true
+ },
+ "kk": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Cyrl"
+  ],
+  "glyphs": 377,
+  "size": 62312,
+  "ok": true
+ },
+ "ky": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Cyrl"
+  ],
+  "glyphs": 377,
+  "size": 62312,
+  "ok": true
+ },
+ "sq": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 205,
+  "size": 33388,
+  "ok": true
+ },
+ "he": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Hebr"
+  ],
+  "glyphs": 230,
+  "size": 42444,
+  "ok": true
+ },
+ "fa": {
+  "src": "AR.ttf",
+  "scripts": [
+   "Arab"
+  ],
+  "glyphs": 1296,
+  "size": 154264,
+  "ok": true
+ },
+ "az": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 1091,
+  "size": 136148,
+  "ok": true
+ },
+ "uz": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 1093,
+  "size": 136316,
+  "ok": true
+ },
+ "ne": {
+  "src": "HI.ttf",
+  "scripts": [
+   "Deva"
+  ],
+  "glyphs": 250,
+  "size": 102936,
+  "ok": true
+ },
+ "ms": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 205,
+  "size": 33388,
+  "ok": true
+ },
+ "tl": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 205,
+  "size": 33388,
+  "ok": true
+ },
+ "sw": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 205,
+  "size": 33388,
+  "ok": true
+ },
+ "cy": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 205,
+  "size": 33388,
+  "ok": true
+ },
+ "gl": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 205,
+  "size": 33388,
+  "ok": true
+ },
+ "af": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 205,
+  "size": 33388,
+  "ok": true
+ },
+ "eo": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 1091,
+  "size": 136148,
+  "ok": true
+ },
+ "mn": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Cyrl"
+  ],
+  "glyphs": 377,
+  "size": 62312,
+  "ok": true
+ },
+ "tk": {
+  "src": "HI.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 293,
+  "size": 47032,
+  "ok": true
+ },
+ "aa": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "ab": {
+  "src": "SANS.ttf",
+  "scripts": [
+   "Cyrl"
+  ],
+  "glyphs": 422,
+  "size": 77056,
+  "ok": true
+ },
+ "ak": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "am": {
+  "src": "NotoSansEthiopic.ttf",
+  "scripts": [
+   "Ethi"
+  ],
+  "glyphs": 525,
+  "size": 281620,
+  "ok": true
+ },
+ "an": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "as": {
+  "src": "NotoSansBengali.ttf",
+  "scripts": [
+   "Beng"
+  ],
+  "glyphs": 103,
+  "size": 124912,
+  "ok": true
+ },
+ "ba": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Cyrl"
+  ],
+  "glyphs": 375,
+  "size": 62140,
+  "ok": true
+ },
+ "bm": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "bn": {
+  "src": "NotoSansBengali.ttf",
+  "scripts": [
+   "Beng"
+  ],
+  "glyphs": 103,
+  "size": 124912,
+  "ok": true
+ },
+ "bo": {
+  "src": "NotoSerifTibetan.ttf",
+  "scripts": [
+   "Tibt"
+  ],
+  "glyphs": 210,
+  "size": 589392,
+  "ok": true
+ },
+ "br": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "bs": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "ce": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Cyrl"
+  ],
+  "glyphs": 375,
+  "size": 62140,
+  "ok": true
+ },
+ "co": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "cu": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Cyrl",
+   "Zinh"
+  ],
+  "glyphs": 509,
+  "size": 75260,
+  "ok": true
+ },
+ "cv": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Cyrl"
+  ],
+  "glyphs": 375,
+  "size": 62140,
+  "ok": true
+ },
+ "dv": {
+  "src": "NotoSansThaana.ttf",
+  "scripts": [
+   "Thaa"
+  ],
+  "glyphs": 70,
+  "size": 17304,
+  "ok": true
+ },
+ "dz": {
+  "src": "NotoSerifTibetan.ttf",
+  "scripts": [
+   "Tibt"
+  ],
+  "glyphs": 210,
+  "size": 589392,
+  "ok": true
+ },
+ "ee": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 1090,
+  "size": 136084,
+  "ok": true
+ },
+ "eu": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "ff": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "fo": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "fy": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "ga": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "gd": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "gn": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 1091,
+  "size": 136156,
+  "ok": true
+ },
+ "gu": {
+  "src": "NotoSansGujarati.ttf",
+  "scripts": [
+   "Gujr"
+  ],
+  "glyphs": 92,
+  "size": 175900,
+  "ok": true
+ },
+ "gv": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "ha": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "ht": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "hy": {
+  "src": "NotoSansArmenian.ttf",
+  "scripts": [
+   "Armn"
+  ],
+  "glyphs": 98,
+  "size": 28208,
+  "ok": true
+ },
+ "ia": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "ie": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "ig": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "ii": {
+  "src": "NotoSansYi.ttf",
+  "scripts": [
+   "Yiii"
+  ],
+  "glyphs": 1221,
+  "size": 168488,
+  "ok": true
+ },
+ "io": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "iu": {
+  "src": "NotoSansCanadianAboriginal.ttf",
+  "scripts": [
+   "Cans"
+  ],
+  "glyphs": 727,
+  "size": 167716,
+  "ok": true
+ },
+ "jv": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "ka": {
+  "src": "NotoSansGeorgian-Regular.ttf",
+  "scripts": [
+   "Geor"
+  ],
+  "glyphs": 175,
+  "size": 46484,
+  "ok": true
+ },
+ "ki": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "kl": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "km": {
+  "src": "NotoSansKhmer.ttf",
+  "scripts": [
+   "Khmr"
+  ],
+  "glyphs": 159,
+  "size": 107984,
+  "ok": true
+ },
+ "kn": {
+  "src": "NotoSansKannada.ttf",
+  "scripts": [
+   "Knda"
+  ],
+  "glyphs": 130,
+  "size": 144368,
+  "ok": true
+ },
+ "ks": {
+  "src": "AR.ttf",
+  "scripts": [
+   "Arab",
+   "Zinh"
+  ],
+  "glyphs": 1317,
+  "size": 155720,
+  "ok": true
+ },
+ "ku": {
+  "src": "AR.ttf",
+  "scripts": [
+   "Arab"
+  ],
+  "glyphs": 1290,
+  "size": 153172,
+  "ok": true
+ },
+ "kw": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "la": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "lb": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "lg": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "ln": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "lo": {
+  "src": "NotoSansLao.ttf",
+  "scripts": [
+   "Laoo"
+  ],
+  "glyphs": 84,
+  "size": 32856,
+  "ok": true
+ },
+ "lu": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "mg": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "mi": {
+  "src": "HI.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 292,
+  "size": 46960,
+  "ok": true
+ },
+ "ml": {
+  "src": "NotoSansMalayalam.ttf",
+  "scripts": [
+   "Mlym"
+  ],
+  "glyphs": 157,
+  "size": 95128,
+  "ok": true
+ },
+ "mr": {
+  "src": "HI.ttf",
+  "scripts": [
+   "Deva"
+  ],
+  "glyphs": 247,
+  "size": 102740,
+  "ok": true
+ },
+ "mt": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "my": {
+  "src": "NotoSansMyanmar.ttf",
+  "scripts": [
+   "Mymr"
+  ],
+  "glyphs": 225,
+  "size": 160944,
+  "ok": true
+ },
+ "nd": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "nn": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "nr": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "nv": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "ny": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "oc": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "om": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "or": {
+  "src": "NotoSansOriya.ttf",
+  "scripts": [
+   "Orya"
+  ],
+  "glyphs": 130,
+  "size": 109864,
+  "ok": true
+ },
+ "os": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Cyrl"
+  ],
+  "glyphs": 375,
+  "size": 62140,
+  "ok": true
+ },
+ "pa": {
+  "src": "NotoSansGurmukhi.ttf",
+  "scripts": [
+   "Guru"
+  ],
+  "glyphs": 119,
+  "size": 40644,
+  "ok": true
+ },
+ "ps": {
+  "src": "AR.ttf",
+  "scripts": [
+   "Arab"
+  ],
+  "glyphs": 1289,
+  "size": 152952,
+  "ok": true
+ },
+ "qu": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "rm": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "rn": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "rw": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "sa": {
+  "src": "HI.ttf",
+  "scripts": [
+   "Deva"
+  ],
+  "glyphs": 247,
+  "size": 102740,
+  "ok": true
+ },
+ "sc": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "sd": {
+  "src": "AR.ttf",
+  "scripts": [
+   "Arab"
+  ],
+  "glyphs": 1289,
+  "size": 152952,
+  "ok": true
+ },
+ "se": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "sg": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "si": {
+  "src": "NotoSansSinhala.ttf",
+  "scripts": [
+   "Sinh"
+  ],
+  "glyphs": 202,
+  "size": 105536,
+  "ok": true
+ },
+ "sn": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "so": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "ss": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "st": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "su": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "ta": {
+  "src": "NotoSansTamil.ttf",
+  "scripts": [
+   "Taml"
+  ],
+  "glyphs": 111,
+  "size": 65076,
+  "ok": true
+ },
+ "te": {
+  "src": "NotoSansTelugu.ttf",
+  "scripts": [
+   "Telu"
+  ],
+  "glyphs": 139,
+  "size": 181964,
+  "ok": true
+ },
+ "tg": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Cyrl"
+  ],
+  "glyphs": 375,
+  "size": 62140,
+  "ok": true
+ },
+ "ti": {
+  "src": "NotoSansEthiopic.ttf",
+  "scripts": [
+   "Ethi"
+  ],
+  "glyphs": 525,
+  "size": 281620,
+  "ok": true
+ },
+ "tn": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "to": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "ts": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "tt": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Cyrl"
+  ],
+  "glyphs": 375,
+  "size": 62140,
+  "ok": true
+ },
+ "ug": {
+  "src": "AR.ttf",
+  "scripts": [
+   "Arab"
+  ],
+  "glyphs": 1289,
+  "size": 152952,
+  "ok": true
+ },
+ "ur": {
+  "src": "AR.ttf",
+  "scripts": [
+   "Arab"
+  ],
+  "glyphs": 1289,
+  "size": 152952,
+  "ok": true
+ },
+ "ve": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 1090,
+  "size": 136084,
+  "ok": true
+ },
+ "vo": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "wa": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "wo": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "xh": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "yi": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Hebr"
+  ],
+  "glyphs": 228,
+  "size": 42268,
+  "ok": true
+ },
+ "yo": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "za": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "zu": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "en-US": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "en-GB": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "en-AU": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "en-CA": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "en-IN": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "en-ZA": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "en-IE": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "es-MX": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "es-AR": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "es-CO": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "es-CL": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "es-PE": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "es-VE": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "es-EC": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "es-GT": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "es-CU": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "es-BO": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "es-DO": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "pt-BR": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "pt-PT": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "pt-AO": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "pt-MZ": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "fr-CA": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "fr-BE": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "fr-CH": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "fr-LU": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "de-AT": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "de-CH": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "ar-EG": {
+  "src": "AR.ttf",
+  "scripts": [
+   "Arab"
+  ],
+  "glyphs": 1289,
+  "size": 152952,
+  "ok": true
+ },
+ "ar-SA": {
+  "src": "AR.ttf",
+  "scripts": [
+   "Arab"
+  ],
+  "glyphs": 1289,
+  "size": 152952,
+  "ok": true
+ },
+ "ar-DZ": {
+  "src": "AR.ttf",
+  "scripts": [
+   "Arab"
+  ],
+  "glyphs": 1289,
+  "size": 152952,
+  "ok": true
+ },
+ "ar-MA": {
+  "src": "AR.ttf",
+  "scripts": [
+   "Arab"
+  ],
+  "glyphs": 1289,
+  "size": 152952,
+  "ok": true
+ },
+ "ar-AE": {
+  "src": "AR.ttf",
+  "scripts": [
+   "Arab"
+  ],
+  "glyphs": 1289,
+  "size": 152952,
+  "ok": true
+ },
+ "ar-TN": {
+  "src": "AR.ttf",
+  "scripts": [
+   "Arab"
+  ],
+  "glyphs": 1289,
+  "size": 152952,
+  "ok": true
+ },
+ "az-Latn": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 1090,
+  "size": 136084,
+  "ok": true
+ },
+ "az-Cyrl": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Cyrl"
+  ],
+  "glyphs": 375,
+  "size": 62140,
+  "ok": true
+ },
+ "uz-Latn": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 205,
+  "size": 33460,
+  "ok": true
+ },
+ "uz-Cyrl": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Cyrl"
+  ],
+  "glyphs": 375,
+  "size": 62140,
+  "ok": true
+ },
+ "sr-Cyrl": {
+  "src": "MONOB.ttf",
+  "scripts": [
+   "Cyrl"
+  ],
+  "glyphs": 375,
+  "size": 62140,
+  "ok": true
+ },
+ "zh-HK": {
+  "src": "CJK.ttf",
+  "scripts": [
+   "Hani"
+  ],
+  "glyphs": 3609,
+  "size": 646156,
+  "ok": true
+ },
+ "pa-Guru": {
+  "src": "NotoSansGurmukhi.ttf",
+  "scripts": [
+   "Guru"
+  ],
+  "glyphs": 119,
+  "size": 40644,
+  "ok": true
+ },
+ "pa-Arab": {
+  "src": "AR.ttf",
+  "scripts": [
+   "Arab"
+  ],
+  "glyphs": 1289,
+  "size": 152952,
+  "ok": true
+ },
+ "hi-Latn": {
+  "src": "TH.ttf",
+  "scripts": [
+   "Latn"
+  ],
+  "glyphs": 204,
+  "size": 33320,
+  "ok": true
+ },
+ "ur-IN": {
+  "src": "AR.ttf",
+  "scripts": [
+   "Arab"
+  ],
+  "glyphs": 1289,
+  "size": 152952,
+  "ok": true
+ }
+}

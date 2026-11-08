@@ -109,3 +109,32 @@ N'Ko、叙利亚、它加罗等文字，一个字体都没加。所以"205 个 T
 - 语言再 +2：丹麦语 `da`、印尼语 `id`，构建输出 `shipping 21 complete languages`，
   剩余 184 门各缺 363 条。
 - 最终 ISO：32,061,440 B（15,655 sectors），sha256 `90B9B8DE...`（`make iso` 0 error）。
+## 8. 205 个按语言 TTF（本轮）
+
+**做法**：`_work/gen_lang_fonts2.py` 对 `tools/i18n_data.json` 的 205 门语言逐个生成字体：
+按该语言母语名称 + 已翻译文本判定所用 Unicode 文字（汉字/谚文/西里尔/阿拉伯/天城文…），
+在本地 OFL 源字体（`assets/fonts` + `_work/fonts_all` 共 40 余个 Noto/DejaVu/Droid）里选覆盖该文字最好的一个，
+用 fontTools 按"该文字在本字体中的全部码位 + ASCII + 扩展拉丁"裁剪，输出 `assets/fonts/lang/<code>.ttf`。
+汉字/谚文类超过 4000 字形时截断到 3000 + 实际用到的字符，避免单个字体几 MB。
+
+**结果**：205 / 205 生成成功，合计 16.6 MB。抽证：
+`uk` 379 字形 62 KB（Cyrl）、`ar` 1298 字形 155 KB（Arab）、`ja` 3481 字形 606 KB（Hani）、
+`zh-CN` 3591 字形 629 KB、`am` 525 字形 282 KB（Ethi，来自 NotoSansEthiopic）、
+`bo`/`dz` 来自 NotoSerifTibetan、`ko` 661 KB（Hang）、`ka` 175 字形 46 KB（Geor）。
+
+**已复制到真正随 ISO 发布的字体目录**：`tools/prep_grub.sh` 末尾新增循环，把 205 个 TTF 以大写名
+（`AA.TTF`…`ZU.TTF`）复制进 `iso/boot/fonts/`。构建日志 `lang fonts copied: 205`，
+该目录现有 **210 个 TTF / 25 MB**（8 个原字体 + 205 个语言字体，有 3 个同名覆盖）。
+ISO 从 32,061,440 B 涨到 **48,519,168 B（23,691 sectors）**，`make iso` 0 error。
+
+**内核侧（已改，尚未在安装态验证）**：`kernel/ttf.c` 新增 `dyn_load()`——按当前语言代码
+拼 `<CODE>.TTF`，走 `load_file()` 从 FAT 盘读入并 `open_face()`，挂在 `src_face()` 回退链最后一级
+（keyfont 30），首次命中会往串口打 `[TTF] lang font XX.TTF loaded`。
+**边界**：Live 模式从光盘启动、没有 FAT 盘，这条路径不会触发；装到硬盘后，installer 目前只把
+8 个字体写进数据盘，**205 个语言字体还没有被 installer 写到用户盘**——所以"内核真按语言加载字体"
+这一条目前只在代码层完成，没到可用状态。下一步是让 installer 从 ISO 的 /boot/fonts 把 205 个 TTF
+一并写入数据盘分区。
+
+**已知缺口**：4 门曾因缺源字体只有 1 个字形（am/ti/bo/dz），补下 NotoSerifTibetan 与
+NotoSansEthiopic 后已重生成（am 525 字形）；报告 `docs/fonts-per-language.json` 记录了每门的
+src/scripts/glyphs/size。

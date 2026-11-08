@@ -6,6 +6,7 @@
 #include <kernel/serial.h>
 #include <kernel/fat32.h>
 #include <kernel/payload.h>
+#include <kernel/i18n.h>
 
 void *memcpy(void *dst, const void *src, size_t n);
 void *memset(void *dst, int v, size_t n);
@@ -200,6 +201,12 @@ static const char *fb_pay[FB_COUNT] = {
     PAYLOAD_FCJK, PAYLOAD_FKR, PAYLOAD_FAR, PAYLOAD_FTH, PAYLOAD_FHI
 };
 static const int fb_keyfont[FB_COUNT] = { 15, 16, 17, 18, 19 };
+
+/* per-language font, loaded from disk as <LANGCODE>.TTF (205 languages) */
+static uint8_t *dyn_data;
+static stbtt_fontinfo dyn_face;
+static int dyn_state;             /* 0 = not tried, 1 = loaded, -1 = failed */
+static char dyn_for[12];
 
 static int g_ready;
 
@@ -409,6 +416,58 @@ void ttf_set_pixel_height(int px)
 int ttf_ascent(void) { return g_ready ? cur_ascent : 0; }
 int ttf_line_height(void) { return g_ready ? cur_line : 0; }
 
+/* try to load the font of the currently selected language: <CODE>.TTF */
+static int dyn_load(void)
+{
+    char want[12];
+    const char *c = i18n_code(i18n_lang());
+    int n = 0;
+    if (!c || !c[0])
+        return -1;
+    for (; c[n] && n < 6; n++)
+        want[n] = (c[n] >= 'a' && c[n] <= 'z') ? (char)(c[n] - 32) : c[n];
+    want[n++] = '.';
+    want[n++] = 'T';
+    want[n++] = 'T';
+    want[n++] = 'F';
+    want[n] = 0;
+
+    for (int i = 0; i < 12; i++) {
+        if (dyn_for[i] != want[i]) {
+            dyn_state = 0;
+            break;
+        }
+        if (!want[i])
+            break;
+    }
+    if (dyn_state != 0)
+        return dyn_state;
+
+    for (int i = 0; i < 12; i++) {
+        dyn_for[i] = want[i];
+        if (!want[i])
+            break;
+    }
+
+    uint32_t len = 0;
+    uint8_t *d = load_file(want, &len);
+    if (!d) {
+        dyn_state = -1;
+        return -1;
+    }
+    if (!open_face(d, &dyn_face)) {
+        kfree(d);
+        dyn_state = -1;
+        return -1;
+    }
+    dyn_data = d;
+    dyn_state = 1;
+    serial_puts("[TTF] lang font ");
+    serial_puts(want);
+    serial_puts(" loaded\n");
+    return 1;
+}
+
 /* returns the source face + key-font id for a codepoint */
 static stbtt_fontinfo *src_face(uint32_t cp, int *keyfont)
 {
@@ -422,6 +481,11 @@ static stbtt_fontinfo *src_face(uint32_t cp, int *keyfont)
             *keyfont = fb_keyfont[i];
             return &fb_face[i];
         }
+    }
+    /* per-language font on disk, last resort before the base face */
+    if (dyn_load() == 1 && stbtt_FindGlyphIndex(&dyn_face, (int)cp) != 0) {
+        *keyfont = 30;
+        return &dyn_face;
     }
     *keyfont = cur_font;
     return &face[cur_font];
