@@ -6,6 +6,7 @@
 #include <kernel/usb.h>
 #include <kernel/i18n.h>
 #include "i18n_data.h"
+#include "../../drivers/usb/xhci.h"
 
 static struct ui_win W;
 static int inited;
@@ -164,6 +165,50 @@ int usbdev_frame(int mx, int my, int clicked)
             y += 22 * S;
         }
         y += 8 * S;
+    }
+
+    /* Devices the xHCI driver actually enumerated (descriptor read over EP0),
+       as opposed to the port bits above which only say "something is plugged
+       in". */
+    int nde = xhci_dev_count();
+    if (nde > 0) {
+        gfx_draw_string_wide(x0, y, fb_rgb(150, 210, 255), bg,
+                             "ENUMERATED DEVICES");
+        y += 26 * S;
+        for (int i = 0; i < nde; i++) {
+            const struct usb_dev_info *d = xhci_dev_get(i);
+            if (!d)
+                continue;
+            char hv[8], pv[8];
+            hex4(d->vid, hv);
+            hex4(d->pid, pv);
+            line[0] = 0;
+            append(line, hv);
+            append(line, ":");
+            append(line, pv);
+            append(line, "  port ");
+            char n2[8];
+            u2dec(d->port, n2);
+            append(line, n2);
+            append(line, "  speed ");
+            append(line, usb_speed_name(d->speed));
+            gfx_draw_string(x0 + 8 * S, y, fb_rgb(255, 208, 110), bg, line);
+            y += 24 * S;
+
+            line[0] = 0;
+            append(line, "class ");
+            char n3[8];
+            u2dec(d->dev_class, n3);
+            append(line, n3);
+            append(line, "  subclass ");
+            u2dec(d->dev_subclass, n3);
+            append(line, n3);
+            append(line, "  slot ");
+            u2dec(d->slot, n3);
+            append(line, n3);
+            gfx_draw_string(x0 + 16 * S, y, fb_rgb(170, 182, 206), bg, line);
+            y += 26 * S;
+        }
     }
 
     gfx_draw_string_wide(x0, W.y + W.h - 40 * S, fb_rgb(140, 150, 168), bg,

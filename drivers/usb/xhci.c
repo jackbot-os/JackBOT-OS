@@ -507,6 +507,41 @@ static int ep0_transfer(uint32_t slot, uint8_t bmRequest, uint8_t bRequest,
     return 0;
 }
 
+static int evaluate_context(uint32_t slot, uint32_t max_packet)
+{
+    /* Only EP0's MaxPacketSize changes: keep the slot context as it is and
+       mark only the endpoint as "add" so the controller re-reads it. */
+    ctx_zero(g_input);
+    g_input->dw[1] = (1u << 1);                    /* A1: EP0 only */
+
+    struct xhci_ctx *slotc = ctx_at(g_input, 1);
+    struct xhci_ctx *eps   = ctx_at(g_input, 2);
+    ctx_zero(slotc);
+    ctx_zero(eps);
+
+    eps->dw[0] = (1u << 16);
+    eps->dw[1] = (3u << 1) | (4u << 3) |
+                 ((max_packet & 0xFFFFu) << 16);
+    eps->dw[2] = (uint32_t)((uint64_t)g_ep0_phys | 1u);
+    eps->dw[3] = 0;
+    __asm__ volatile("mfence" ::: "memory");
+
+    cmd_push(g_input_phys, 0, 0, TRB_EVAL_CTX);
+    uint32_t code = 0xFF, s = 0;
+    if (wait_event(TRB_CMD_COMPLETE, &code, &s) != 0) {
+        serial_puts("[XHCI] evaluate context timed out\n");
+        return -1;
+    }
+    if (code != 1) {
+        loghex("[XHCI] evaluate context failed code=", code);
+        return -1;
+    }
+    serial_puts("[XHCI] ep0 max packet set to ");
+    serial_puthex(max_packet);
+    serial_putc('\n');
+    return 0;
+}
+
 static int read_device_descriptor(uint32_t slot, struct usb_dev_info *info,
                                   uint8_t *raw18)
 {
@@ -606,6 +641,15 @@ int xhci_probe(uint32_t bar_phys, struct usb_dev_info *out, int max_out)
         uint32_t mps = (speed >= 3) ? 64u : 8u;    /* HS/SS use 64 */
         if (address_device(slot, p, (uint32_t)speed, mps) != 0)
             continue;
+
+        /* A full-speed device may still declare a 64-byte EP0; the xHCI spec
+           wants the endpoint context updated before longer transfers. */
+        if (speed < 3) {
+            uint8_t *b8 = (uint8_t *)(uintptr_t)(g_input_phys + 0x800);
+            if (ep0_transfer(slot, 0x80, 6, 0x0100, 0, b8, 8) == 0 &&
+                b8[7] == 64)
+                evaluate_context(slot, 64);
+        }
 
         struct usb_dev_info info;
         uint8_t raw[18];
