@@ -18,11 +18,14 @@
 #include <kernel/wallpaper_image.h>
 #include <kernel/perm.h>
 #include <kernel/users.h>
+#include <kernel/clock.h>
 
 #define N_WP 3
 #define CAROUSEL_TICKS 250
 
 uint64_t timer_get_ticks(void);
+int desk_is_light(void);
+static void wp_paint_rect(int x, int y, int w, int h);
 
 static int S;
 static int BAR;
@@ -173,14 +176,33 @@ static void render_wallpaper(void)
                 wp_buf[(uint64_t)y * w + x] = fb_rgb(16, 18, 28);
         wp_dirty = 0;
     }
-    fb_blit_full(wp_buf);
+    /* the whole-frame refresh also has to respect the day/night theme */
+    wp_paint_rect(0, 0, w, H);
 }
 
-/* Repaint one rectangle straight from the wallpaper surface. Used while a
-   window is dragged: only the strip the window crosses gets restored instead
-   of blitting all 1024x768 pixels every frame. */
-static void restore_wp_rect(int x, int y, int w, int h)
+/* Daytime wallpaper: a pastel vertical gradient instead of the East Lake
+   photo, so 06:00-17:59 reads as a light theme and the rest of the day keeps
+   the photo. Both paths paint the same rectangle so every caller (first
+   paint, drag restore, window restore) stays theme-correct. */
+static void wp_light_fill(int x, int y, int w, int h)
 {
+    int H = (int)fb_height();
+    for (int j = 0; j < h; j++) {
+        int yy = y + j;
+        int t = H > 1 ? yy * 255 / (H - 1) : 0;      /* 0 top .. 255 bottom */
+        int r = 198 + (250 - 198) * t / 255;
+        int g = 218 + (246 - 218) * t / 255;
+        int b = 240 + (238 - 240) * t / 255;
+        fb_fill_rect(x, yy, w, 1, fb_rgb(r, g, b));
+    }
+}
+
+static void wp_paint_rect(int x, int y, int w, int h)
+{
+    if (desk_is_light()) {
+        wp_light_fill(x, y, w, h);
+        return;
+    }
     if (!wp_buf)
         return;
     fb_blit_rect(x, y, w, h, wp_buf, (int)fb_width());
@@ -523,77 +545,32 @@ static int button2(int x, int y, int w, int h, const char *label, int sel,
     return clicked && hov;
 }
 
-static uint8_t cmos(int reg)
-{
-    uint8_t r = (uint8_t)reg, v;
-    __asm__ volatile("outb %0, %1" : : "a"(r), "N"((uint16_t)0x70));
-    __asm__ volatile("inb %1, %0" : "=a"(v) : "N"((uint16_t)0x71));
-    return v;
-}
-static int bcd(uint8_t v) { return (v & 0xf) + ((v >> 4) * 10); }
-
-/* CMOS RTC read with the two correctness steps the raw port read skipped:
-   wait out the update-in-progress window (0x0A bit 7) and read twice until
-   two consecutive samples agree. Reading registers piecemeal while the chip
-   is mid-update returns a mix of the old and new fields, which is what made
-   the taskbar clock sit a minute behind. */
-static int rtc_uip(void) { return cmos(0x0a) & 0x80; }
+/* All date/time formatting now goes through kernel/clock.c: one CMOS snapshot
+   that waits out the update-in-progress window, handles BCD vs binary and
+   12 vs 24 hour mode, and anchors sub-second time to the PIT. Keeping the
+   wrappers means every existing call site stays correct. */
 
 static void rtc_time(int *h, int *m, int *s)
 {
-    int sec = 0, min = 0, hr = 0, guard = 0;
-    while (rtc_uip() && guard++ < 2000000)
-        ;
-    for (int round = 0; round < 4; round++) {
-        sec = cmos(0x00);
-        min = cmos(0x02);
-        hr  = cmos(0x04);
-        if (!rtc_uip())
-            break;
-    }
-    uint8_t sb = cmos(0x0b);
-    if (!(sb & 0x04)) {              /* BCD time (the usual default) */
-        sec = bcd(sec);
-        min = bcd(min);
-        int pm = hr & 0x80;
-        hr = bcd((uint8_t)(hr & 0x7f));
-        if (!(sb & 0x02)) {          /* 12-hour mode: fold into 24-hour */
-            if (pm && hr != 12)
-                hr += 12;
-            else if (!pm && hr == 12)
-                hr = 0;
-        }
-    } else {                         /* binary time */
-        hr &= 0x7f;
-        if (!(sb & 0x02) && (cmos(0x04) & 0x80) && hr != 12)
-            hr += 12;
-    }
-    *h = hr; *m = min; *s = sec;
+    struct rtc_time t;
+    clock_now(&t, 0);
+    *h = t.hour; *m = t.min; *s = t.sec;
 }
 
-/* Date for the taskbar: CMOS 0x09/0x08/0x07, same BCD/binary rule as the
-   clock. Returns month/day as 1-12 and 1-31 so the caller only formats. */
 static void rtc_date(int *mo, int *dy, int *yr)
 {
-    int mon = 0, day = 0, year = 0, guard = 0;
-    while (rtc_uip() && guard++ < 2000000)
-        ;
-    for (int round = 0; round < 4; round++) {
-        day  = cmos(0x07);
-        mon  = cmos(0x08);
-        year = cmos(0x09);
-        if (!rtc_uip())
-            break;
-    }
-    uint8_t sb = cmos(0x0b);
-    if (!(sb & 0x04)) {
-        day = bcd(day);
-        mon = bcd(mon);
-        year = bcd(year);
-    }
-    if (mon < 1 || mon > 12) mon = 1;
-    if (day < 1 || day > 31) day = 1;
-    *mo = mon; *dy = day; *yr = year;
+    struct rtc_time t;
+    clock_now(&t, 0);
+    *mo = t.month; *dy = t.day; *yr = t.year;
+}
+
+/* 06:00-17:59 light, 18:00-05:59 dark. One predicate drives the taskbar,
+   the icon labels and the wallpaper so the three can never disagree. */
+int desk_is_light(void)
+{
+    struct rtc_time t;
+    clock_now(&t, 0);
+    return t.hour >= 6 && t.hour < 18;
 }
 
 static void draw_taskbar(int mx, int my, int clicked, int *start_click,
@@ -601,15 +578,22 @@ static void draw_taskbar(int mx, int my, int clicked, int *start_click,
 {
     int w = (int)fb_width(), top = (int)fb_height() - BAR;
     int bh = BAR - 8 * S;
+    int lit = desk_is_light();
+    uint32_t barbg = lit ? fb_rgb(246, 248, 252) : fb_rgb(16, 18, 28);
     /* the glyph layer no longer paints its own background, so the bar can
        keep the glass setting instead of forcing a solid pass */
 
     int set_x = w * 32 / 100, jb_x = w * 44 / 100;
     if (set_x < 112 * S + 110 * S) set_x = 112 * S + 110 * S;
     jb_x = set_x + (128 * S);
-    draw_rect(0, top, w, BAR, fb_rgb(16, 18, 28));
+    draw_rect(0, top, w, BAR, barbg);
+    /* No shadow ramp above the bar: blending here read the front buffer
+       before it was submitted, so the "shadow" came out as a solid black
+       stripe. A flat accent line separates the bar from the wallpaper
+       instead, which is correct in both themes. */
     /* accent line on the taskbar top edge */
-    draw_rect(0, top, w, 2 * S, fb_rgb(46, 110, 200));
+    draw_rect(0, top, w, 2 * S, lit ? fb_rgb(90, 150, 225)
+                                      : fb_rgb(46, 110, 200));
     /* Start: blue accent button */
     {
         int sx = 10 * S, sy = top + 4 * S, sw = 90 * S, sh = bh;
@@ -626,8 +610,9 @@ static void draw_taskbar(int mx, int my, int clicked, int *start_click,
         if (clicked && shov)
             *start_click = 1;
     }
-    gfx_draw_string(112 * S, top + 6 * S, fb_rgb(90, 200, 255),
-                    fb_rgb(16, 18, 28), "JackBOT OS");
+    gfx_draw_string(112 * S, top + 6 * S,
+                    lit ? fb_rgb(24, 60, 110) : fb_rgb(90, 200, 255),
+                    barbg, "JackBOT OS");
     gfx_set_transparent(gl_on);
     /* Wallpaper themes now live in Settings > Display; the old standalone
        wallpaper button is gone on purpose. */
@@ -650,8 +635,9 @@ static void draw_taskbar(int mx, int my, int clicked, int *start_click,
     clk[9] = d[mm / 10]; clk[10] = d[mm % 10]; clk[11] = ':';
     clk[12] = d[ss / 10]; clk[13] = d[ss % 10]; clk[14] = 0;
     int cw = gfx_text_width(clk);
-    gfx_draw_string(w - cw - 12 * S, top + 6 * S, fb_rgb(225, 232, 245),
-                    fb_rgb(16, 18, 28), clk);
+    gfx_draw_string(w - cw - 12 * S, top + 6 * S,
+                    lit ? fb_rgb(40, 50, 70) : fb_rgb(225, 232, 245),
+                    barbg, clk);
 }
 
 static int pWX, pWY, pWW, pWH, CW, CH;
@@ -1368,18 +1354,19 @@ void desktop_init(void)
 }
 
 /* ---- Desktop shortcuts: click an icon to launch a program ---- */
-#define DSK_ICONS 4
+#define DSK_ICONS 5
 static const char *dsk_label(int i)
 {
     switch (i) {
     case 0: return app_name(APP_FILES);
     case 1: return app_name(APP_BROWSER);
     case 2: return app_name(APP_PYTHON);
+    case 3: return app_name(APP_MAPS);
     default: return "Jbot";
     }
 }
 static const int dsk_app[DSK_ICONS] = {
-    APP_FILES, APP_BROWSER, APP_PYTHON, 3
+    APP_FILES, APP_BROWSER, APP_PYTHON, APP_MAPS, 3
 };
 
 static void dsk_icon_geom(int i, int *x, int *y, int *w, int *h)
@@ -1421,6 +1408,7 @@ static void draw_desktop_icons(int mx, int my, int clicked)
         uint32_t tint = (i == 0) ? fb_rgb(70, 126, 204)
                       : (i == 1) ? fb_rgb(96, 146, 216)
                       : (i == 2) ? fb_rgb(52, 132, 120)
+                      : (i == 3) ? fb_rgb(60, 150, 170)
                                  : fb_rgb(120, 90, 190);
         draw_glass_round_rect(x, y, w, w, 12 * S, tint, hover ? 210 : 150);
         ui_round_border(x, y, w, w, 12 * S,
@@ -1437,10 +1425,14 @@ static void draw_desktop_icons(int mx, int my, int clicked)
                 lx = (int)fb_width() - 4 * S - tw;
             if (lx < 4 * S)
                 lx = 4 * S;
+            int lit = desk_is_light();
             draw_glass_round_rect(lx - 4 * S, ly - 2 * S, tw + 8 * S, th + 4 * S,
-                                  5 * S, fb_rgb(12, 16, 26), 205);
-            gfx_draw_string(lx, ly, fb_rgb(240, 246, 255),
-                            fb_rgb(12, 16, 26), nm);
+                                  5 * S,
+                                  lit ? fb_rgb(252, 253, 255) : fb_rgb(12, 16, 26),
+                                  lit ? 225 : 205);
+            gfx_draw_string(lx, ly,
+                            lit ? fb_rgb(20, 30, 46) : fb_rgb(240, 246, 255),
+                            lit ? fb_rgb(252, 253, 255) : fb_rgb(12, 16, 26), nm);
         }
         if (clicked && hover) {
             int id = dsk_app[i];
@@ -1459,6 +1451,23 @@ void desktop_run(void)
     int mx, my;
     int opened_app = 0;
     ps2_mouse_xy(&mx, &my);
+
+    /* The theme follows the clock: 06:00 flips to light, 18:00 back to dark.
+       The desktop repaints incrementally (win_painted / drawn_win only cover
+       what changed), so a flip has to force one full repaint — otherwise the
+       upper half keeps the old palette and the frame tears in two. */
+    {
+        static int last_light = -1;
+        int lit = desk_is_light();
+        if (last_light >= 0 && lit != last_light) {
+            wp_dirty = 1;
+            win_painted = 0;
+            drawn_win = -1;
+            need_redraw = 1;
+        }
+        last_light = lit;
+    }
+
     int cx, cy;
     int clicked = ps2_mouse_click(&cx, &cy);
     if (clicked) {
@@ -1577,14 +1586,8 @@ void desktop_run(void)
                    pointer pixels are dropped first so they cannot be saved
                    back over the fresh wallpaper. */
                 cursor_invalidate();
-                if (wp_buf) {
-                    fb_blit_rect(ox, oy, ww, wh,
-                                 wp_buf + (size_t)oy * fb_width() + ox,
-                                 fb_width());
-                    fb_blit_rect(nx, ny, ww, wh,
-                                 wp_buf + (size_t)ny * fb_width() + nx,
-                                 fb_width());
-                }
+                wp_paint_rect(ox, oy, ww, wh);
+                wp_paint_rect(nx, ny, ww, wh);
                 win_painted = 0;
                 drawn_win = -1;
             }

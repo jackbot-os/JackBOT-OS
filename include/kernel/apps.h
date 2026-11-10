@@ -31,6 +31,7 @@ enum {
     APP_BLUETOOTH,
     APP_SNAKE,
     APP_G2048,
+    APP_MAPS,
     APP_LIMIT
 };
 

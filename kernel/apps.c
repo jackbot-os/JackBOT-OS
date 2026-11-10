@@ -32,6 +32,7 @@ void voice_open(void);    int voice_frame(int, int, int);
 void bluetooth_open(void); int bluetooth_frame(int, int, int);
 void snake_open(void);    int snake_frame(int, int, int);
 void g2048_open(void);    int g2048_frame(int, int, int);
+void maps_open(void);     int maps_frame(int, int, int);
 
 typedef void (*openfn)(void);
 typedef int (*framefn)(int, int, int);
@@ -79,6 +80,7 @@ static void setup(void)
     set(APP_BLUETOOTH, bluetooth_open, bluetooth_frame);
     set(APP_SNAKE, snake_open, snake_frame);
     set(APP_G2048, g2048_open, g2048_frame);
+    set(APP_MAPS, maps_open, maps_frame);
     done = 1;
 }
 
@@ -130,6 +132,7 @@ const char *app_name(int id)
     case APP_BLUETOOTH: return tr(STR_AN_BLUETOOTH);
     case APP_SNAKE: return tr(STR_AN_SNAKE);
     case APP_G2048: return tr(STR_AN_G2048);
+    case APP_MAPS: return "Maps";
     default: return "";
     }
 }

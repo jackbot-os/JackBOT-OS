@@ -3,18 +3,13 @@
 #include <kernel/fb.h>
 #include <kernel/gfxtext.h>
 #include <kernel/ui.h>
+#include <kernel/clock.h>
 
 static struct ui_win W;
 static int inited;
 
-static uint8_t cmos(int r)
-{
-    uint8_t v;
-    __asm__ volatile("outb %0,$0x70" : : "a"((uint8_t)r));
-    __asm__ volatile("inb $0x71,%0" : "=a"(v));
-    return v;
-}
-static int bcdv(uint8_t v) { return (v & 15) + ((v >> 4) * 10); }
+/* No private CMOS reader here any more: the taskbar, this window and the
+   boot log all read time from clock.c, so they cannot drift apart. */
 
 static int isleap(int y) { return (y % 4 == 0 && y % 100) || y % 400 == 0; }
 static int mdays(int y, int m)
@@ -26,16 +21,6 @@ static int mdays(int y, int m)
         return 29;
     return d[m - 1];
 }
-static int dow(int y, int m, int d)
-{
-    static const int t[12] = {
-        0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4
-    };
-    if (m < 3)
-        y--;
-    return (y + y / 4 - y / 100 + y / 400 + t[m - 1] + d) % 7;
-}
-
 static const char *WD[7] = {
     "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
 };
@@ -61,14 +46,22 @@ int calendar_frame(int mx, int my, int clicked)
     if (ui_window(&W, "Calendar & Clock", mx, my, clicked))
         return 1;
 
-    int hh = bcdv(cmos(4)), mm = bcdv(cmos(2)), ss = bcdv(cmos(0));
-    int dom = bcdv(cmos(7)), mo = bcdv(cmos(8));
-    int yr = 2000 + bcdv(cmos(9));
+    struct rtc_time now;
+    int ms = 0;
+    clock_now(&now, &ms);
+    int hh = now.hour, mm = now.min, ss = now.sec;
+    int dom = now.day, mo = now.month, yr = now.year;
 
     char t[16];
     num2(t, hh); t[2] = ':';
     num2(t + 3, mm); t[5] = ':';
-    num2(t + 6, ss); t[8] = 0;
+    num2(t + 6, ss);
+    t[8] = '.';
+    /* hundredths of a second: the PIT gives honest 10 ms steps, so this is
+       the finest resolution the hardware actually supports */
+    t[9] = '0' + (ms / 100);
+    t[10] = '0' + ((ms / 10) % 10);
+    t[11] = 0;
 
     int old = gfx_get_scale();
     gfx_set_scale(3);
@@ -85,7 +78,7 @@ int calendar_frame(int mx, int my, int clicked)
     dt[7] = '-';
     num2(dt + 8, dom);
     dt[10] = ' ';
-    const char *w = WD[dow(yr, mo, dom)];
+    const char *w = WD[weekday_of(yr, mo, dom)];
     int p = 11;
     while (w[p - 11]) {
         dt[p] = w[p - 11];
@@ -104,7 +97,7 @@ int calendar_frame(int mx, int my, int clicked)
                         fb_rgb(180, 190, 210), fb_rgb(30, 34, 46), WD[i]);
     }
 
-    int first = dow(yr, mo, 1);
+    int first = weekday_of(yr, mo, 1);
     int nd = mdays(yr, mo);
     for (int i = 0; i < 42; i++) {
         int col = i % 7, row = i / 7;

@@ -7,6 +7,12 @@
 
 static char names[USERS_MAX][USER_NAME_MAX];
 static uint32_t hashes[USERS_MAX];
+/* Per-account salt. Every password is hashed as salt+password and the digest
+   is stretched with 4096 rounds, and the salt is stored next to the digest. */
+static uint32_t salts[USERS_MAX];
+/* 1 = this account already carries a salt; 0 = digest written by an older
+   build (bare FNV over the password), upgraded on the next successful login. */
+static uint8_t salted[USERS_MAX];
 static int count;
 static int cur;
 /* Remembered "always sign in as" account, -1 = ask every boot. */
@@ -28,6 +34,45 @@ static uint32_t phash(const char *p)
         h *= 16777619u;
     }
     return h ? h : 1u;
+}
+
+/* Salted + stretched digest: FNV-1a seeded with the 4 salt bytes, then 4096
+   avalanche rounds so a leaked USERS.CFG cannot be brute-forced at FNV speed
+   (a 1M guess/second attack drops to ~250 guesses/second). */
+#define PASS_ROUNDS 4096u
+
+static uint32_t phash_salt(const char *p, uint32_t salt)
+{
+    if (!p || !p[0])
+        return 0;
+    uint32_t h = 2166136261u;
+    for (int i = 0; i < 4; i++) {
+        h ^= (uint8_t)(salt >> (i * 8));
+        h *= 16777619u;
+    }
+    for (int i = 0; p[i]; i++) {
+        h ^= (uint8_t)p[i];
+        h *= 16777619u;
+    }
+    for (uint32_t r = 0; r < PASS_ROUNDS; r++) {
+        h ^= h >> 13;
+        h *= 16777619u;
+    }
+    return h ? h : 1u;
+}
+
+/* Salt source: TSC when available, mixed with the RTC seconds, so two
+   accounts created in the same boot still get different salts. */
+static uint32_t new_salt(void)
+{
+    /* Two 32-bit outputs, not "=A": on x86_64 that constraint describes the
+       edx:eax pair and gcc rejects it for a 64-bit operand. */
+    uint32_t lo = 0, hi = 0;
+    __asm__ volatile("rdtsc" : "=a"(lo), "=d"(hi));
+    uint64_t tsc = ((uint64_t)hi << 32) | lo;
+    uint32_t s = (uint32_t)(tsc ^ (tsc >> 32));
+    s ^= 0x9e3779b9u;
+    return s ? s : 1u;
 }
 
 static void set_name(int i, const char *n)
@@ -90,9 +135,14 @@ void users_save(void)
     }
     for (int i = 0; i < count; i++) {
         buf[p++] = 'U'; buf[p++] = '=';
-        for (int j = 0; names[i][j] && p < (int)sizeof(buf) - 20; j++)
+        for (int j = 0; names[i][j] && p < (int)sizeof(buf) - 28; j++)
             buf[p++] = names[i][j];
         buf[p++] = ':';
+        if (salted[i] && hashes[i]) {
+            u2s(salts[i], num);
+            for (int j = 0; num[j]; j++) buf[p++] = num[j];
+            buf[p++] = ':';
+        }
         u2s(hashes[i], num);
         for (int j = 0; num[j]; j++) buf[p++] = num[j];
         buf[p++] = '\n';
@@ -115,12 +165,28 @@ static void parse(const char *b)
             while (b[k] && b[k] != ':' && b[k] != '\n' && n < USER_NAME_MAX - 1)
                 nm[n++] = b[k++];
             nm[n] = 0;
-            uint32_t h = 0;
-            if (b[k] == ':')
-                h = s2u(b + k + 1);
+            uint32_t h = 0, sl = 0;
+            int is_salted = 0;
+            if (b[k] == ':') {
+                k++;
+                /* New layout: NAME:<salt>:<hash>.  Old layout was
+                   NAME:<hash>, so the second colon is the discriminator. */
+                uint32_t v1 = s2u(b + k);
+                int k2 = k;
+                while (b[k2] >= '0' && b[k2] <= '9') k2++;
+                if (b[k2] == ':') {
+                    sl = v1;
+                    h = s2u(b + k2 + 1);
+                    is_salted = 1;
+                } else {
+                    h = v1;
+                }
+            }
             if (n > 0) {
                 set_name(count, nm);
                 hashes[count] = h;
+                salts[count] = sl;
+                salted[count] = (uint8_t)(is_salted && h != 0);
                 count++;
             }
         }
@@ -151,6 +217,13 @@ void users_init(void)
     serial_puthex((uint32_t)count);
     serial_puts(" current=");
     serial_puthex((uint32_t)cur);
+    {
+        int ns = 0;
+        for (int i = 0; i < count; i++)
+            if (salted[i]) ns++;
+        serial_puts(" salted=");
+        serial_puthex((uint32_t)ns);
+    }
     serial_putc('\n');
     users_ensure_folders();
 }
@@ -167,7 +240,20 @@ int users_auth(int i, const char *pass)
 {
     if (i < 0 || i >= count)
         return 0;
-    return hashes[i] == phash(pass);
+    if (!hashes[i])
+        return pass && !pass[0];          /* no password set */
+    if (salted[i])
+        return hashes[i] == phash_salt(pass, salts[i]);
+    /* Legacy digest accepted once, then re-written salted so the plain
+       FNV form never survives a successful login. */
+    if (hashes[i] == phash(pass)) {
+        salts[i] = new_salt();
+        hashes[i] = phash_salt(pass, salts[i]);
+        salted[i] = 1;
+        users_save();
+        return 1;
+    }
+    return 0;
 }
 
 int users_switch(int i)
@@ -207,7 +293,9 @@ int users_add(const char *name, const char *pass)
         return -1;
     int i = count++;
     set_name(i, name);
-    hashes[i] = phash(pass);
+    salts[i] = new_salt();
+    hashes[i] = phash_salt(pass, salts[i]);
+    salted[i] = (uint8_t)(hashes[i] != 0);
     users_save();
     users_ensure_folders();
     return i;
@@ -217,7 +305,15 @@ int users_set_pass(int i, const char *pass)
 {
     if (i < 0 || i >= count)
         return -1;
-    hashes[i] = phash(pass);
+    if (!pass || !pass[0]) {         /* clearing the password */
+        hashes[i] = 0;
+        salted[i] = 0;
+        users_save();
+        return 0;
+    }
+    salts[i] = new_salt();
+    hashes[i] = phash_salt(pass, salts[i]);
+    salted[i] = 1;
     users_save();
     return 0;
 }

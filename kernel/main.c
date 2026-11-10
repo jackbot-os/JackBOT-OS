@@ -330,6 +330,8 @@ void kmain(uint64_t magic, uint64_t mb_info)
     pic_remap();
     idt_init();
     timer_init();
+    extern void clock_init(void);
+    clock_init();
     pic_mask_all();
     pic_clear_mask(0);
 
