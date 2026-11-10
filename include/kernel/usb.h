@@ -39,6 +39,7 @@ struct usb_hc {
     uint8_t speed[USB_MAX_PORTS]; /* USB_SPD_* */
     uint8_t pwr[USB_MAX_PORTS];   /* 端口是否供电 */
     uint8_t oc[USB_MAX_PORTS];    /* 端口过流标志 */
+    uint8_t dev_count;   /* 驱动真正枚举到的设备数（不是端口灯） */
 };
 
 /* 重新扫描所有 USB 主控并读取根集线器端口状态，返回主控数量。 */

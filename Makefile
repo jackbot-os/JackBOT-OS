@@ -15,7 +15,7 @@ KERN_SRCS := main idt pic timer clock serial trap apic pmm vmm heap kstring sche
 ARCH_ASM := boot gdt vectors switch
 OBJS := $(addprefix $(BUILD)/,$(addsuffix .o,$(KERN_SRCS))) \
         $(addprefix $(BUILD)/,$(addsuffix .o,$(ARCH_ASM)))
-DEPS := $(OBJS:.o=.d)
+DEPS := $(OBJS:.o=.d) $(DRV_OBJS:.o=.d)
 -include $(DEPS)
 KERNEL := iso/boot/kernel
 ISO := $(BUILD)/JackBOT-1.0.9.iso
@@ -87,6 +87,15 @@ $(WALLPAPER_OBJ): $(WALLPAPER_BMP) | $(BUILD)
 $(BUILD)/%.o: kernel/%.c | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# Device drivers live under drivers/ so they are readable and greppable on
+# their own. Each subdirectory is flat: one .c per driver, one .h per driver.
+DRV_SRCS := drivers/usb/xhci.c
+DRV_OBJS := $(patsubst drivers/%.c,$(BUILD)/drv_%.o,$(DRV_SRCS))
+
+$(BUILD)/drv_%.o: drivers/%.c | $(BUILD)
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
+
 # Rendering and desktop code compiled with optimisation. These are the files
 # that run per frame (pixel loops, blending, text, 3D rasteriser), so -O2 buys
 # the smoothness the whole UI is judged on. Hardware drivers deliberately stay
@@ -101,8 +110,8 @@ $(BUILD)/userproc.o: $(USER_H) $(CRASH_USER_H)
 $(BUILD)/%.o: arch/x86_64/%.asm | $(BUILD)
 	$(NASM) $(NASMFLAGS) $< -o $@
 
-$(KERNEL): $(OBJS) $(WALLPAPER_OBJ) arch/x86_64/linker.ld
-	ld $(LDFLAGS) -o $@ $(OBJS) $(WALLPAPER_OBJ)
+$(KERNEL): $(OBJS) $(DRV_OBJS) $(WALLPAPER_OBJ) arch/x86_64/linker.ld
+	ld $(LDFLAGS) -o $@ $(OBJS) $(DRV_OBJS) $(WALLPAPER_OBJ)
 
 iso: $(ISO)
 

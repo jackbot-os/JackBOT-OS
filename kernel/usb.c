@@ -7,6 +7,7 @@
 #include <kernel/serial.h>
 #include <kernel/i18n.h>
 #include "i18n_data.h"
+#include "../../drivers/usb/xhci.h"
 
 /*
  * USB 主控制器发现 + 根集线器端口状态读取。
@@ -204,6 +205,19 @@ int usb_scan(void)
         serial_puthex((uint32_t)h->nports);
         serial_putc('\n');
         hc_n++;
+
+        /* USB 3.x controllers get their real bring-up from the driver in
+           drivers/usb/: reset, rings, port reset, Enable Slot, Address
+           Device and a GET_DESCRIPTOR(DEVICE) so the device identity is
+           known instead of only the port status bits. */
+        if (kind == USB_KIND_XHCI && h->mem_base) {
+            static struct usb_dev_info got[8];
+            int n = xhci_probe(h->mem_base, got, 8);
+            if (n > 0) {
+                xhci_store_devices(got, n);
+                h->dev_count = (uint8_t)n;
+            }
+        }
     }
     return hc_n;
 }
