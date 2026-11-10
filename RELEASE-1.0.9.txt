@@ -1,0 +1,41 @@
+JackBOT OS v1.0.9 (EastLake) - build manifest
+=============================================
+
+Version:      1.0.9 (EastLake)
+Source:       git commit 79fa886ce002db05c3f492a45663efbc770de049 (branch master)
+Image:        JackBOT-1.0.9.iso
+Size:         65,220,608 bytes
+SHA-256:      7b0ac03823ac9b05cf569e430f5e9381307579390ff3c2ba05222c285e19f3ab
+
+How this image was produced
+---------------------------
+1. tools/build_iso_fullsync.py hash-synced the repository working tree to the
+   Debian build VM (every source file compared by SHA-256, so no hand-written
+   file list can leave a stale .c behind), skipping only third_party/, build/
+   and build_assets/.
+2. `make iso` on the VM: MAKE rc=0, 0 errors.
+3. The VM printed sha256 7b0ac038... for build/JackBOT-1.0.9.iso, and the copy
+   pulled back to the host hashed to the same value, so the published image is
+   the one this source tree produces.
+4. The image was cold-booted in VirtualBox 7.2.14 (Extension Pack installed) and
+   reached the desktop: serial ends with `[B] desktop done`.
+
+What is proven inside this image
+--------------------------------
+- xHCI (USB 3) host controller: reset, command ring, event ring, port reset,
+  Enable Slot, Address Device and EP0 GET_DESCRIPTOR all complete against a real
+  device plugged into the host; serial prints
+  `[XHCI] device port=1 vid=0x1c4f pid=0x0048 ... speed=0x2 slot=0x1`.
+- JCA bytecode VM and the jcac C front end self-test (`[C] PASS`) run at boot on
+  an installed system. The live ISO skips the heavy boot self-test block, so a
+  live boot shows `[JCA] self-test OK` only.
+
+Known limits (not hidden)
+-------------------------
+- No USB hub support: only devices directly on an xHCI root port are seen.
+- No hot-plug / interrupt handling yet: enumeration happens at boot and when the
+  USB page's Refresh is used; no class drivers (HID, storage, WLAN) yet.
+- AHCI/SATA still does not complete a command in VirtualBox (TFD=0x170), so an
+  installed disk does not boot; the ISO path is the working one.
+- 802.11 is not implemented, so the Realtek 8812BU USB NIC is detected as a USB
+  device only, with no network stack attached to it.
