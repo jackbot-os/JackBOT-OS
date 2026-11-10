@@ -214,6 +214,7 @@ static int port_setup(int n)
 {
     struct ahci_port *p = &g_ports[n];
     uint32_t clb, fb;
+    int adopt = 0;
 
     if (p->clb_phys == 0) {
         serial_puts("[AHCI] port ");
@@ -237,8 +238,7 @@ static int port_setup(int n)
         memset((void *)(uintptr_t)clb, 0, 4096);
         memset((void *)(uintptr_t)fb, 0, 4096);
         p->clb_phys = clb;
-        p->fb_phys = fb;
-        for (int i = 0; i < 32; i++) {
+        p->fb_phys = fb;        for (int i = 0; i < 32; i++) {
             uint32_t ct = alloc_page_below1g();
             if (!ct) {
                 serial_puts("[AHCI] port ");
@@ -254,6 +254,28 @@ static int port_setup(int n)
         serial_puts(" ct ok\n");
     }
 
+    /* Experiment: the firmware already programmed a working command list
+       and read this disk successfully with it. Adopting those addresses
+       instead of reprogramming the port tells us whether VBox rejects our
+       own CLB/FB programming or the whole command path. */
+    {
+        uint32_t bclb = prd(n, PxCLB) & 0xFFFFFC00u;
+        uint32_t bfb  = prd(n, PxFB) & 0xFFFFFF00u;
+        serial_puts("[AHCI] p"); serial_puthex((uint32_t)n);
+        serial_puts(" bios clb="); serial_puthex(prd(n, PxCLB));
+        serial_puts(" fb="); serial_puthex(prd(n, PxFB));
+        serial_puts(" cmd="); serial_puthex(prd(n, PxCMD));
+        serial_putc('\n');
+        if (bclb && bfb) {
+            p->clb_phys = bclb;
+            p->fb_phys = bfb;
+            adopt = 1;
+            serial_puts("[AHCI] p"); serial_puthex((uint32_t)n);
+            serial_puts(" adopting bios command list\n");
+        }
+    }
+
+    if (!adopt) {
     serial_puts("[AHCI] p"); serial_puthex((uint32_t)n);
     serial_puts(" stop begin CMD="); serial_puthex(prd(n, PxCMD));
     serial_puts(" TFD="); serial_puthex(prd(n, PxTFD)); serial_putc('\n');
@@ -297,12 +319,29 @@ static int port_setup(int n)
     serial_puts(" CT0="); serial_puthex(p->ct_phys[0]);
     serial_putc('\n');
 
-    /* COMRESET disabled: the link is already established (SSTS.DET=3) and
-       toggling DET put the emulated device into a rejecting state. */
-    serial_puts("[AHCI] p"); serial_puthex((uint32_t)n);
-    serial_puts(" comreset skipped ssts=");
-    serial_puthex(prd(n, PxSSTS));
-    serial_putc('\n');
+    /* AHCI spec: after the HBA reset every implemented port must be reset
+       through PxSCTL.DET before commands are issued. Skipping it leaves
+       the device ready in PxTFD but never executing a command (CI stays
+       set, no interrupt is raised). */
+    {
+        uint32_t sctl = prd(n, PxSCTL);
+        pwr(n, PxSCTL, (sctl & ~0xFu) | 1u);          /* DET=1 COMRESET */
+        for (volatile uint32_t i = 0; i < 20000u; i++)
+            ;
+        pwr(n, PxSCTL, prd(n, PxSCTL) & ~0xFu);        /* DET=0 */
+        uint32_t spins = 0;
+        while (spins < 200000u) {
+            if ((prd(n, PxSSTS) & SSTS_DET_MASK) == SSTS_DET_ONLINE)
+                break;
+            spins++;
+        }
+        serial_puts("[AHCI] p"); serial_puthex((uint32_t)n);
+        serial_puts(" comreset done spins="); serial_puthex(spins);
+        serial_puts(" ssts="); serial_puthex(prd(n, PxSSTS));
+        serial_puts(" sig="); serial_puthex(prd(n, PxSIG));
+        serial_putc('\n');
+    }
+    }
 
     /* clear every pending interrupt and disable them (polled driver) */
     pwr(n, PxSERR, 0xFFFFFFFFu);
@@ -390,6 +429,25 @@ static int port_exec(int n, uint8_t cmd, uint8_t write, uint64_t lba,
     if (p->clb_phys == 0 && port_setup(n) != 0)
         return -1;
 
+    /* A command that timed out (FLUSH CACHE EXT does on several emulated
+       HBAs) leaves PxCI bit0 set. Writing the same bit again does not
+       re-issue anything, so every later command is silently swallowed.
+       Stop the engine, drop the stale bit and restart it first. */
+    if (prd(n, PxCI) & 1u) {
+        serial_puts("[AHCI] p"); serial_puthex((uint32_t)n);
+        serial_puts(" stale CI, recovering\n");
+        pwr(n, PxIS, 0xFFFFFFFFu);
+        pwr(n, PxSERR, 0xFFFFFFFFu);
+        if (port_stop(n) == 0) {
+            pwr(n, PxCI, 1u);
+            if (port_start(n) != 0) {
+                serial_puts("[AHCI] p"); serial_puthex((uint32_t)n);
+                serial_puts(" restart failed after stale CI\n");
+                return -1;
+            }
+        }
+    }
+
     h = (struct ahci_cmd_hdr *)(uintptr_t)p->clb_phys;
     t = (struct ahci_cmd_table *)(uintptr_t)p->ct_phys[0];
 
@@ -448,7 +506,7 @@ static int port_exec(int n, uint8_t cmd, uint8_t write, uint64_t lba,
                 serial_puts(" TFD="); serial_puthex(prd(n, PxTFD));
                 serial_putc('\n');
             }
-            if (now - t0 > 1000) {
+            if (now - t0 > 5000) {
                 timed_out = 1;
                 break;
             }
@@ -463,6 +521,15 @@ static int port_exec(int n, uint8_t cmd, uint8_t write, uint64_t lba,
             serial_puts(" TFD=");
             serial_puthex(prd(n, PxTFD));
             serial_putc('\n');
+            /* Do not leave the port with a dangling CI bit: stop the
+               engine, clear the outstanding command, then restart so the
+               next submission can be fetched and completed. */
+            if (port_stop(n) == 0) {
+                pwr(n, PxCI, 1u);
+                pwr(n, PxIS, 0xFFFFFFFFu);
+                pwr(n, PxSERR, 0xFFFFFFFFu);
+                (void)port_start(n);
+            }
             return -1;
         }
     }
@@ -527,9 +594,10 @@ static char *put_field(char *dst, const uint16_t *ident, int first, int words)
     return dst;
 }
 
-/* Diagnostic: a command with no data phase. If this completes, the command
-   submission path works and a failure in IDENTIFY points at the PRDT/DMA
-   path instead. */
+/* Diagnostic: a command with no data phase. Kept for on-hardware
+   debugging; not used at boot any more (a timed-out FLUSH used to strand
+   PxCI and made every later command unreachable). */
+static void port_probe_flush(int n) __attribute__((unused));
 static void port_probe_flush(int n)
 {
     int rc = port_exec(n, CMD_FLUSH_CACHE_EXT, 1, 0, 0, 0, 0, 0);
@@ -558,13 +626,34 @@ static int port_identify(int n)
     }
     memset((void *)(uintptr_t)phys, 0, 4096);
 
-    if (port_exec(n, CMD_IDENTIFY, 0, 0, 0, 0,
-                  (void *)(uintptr_t)phys, bytes) != 0) {
-        serial_puts("[AHCI] port ");
-        serial_puthex((uint32_t)n);
-        serial_puts(" IDENTIFY failed\n");
-        return -1;
+    for (int attempt = 0; attempt < 3; attempt++) {
+        if (port_exec(n, CMD_IDENTIFY, 0, 0, 0, 0,
+                      (void *)(uintptr_t)phys, bytes) == 0)
+            break;
+        serial_puts("[AHCI] p"); serial_puthex((uint32_t)n);
+        serial_puts(" identify retry after failure attempt=");
+        serial_puthex((uint32_t)attempt);
+        serial_putc('\n');
+        if (attempt == 2) {
+            serial_puts("[AHCI] port ");
+            serial_puthex((uint32_t)n);
+            serial_puts(" IDENTIFY failed\n");
+            return -1;
+        }
     }
+    /* Diagnostic: a plain sector read tells whether the failure is the
+       IDENTIFY command itself or the whole command/DMA path. */
+    {
+        int rc2 = port_exec(n, CMD_READ_DMA_EXT, 0, 0, 1, 0,
+                            (void *)(uintptr_t)phys, 512);
+        uint8_t *b = (uint8_t *)(uintptr_t)phys;
+        serial_puts("[AHCI] p"); serial_puthex((uint32_t)n);
+        serial_puts(" read probe rc="); serial_puthex((uint32_t)rc2);
+        serial_puts(" data0="); serial_puthex(*(uint32_t *)b);
+        serial_puts(" mbr_sig="); serial_puthex(b[510] | (b[511] << 8));
+        serial_putc('\n');
+    }
+    return -1;
 
     memcpy(ident, (void *)(uintptr_t)phys, sizeof ident);
 
@@ -656,13 +745,32 @@ int ahci_init(struct pci_dev *d)
     serial_puts("[AHCI] ae set ghc=");
     serial_puthex(rd(HBA_GHC));
     serial_putc('\n');
+    /* AHCI spec: the HBA must be reset before the first use; without HR
+       some HBAs (including the ICH9 model in VirtualBox) accept the
+       PxCLB/PxFB programming and the ST transition but never fetch a
+       command from the list, so PxCI stays set forever and no interrupt
+       is ever raised. */
     serial_puts("[AHCI] hba reset start\n");
-    serial_puts("[AHCI] HBA reset start GHC=");
-    serial_puthex(rd(HBA_GHC));
+    serial_puts("[AHCI] port0 clb-before-reset=");
+    serial_puthex(prd(0, PxCLB));
     serial_putc('\n');
-    /* HBA reset experiment: skip HR, only keep AE set. Some emulated HBAs
-       leave the device in a faulted TFD state after a global reset. */
-    serial_puts("[AHCI] hba reset skipped (AE only)\n");
+    if (prd(0, PxCLB) != 0) {
+        /* firmware programmed a usable command list already: a global
+           reset would throw that away, so leave the HBA as it is */
+        serial_puts("[AHCI] hba reset skipped (firmware command list kept)\n");
+    } else {
+        wr(HBA_GHC, rd(HBA_GHC) | GHC_HR);
+    {
+        uint32_t spins = 0;
+        while ((rd(HBA_GHC) & GHC_HR) && spins < 1000000u)
+            spins++;
+        serial_puts("[AHCI] hba reset done spins=");
+        serial_puthex(spins);
+        serial_puts(" GHC=");
+        serial_puthex(rd(HBA_GHC));
+        serial_putc('\n');
+    }
+    }
     wr(HBA_GHC, rd(HBA_GHC) | GHC_AE);
     wr(HBA_IS, 0xFFFFFFFFu);
     serial_puts("[AHCI] HBA reset done\n");
@@ -710,7 +818,8 @@ int ahci_init(struct pci_dev *d)
         }
         if (port_setup((int)n) != 0)
             continue;
-        port_probe_flush((int)n);
+        /* no flush probe: a timed-out FLUSH used to strand PxCI and made
+           the following IDENTIFY unreachable on every emulated HBA */
         if (port_identify((int)n) == 0) {
             g_online++;
             if (g_primary < 0)
