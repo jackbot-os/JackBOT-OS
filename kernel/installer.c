@@ -280,6 +280,66 @@ int installer_install(int mode, install_progress_fn progress)
         }
     }
 
+    /* All 205 per-language TTFs are installed on the user disk, not just
+       the 8 fallback faces: the bundle lands as /BOOT/LGFONT.BIN (hd.cfg
+       declares it as a multiboot module so the kernel indexes it), and
+       every face is unpacked to /BOOT/FONTS/<CODE>.TTF so anything that
+       opens a plain file has the real font there. Disk cost is ~32 MB
+       total; installers are expected to take a while. */
+    {
+        const struct payload_mod *lg = payload_find(PAYLOAD_LGFONT);
+        if (!lg || !lg->data || lg->size < 8) {
+            serial_puts("[INST] LGFONT payload missing\n");
+            rc = -1;
+        } else {
+            const unsigned char *lb = (const unsigned char *)lg->data;
+            if (lb[0] != 'L' || lb[1] != 'G' || lb[2] != 'F' ||
+                lb[3] != '1') {
+                serial_puts("[INST] LGFONT bad magic\n");
+                rc = -1;
+            } else if (fat_write_file("BOOT/LGFONT.BIN", lg->data,
+                                      lg->size) != 0) {
+                serial_puts("[INST] write LGFONT FAIL\n");
+                rc = -1;
+            } else {
+                uint32_t cnt = 0;
+                cnt = *(const uint32_t *)(lb + 4);
+                fat_mkdir("BOOT/FONTS");
+                int wrote = 0;
+                for (uint32_t i = 0; i < cnt && i < 512; i++) {
+                    const unsigned char *e = lb + 8 + (size_t)i * 20;
+                    uint32_t off = *(const uint32_t *)(e + 12);
+                    uint32_t sz = *(const uint32_t *)(e + 16);
+                    if (off + sz > lg->size || sz < 512)
+                        continue;
+                    char path[24];
+                    int q = 0;
+                    const char *pre = "BOOT/FONTS/";
+                    while (pre[q]) { path[q] = pre[q]; q++; }
+                    for (int k = 0; k < 12 && e[k]; k++)
+                        path[q++] = (char)e[k];
+                    path[q++] = '.';
+                    path[q++] = 'T';
+                    path[q++] = 'T';
+                    path[q++] = 'F';
+                    path[q] = 0;
+                    if (fat_write_file(path, (const void *)(lb + off),
+                                       sz) != 0) {
+                        serial_puts("[INST] write lang TTF FAIL\n");
+                        rc = -1;
+                        break;
+                    }
+                    wrote++;
+                }
+                serial_puts("[INST] fonts installed=");
+                serial_puthex((uint64_t)wrote);
+                serial_puts(" of ");
+                serial_puthex((uint64_t)cnt);
+                serial_putc('\n');
+            }
+        }
+    }
+
     const struct { const char *path; const struct payload_mod *m; } sounds[] = {
         {"BOOT.PCM", bootpcm}, {"WARN.PCM", warnpcm}
     };
