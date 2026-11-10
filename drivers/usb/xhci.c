@@ -22,7 +22,7 @@
 #include <kernel/serial.h>
 #include "xhci.h"
 
-#define XHCI_VBASE        0xffff800090000000ull
+#define XHCI_VBASE        0xffffa00000000000ull
 #define XHCI_MAP_BYTES    0x20000u
 
 /* ---- operational registers (offsets from operational base) ---------- */
@@ -42,6 +42,21 @@
 #define STS_EINT         (1u << 3)
 #define STS_PCD          (1u << 4)
 #define STS_CNR          (1u << 11)
+
+/* ---- runtime register space ------------------------------------------ */
+/* MFINDEX occupies 0x00..0x1F: the interrupter register set (IMAN, IMOD,
+   ERSTSZ, ERSTBA, ERDP) only starts at offset 0x20. Writing the event ring
+   setup at +0x00 silently lands on MFINDEX and the controller never gets an
+   event ring. */
+#define RT_IR0           0x20
+#define RT_IMAN          0x00
+#define RT_IMOD          0x04
+#define RT_ERSTSZ        0x08
+#define RT_ERSTBA        0x10
+#define RT_ERDP          0x18
+#define IMAN_IP          (1u << 0)
+#define IMAN_IE          (1u << 1)
+#define ERDP_EHB         (1u << 3)
 
 /* ---- port status bits ------------------------------------------------ */
 #define PORT_CCS         (1u << 0)
@@ -70,6 +85,7 @@
 #define TRB_TRANSFER_EV  0x20
 #define TRB_CMD_COMPLETE 0x21
 #define TRB_PORT_CHANGE  0x22
+#define TRB_NO_OP        0x17
 
 #define TRB_ENTRIES      256      /* per ring, one page = 256 TRBs */
 #define CMD_RING_IDX     0
@@ -90,6 +106,7 @@ static volatile uint8_t *g_base;      /* mapped BAR */
 static volatile uint8_t *g_op;
 static volatile uint32_t *g_doorbell;
 static volatile uint8_t *g_rt;
+static volatile uint8_t *g_ir;        /* runtime + RT_IR0: interrupter 0 */
 static uint32_t g_max_slots;
 static uint32_t g_max_ports;
 static uint32_t g_ctx_size;           /* 32 or 64 */
@@ -146,7 +163,8 @@ static void zero_page(uint32_t phys)
 /* ring submission                                                    */
 /* ------------------------------------------------------------------ */
 
-static void cmd_push(uint32_t dw0, uint32_t dw1, uint32_t dw2, uint32_t type)
+static void cmd_push(uint32_t dw0, uint32_t dw1, uint32_t dw2, uint32_t type,
+                    uint32_t slot)
 {
     if (g_cmd_idx + 1 >= TRB_ENTRIES) {
         serial_puts("[XHCI] command ring full\n");
@@ -156,7 +174,10 @@ static void cmd_push(uint32_t dw0, uint32_t dw1, uint32_t dw2, uint32_t type)
     t->dw0 = dw0;
     t->dw1 = dw1;
     t->dw2 = dw2;
-    t->dw3 = (type << 10) | g_cmd_cyc;
+    /* Slot ID lives in bits 24..31 of the control dword: without it a
+       slot-addressed command (Address Device / Evaluate Context) comes back
+       as SLOT_NOT_ON. */
+    t->dw3 = (type << 10) | ((slot & 0xFFu) << 24) | g_cmd_cyc;
     __asm__ volatile("mfence" ::: "memory");
     g_doorbell[0] = 0;                   /* target 0 = command ring */
 }
@@ -173,8 +194,8 @@ static int ev_pop(trb_t *out)
         g_ev_cyc ^= 1u;
     }
     /* hand the consumed entry back to the controller */
-    hal_write64(g_rt + 0x18, (uint64_t)(g_ev_phys + (uint32_t)g_ev_idx * 16));
-    hal_write32(g_rt + 0x00, STS_EINT);   /* clear pending interrupt */
+    hal_write64(g_ir + RT_ERDP, (uint64_t)(g_ev_phys + (uint32_t)g_ev_idx * 16) | ERDP_EHB);
+    hal_write32(g_ir + RT_IMAN, IMAN_IP | IMAN_IE);
     return 1;
 }
 
@@ -182,7 +203,7 @@ static int ev_pop(trb_t *out)
    fills slot_out / code_out. */
 static int wait_event(uint32_t want_type, uint32_t *code_out, uint32_t *slot_out)
 {
-    for (uint32_t spin = 0; spin < 2000000u; spin++) {
+    for (uint32_t spin = 0; spin < 8000000u; spin++) {
         trb_t e;
         while (ev_pop(&e)) {
             uint32_t type = (e.dw3 >> 10) & 0x3Fu;
@@ -284,6 +305,12 @@ static int rings_init(void)
 
     /* command ring */
     hal_write64(g_op + OP_CRCR, (uint64_t)g_cmd_phys | 1u);
+
+    /* The ring cycle state is owned by the controller: take whatever it
+       reports instead of assuming the reset value, otherwise every TRB is
+       written with the wrong cycle bit and silently never fetched. */
+    loghex("[XHCI] crcr_rb=", (uint32_t)hal_read64(g_op + OP_CRCR));
+    g_cmd_cyc = 1;
     return 0;
 }
 
@@ -305,10 +332,12 @@ static int erst_init(void)
     e[3] = 0;
     __asm__ volatile("mfence" ::: "memory");
 
-    hal_write32(g_rt + 0x08, 1);
-    hal_write64(g_rt + 0x10, (uint64_t)erst_phys);
-    hal_write64(g_rt + 0x18, (uint64_t)g_ev_phys);     /* ERDP */
-    hal_write32(g_rt + 0x00, STS_EINT);
+    hal_write32(g_ir + RT_ERSTSZ, 1);
+    hal_write64(g_ir + RT_ERSTBA, (uint64_t)erst_phys);
+    hal_write64(g_ir + RT_ERDP, (uint64_t)g_ev_phys);
+        loghex("[XHCI] erstsz=", hal_read32(g_ir + RT_ERSTSZ));
+    loghex("[XHCI] erstba=", (uint32_t)hal_read64(g_ir + RT_ERSTBA));
+    loghex("[XHCI] erdp_w=", (uint32_t)hal_read64(g_ir + RT_ERDP));
     return 0;
 }
 
@@ -402,7 +431,7 @@ static struct xhci_ctx *ctx_at(struct xhci_ctx *base, uint32_t index)
 
 static int enable_slot(uint32_t *slot_out)
 {
-    cmd_push(0, 0, 0, TRB_ENABLE_SLOT);
+    cmd_push(0, 0, 0, TRB_ENABLE_SLOT, 0);
     uint32_t code = 0xFF, slot = 0;
     if (wait_event(TRB_CMD_COMPLETE, &code, &slot) != 0) {
         serial_puts("[XHCI] enable slot timed out\n");
@@ -448,7 +477,7 @@ static int address_device(uint32_t slot, uint32_t port, uint32_t speed,
     *(volatile uint64_t *)(uintptr_t)(g_dcbaa_phys + 8 * slot) =
         (uint64_t)g_devctx_phys;
 
-    cmd_push(g_input_phys, 0, 0, TRB_ADDRESS_DEV);
+    cmd_push(g_input_phys, 0, 0, TRB_ADDRESS_DEV, slot);
     uint32_t code = 0xFF, s = 0;
     if (wait_event(TRB_CMD_COMPLETE, &code, &s) != 0) {
         serial_puts("[XHCI] address device timed out\n");
@@ -526,7 +555,7 @@ static int evaluate_context(uint32_t slot, uint32_t max_packet)
     eps->dw[3] = 0;
     __asm__ volatile("mfence" ::: "memory");
 
-    cmd_push(g_input_phys, 0, 0, TRB_EVAL_CTX);
+    cmd_push(g_input_phys, 0, 0, TRB_EVAL_CTX, slot);
     uint32_t code = 0xFF, s = 0;
     if (wait_event(TRB_CMD_COMPLETE, &code, &s) != 0) {
         serial_puts("[XHCI] evaluate context timed out\n");
@@ -600,6 +629,7 @@ int xhci_probe(uint32_t bar_phys, struct usb_dev_info *out, int max_out)
     g_op = g_base + caplen;
     g_doorbell = (volatile uint32_t *)(g_base + (dboff & ~3u));
     g_rt = g_base + (rtsoff & ~0x1Fu);
+    g_ir = g_rt + RT_IR0;
 
     serial_puts("[XHCI] cap len=");
     serial_puthex(caplen);
@@ -611,6 +641,10 @@ int xhci_probe(uint32_t bar_phys, struct usb_dev_info *out, int max_out)
     serial_puthex(g_ctx_size);
     serial_puts(" hcs2=");
     serial_puthex(hcs2);
+    serial_puts(" dboff=");
+    serial_puthex(dboff);
+    serial_puts(" rtsoff=");
+    serial_puthex(rtsoff);
     serial_putc('\n');
 
     if (controller_reset() != 0)
@@ -621,6 +655,34 @@ int xhci_probe(uint32_t bar_phys, struct usb_dev_info *out, int max_out)
         return -1;
     if (controller_run() != 0)
         return -1;
+
+    /* Register read-back plus a No-Op command: if No-Op completes but
+       Enable Slot does not, the command ring is fine and the port/slot
+       state is the problem. If No-Op times out, the ring or the event
+       ring is misprogrammed. */
+    loghex("[XHCI] diag sts=", hal_read32(g_op + OP_USBSTS));
+    loghex("[XHCI] diag crcr=", (uint32_t)hal_read64(g_op + OP_CRCR));
+    loghex("[XHCI] diag dcbaap=", (uint32_t)hal_read64(g_op + OP_DCBAAP));
+    loghex("[XHCI] diag config=", hal_read32(g_op + OP_CONFIG));
+    loghex("[XHCI] diag iman=", hal_read32(g_ir + RT_IMAN));
+    loghex("[XHCI] diag erdp=", (uint32_t)hal_read64(g_ir + RT_ERDP));
+    cmd_push(0, 0, 0, TRB_NO_OP, 0);
+    {
+        uint32_t code = 0xFF, s = 0;
+        if (wait_event(TRB_CMD_COMPLETE, &code, &s) != 0) {
+            serial_puts("[XHCI] noop timed out, retry flipped cycle\n");
+            g_cmd_idx = 0;
+            g_cmd_cyc ^= 1u;
+            hal_write64(g_op + OP_CRCR, (uint64_t)g_cmd_phys | g_cmd_cyc);
+            cmd_push(0, 0, 0, TRB_NO_OP, 0);
+            if (wait_event(TRB_CMD_COMPLETE, &code, &s) != 0)
+                serial_puts("[XHCI] noop retry timed out\n");
+            else
+                loghex("[XHCI] noop retry code=", code);
+        } else {
+            loghex("[XHCI] noop code=", code);
+        }
+    }
 
     int found = 0;
     for (uint32_t p = 0; p < g_max_ports && found < max_out; p++) {
