@@ -5,6 +5,7 @@
 #include <kernel/ui.h>
 #include <kernel/ps2.h>
 #include <kernel/fat32.h>
+#include <kernel/fsprobe.h>
 #include <kernel/py.h>
 
 /* JackBOT OS terminal - English-only command interpreter.
@@ -305,10 +306,107 @@ static void cmd_open(const char *name)
     cmd_cat(name);
 }
 
+/* ---------------- partition / filesystem commands --------------------- */
+static void cmd_fs(void)
+{
+    struct fsp_entry ents[PART_SCAN_MAX];
+    int n = fsp_scan(ents, PART_SCAN_MAX);
+
+    if (n < 0) {
+        log_str("fs: no block device present (no disk backend).");
+        log_nl();
+        return;
+    }
+    if (n == 0) {
+        log_str("fs: no partitions found on the disk.");
+        log_nl();
+        return;
+    }
+
+    log_str("#  kind       size(MiB)  start-LBA  notes");
+    log_nl();
+    for (int i = 0; i < n; i++) {
+        log_u32((uint32_t)i);
+        log_str("  ");
+        log_str(ents[i].kind);
+        /* pad the kind column so the table stays readable */
+        for (int pad = slen(ents[i].kind); pad < 11; pad++)
+            log_ch(' ');
+        log_u32((ents[i].part.num_sectors / 2048));
+        log_str("  ");
+        log_u32(ents[i].part.start_lba);
+        log_str("  ");
+        if (ents[i].part.name[0]) {
+            log_str(ents[i].part.name);
+            log_str(" ");
+        }
+        log_str(ents[i].mountable ? "(mountable)" : "(no driver)");
+        log_nl();
+    }
+    log_str("Use 'mount <#>' on a FAT partition, then ls / cd / cat / run / Open.");
+    log_nl();
+}
+
+static void cmd_mount(const char *arg)
+{
+    struct fsp_entry ents[PART_SCAN_MAX];
+    int n = fsp_scan(ents, PART_SCAN_MAX);
+    if (n <= 0) {
+        log_str("mount: no partitions to mount.");
+        log_nl();
+        return;
+    }
+
+    int idx = 0;
+    for (const char *p = arg; *p; p++) {
+        if (*p < '0' || *p > '9') { break; }
+        idx = idx * 10 + (*p - '0');
+    }
+    if (idx < 0 || idx >= n) {
+        log_str("mount: partition index out of range (see 'fs').");
+        log_nl();
+        return;
+    }
+    if (!ents[idx].mountable) {
+        log_str("mount: no driver for ");
+        log_str(ents[idx].kind);
+        log_str(" yet - only FAT12/16/32 can be mounted.");
+        log_nl();
+        return;
+    }
+
+    fat_unmount();
+    if (fat_mount_part(ents[idx].part.start_lba, ents[idx].part.num_sectors) != 0) {
+        log_str("mount: FAT mount failed on partition ");
+        log_u32((uint32_t)idx);
+        log_nl();
+        return;
+    }
+    cwd[0] = 0;
+    log_str("mounted ");
+    log_str(ents[idx].kind);
+    log_str(" partition ");
+    log_u32((uint32_t)idx);
+    log_str(" at /");
+    log_nl();
+}
+
+static void cmd_umount(void)
+{
+    if (!fat_mounted()) {
+        log_str("umount: nothing is mounted.");
+        log_nl();
+        return;
+    }
+    fat_unmount();
+    cwd[0] = 0;
+    log_str("unmounted.");
+    log_nl();
+}
+
 /* ---------------- command dispatch ------------------------------------ */
 static void run_line(void)
-{
-    /* echo the prompt + the typed line back into the scrollback */
+{    /* echo the prompt + the typed line back into the scrollback */
     log_str("JACK> ");
     log_str(line);
     log_nl();
@@ -330,13 +428,19 @@ static void run_line(void)
     if (!cmd[0]) { return; }
 
     if (eq(cmd, "help")) {
-        log_str("Commands: help  ver  ls [dir]  cd <dir>  cat <file>");
+        log_str("Commands: help  ver  fs  mount <#>  umount  ls [dir]  cd <dir>");
         log_nl();
-        log_str("          run <file.py>  Open <file|dir>  clear  exit");
+        log_str("          cat <file>  run <file.py>  Open <file|dir>  clear  exit");
         log_nl();
     } else if (eq(cmd, "ver")) {
         log_str("JackBOT OS 1.0.9 (EastLake) - terminal");
         log_nl();
+    } else if (eq(cmd, "fs") || eq(cmd, "partitions")) {
+        cmd_fs();
+    } else if (eq(cmd, "mount")) {
+        cmd_mount(arg);
+    } else if (eq(cmd, "umount")) {
+        cmd_umount();
     } else if (eq(cmd, "ls") || eq(cmd, "dir")) {
         cmd_ls(arg);
     } else if (eq(cmd, "cd")) {

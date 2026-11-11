@@ -180,29 +180,11 @@ static void render_wallpaper(void)
     wp_paint_rect(0, 0, w, H);
 }
 
-/* Daytime wallpaper: a pastel vertical gradient instead of the East Lake
-   photo, so 06:00-17:59 reads as a light theme and the rest of the day keeps
-   the photo. Both paths paint the same rectangle so every caller (first
-   paint, drag restore, window restore) stays theme-correct. */
-static void wp_light_fill(int x, int y, int w, int h)
-{
-    int H = (int)fb_height();
-    for (int j = 0; j < h; j++) {
-        int yy = y + j;
-        int t = H > 1 ? yy * 255 / (H - 1) : 0;      /* 0 top .. 255 bottom */
-        int r = 198 + (250 - 198) * t / 255;
-        int g = 218 + (246 - 218) * t / 255;
-        int b = 240 + (238 - 240) * t / 255;
-        fb_fill_rect(x, yy, w, 1, fb_rgb(r, g, b));
-    }
-}
-
+/* The East Lake photo is the wallpaper in both themes. Daytime no longer
+   replaces it with a pastel gradient: the light/dark switch is meant to change
+   the windows and the taskbar, not the desktop picture. */
 static void wp_paint_rect(int x, int y, int w, int h)
 {
-    if (desk_is_light()) {
-        wp_light_fill(x, y, w, h);
-        return;
-    }
     if (!wp_buf)
         return;
     fb_blit_rect(x, y, w, h, wp_buf, (int)fb_width());
@@ -573,13 +555,39 @@ int desk_is_light(void)
     return t.hour >= 6 && t.hour < 18;
 }
 
+/* How far into the night the window chrome is, 0 = full daylight palette,
+   255 = full night palette. The ramp spans one hour on each side (17:00-18:00
+   and 05:00-06:00) so the windows darken gradually instead of snapping, while
+   the wallpaper itself is left alone. */
+int desk_night_tint(void)
+{
+    struct rtc_time t;
+    int minute;
+    clock_now(&t, 0);
+    minute = t.hour * 60 + t.min;
+
+    if (minute >= 420 && minute < 1020)          /* 07:00 - 16:59 daylight */
+        return 0;
+    if (minute >= 1020 && minute < 1080) {       /* 17:00 - 17:59 ramp up */
+        return (minute - 1020) * 255 / 60;
+    }
+    if (minute >= 1080 || minute < 300)          /* 18:00 - 04:59 full night */
+        return 255;
+    if (minute >= 300 && minute < 360)           /* 05:00 - 05:59 ramp down */
+        return 255 - (minute - 300) * 255 / 60;
+    return 0;
+}
+
 static void draw_taskbar(int mx, int my, int clicked, int *start_click,
                          int *set_click, int *jb_click)
 {
     int w = (int)fb_width(), top = (int)fb_height() - BAR;
     int bh = BAR - 8 * S;
     int lit = desk_is_light();
-    uint32_t barbg = lit ? fb_rgb(246, 248, 252) : fb_rgb(16, 18, 28);
+    /* Taskbar theme, as specified: blue by day, white at night. The windows
+       are the only thing that goes black after hours. */
+    uint32_t barbg = lit ? fb_rgb(30, 84, 172) : fb_rgb(247, 249, 253);
+    uint32_t barfg = lit ? fb_rgb(240, 246, 255) : fb_rgb(26, 36, 56);
     /* the glyph layer no longer paints its own background, so the bar can
        keep the glass setting instead of forcing a solid pass */
 
@@ -592,8 +600,8 @@ static void draw_taskbar(int mx, int my, int clicked, int *start_click,
        stripe. A flat accent line separates the bar from the wallpaper
        instead, which is correct in both themes. */
     /* accent line on the taskbar top edge */
-    draw_rect(0, top, w, 2 * S, lit ? fb_rgb(90, 150, 225)
-                                      : fb_rgb(46, 110, 200));
+    draw_rect(0, top, w, 2 * S, lit ? fb_rgb(96, 156, 232)
+                                      : fb_rgb(200, 214, 236));
     /* Start: blue accent button */
     {
         int sx = 10 * S, sy = top + 4 * S, sw = 90 * S, sh = bh;
@@ -611,7 +619,7 @@ static void draw_taskbar(int mx, int my, int clicked, int *start_click,
             *start_click = 1;
     }
     gfx_draw_string(112 * S, top + 6 * S,
-                    lit ? fb_rgb(24, 60, 110) : fb_rgb(90, 200, 255),
+                    barfg,
                     barbg, "JackBOT OS");
     gfx_set_transparent(gl_on);
     /* Wallpaper themes now live in Settings > Display; the old standalone

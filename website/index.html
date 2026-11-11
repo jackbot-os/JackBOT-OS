@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>JackBOT OS Official Website | v1.0.9 EastLake</title>
+    <link rel="icon" href="images/logo-mark-256.png" type="image/png" />
     <meta name="description" content="JackBOT OS v1.0.9 — a from-scratch x86_64 hobby operating system with a graphical installer, 205-language UI, hardware-accelerated cursor and OOBE. Download the 64-bit ISO.">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -26,8 +27,8 @@
             display: flex; justify-content: space-between; align-items: center;
             padding: 16px 24px; max-width: 1100px; margin: 0 auto;
         }
-        .logo { font-size: 22px; font-weight: 700; color: #f8fafc; }
-        .logo span { color: #3b82f6; }
+        .logo { display: block; }
+        .logo img { height: 34px; width: auto; display: block; }
         .nav-links { display: flex; gap: 24px; list-style: none; }
         .nav-links a { color: #cbd5e1; font-size: 15px; }
         .nav-links a:hover { color: #60a5fa; text-decoration: none; }
@@ -130,7 +131,9 @@
 <body>
     <header class="site-header">
         <div class="header-inner">
-            <div class="logo">JackBOT <span>OS</span></div>
+            <a class="logo" href="#top" aria-label="JackBOT OS">
+                <img src="images/logo-lockup-dark.png" alt="JackBOT OS" height="34" />
+            </a>
             <nav>
                 <ul class="nav-links">
                     <li><a href="#about">About</a></li>
@@ -229,6 +232,14 @@
                     <div class="feature-card">
                         <h3>Real Hardware Enumeration</h3>
                         <p>ACPI RSDP/FADT parsing with the PM1 power-control block, USB UHCI/OHCI/EHCI/xHCI host-controller and root-hub port detection, and a live PCI device tree with vendor/device IDs and IRQs.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Built-in Terminal</h3>
+                        <p>A real command shell (F9, or the Terminal icon) typing straight into the kernel: <code>ls</code>, <code>cd</code>, <code>cat</code>, <code>run</code> for .py programs, <code>Open</code> for files and folders, plus <code>fs</code>, <code>mount</code> and <code>umount</code> for partition-level filesystem access.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Partition Filesystem Probe</h3>
+                        <p>Every MBR/GPT partition is identified by its own boot-sector signature &mdash; FAT12/16/32, exFAT, NTFS, ext2/3/4, HFS+, APFS, ISO9660 &mdash; and any FAT volume can be mounted on demand instead of assuming the first one.</p>
                     </div>
                 </div>
             </div>

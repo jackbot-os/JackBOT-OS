@@ -4,6 +4,19 @@
 #include <kernel/gfxtext.h>
 #include <kernel/ui.h>
 
+/* 0 = daylight palette, 255 = night palette (defined in kernel/desktop.c) */
+int desk_night_tint(void);
+
+/* Blend two RGB triples before packing, so the framebuffer format is only
+   applied once and no unpacking is needed. */
+static uint32_t mix3(int r1, int g1, int b1, int r2, int g2, int b2, int t)
+{
+    int r = r1 + (r2 - r1) * t / 255;
+    int g = g1 + (g2 - g1) * t / 255;
+    int b = b1 + (b2 - b1) * t / 255;
+    return fb_rgb((uint8_t)r, (uint8_t)g, (uint8_t)b);
+}
+
 static int us = 1;
 static int glass = 1;
 
@@ -170,31 +183,33 @@ int ui_window(struct ui_win *win, const char *title,
     last_win = *win;
     last_valid = 1;
     int rad = 7 * S;
+
+    /* Window chrome follows the clock, not the wallpaper: 0 = daylight palette,
+       255 = night palette, with a one-hour ramp either side. The desktop picture
+       is never touched by this. */
+    int night = desk_night_tint();
+    uint32_t body_c   = mix3(246, 249, 254,  24,  27,  38, night);
+    uint32_t title_c  = mix3( 58, 112, 198,  30,  64, 122, night);
+    uint32_t edge_c   = mix3(140, 176, 232,  70, 110, 180, night);
+    uint32_t accent_c = mix3(150, 190, 240,  64, 120, 200, night);
+    uint32_t tfg      = mix3( 26,  42,  72, 235, 242, 255, night);
+
     /* window body: frosted when liquid glass is on, solid otherwise */
     if (glass)
-        round_blend(win->x, win->y, win->w, win->h, rad,
-                    fb_rgb(24, 27, 38), 170);
+        round_blend(win->x, win->y, win->w, win->h, rad, body_c, 170);
     else
-        ui_round_rect(win->x, win->y, win->w, win->h, rad,
-                      fb_rgb(24, 27, 38));
-    ui_round_border(win->x, win->y, win->w, win->h, rad,
-                    fb_rgb(70, 110, 180));
-    /* blue title bar (rounded top, square bottom edge) */
+        ui_round_rect(win->x, win->y, win->w, win->h, rad, body_c);
+    ui_round_border(win->x, win->y, win->w, win->h, rad, edge_c);
+    /* title bar (rounded top, square bottom edge) */
     if (glass) {
-        fill_blend(win->x + rad, win->y, win->w - 2 * rad, 26 * S,
-                   fb_rgb(30, 64, 122), 175);
-        fill_blend(win->x, win->y + rad, win->w, 26 * S - rad,
-                   fb_rgb(30, 64, 122), 175);
+        fill_blend(win->x + rad, win->y, win->w - 2 * rad, 26 * S, title_c, 175);
+        fill_blend(win->x, win->y + rad, win->w, 26 * S - rad, title_c, 175);
     } else {
-        ui_rect(win->x + rad, win->y, win->w - 2 * rad, 26 * S,
-                fb_rgb(30, 64, 122));
-        ui_rect(win->x, win->y + rad, win->w, 26 * S - rad,
-                fb_rgb(30, 64, 122));
+        ui_rect(win->x + rad, win->y, win->w - 2 * rad, 26 * S, title_c);
+        ui_rect(win->x, win->y + rad, win->w, 26 * S - rad, title_c);
     }
-    ui_rect(win->x, win->y + 26 * S, win->w, 2 * S,
-            fb_rgb(64, 120, 200));
-    gfx_draw_string(win->x + 12 * S, win->y + 5 * S,
-                    fb_rgb(235, 242, 255), fb_rgb(30, 64, 122), title);
+    ui_rect(win->x, win->y + 26 * S, win->w, 2 * S, accent_c);
+    gfx_draw_string(win->x + 12 * S, win->y + 5 * S, tfg, title_c, title);
     return ui_button(win->x + win->w - 66 * S, win->y + 3 * S,
                      56 * S, 20 * S, "X", 0, mx, my, clicked);
 }
