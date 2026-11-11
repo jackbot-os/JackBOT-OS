@@ -1403,6 +1403,87 @@ static int dsk_icon_covered(int i)
     return 1;
 }
 
+/* Vector glyphs for the desktop tiles. Drawn from primitives only: no image
+   assets, no external icon font, so they scale with the UI scale factor and
+   stay crisp at 4K. kind matches the dsk_app[] slot. */
+static void g_r(int x, int y, int w, int h, int r, uint32_t c)
+{
+    ui_round_rect(x, y, w, h, r, c);
+}
+
+static void dsk_glyph(int kind, int cx, int cy, int s, uint32_t fg, uint32_t fg2)
+{
+    int h = s / 2;
+    switch (kind) {
+    case 0: {                       /* folder */
+        int w = s, bh = (int)(s * 0.62);
+        g_r(cx - w / 2, cy - h + (int)(s * 0.18), (int)(w * 0.46),
+            (int)(s * 0.14), 2, fg2);
+        g_r(cx - w / 2, cy - h + (int)(s * 0.30), w, bh, 4, fg);
+        g_r(cx - w / 2 + 3, cy - h + (int)(s * 0.34), w - 6, bh - 8, 3, fg2);
+        break;
+    }
+    case 1: {                       /* globe */
+        int d = (int)(s * 0.92);
+        g_r(cx - d / 2, cy - d / 2, d, d, d / 2, fg);
+        /* meridian + equator cut in the darker tone, narrow enough that the
+           sphere still reads as a sphere instead of a capsule */
+        g_r(cx - d / 2 + 3, cy - 1, d - 6, 2, 1, fg2);
+        g_r(cx - (int)(d * 0.12), cy - d / 2 + 4, (int)(d * 0.24),
+            d - 8, (int)(d * 0.12), fg2);
+        g_r(cx - (int)(d * 0.36), cy - d / 4, (int)(d * 0.72),
+            d / 2, (int)(d * 0.25), fg2);
+        break;
+    }
+    case 2: {                       /* python: two interlocking bodies */
+        int w = (int)(s * 0.40), bh = (int)(s * 0.62);
+        g_r(cx - (int)(s * 0.30), cy - h, w, bh, w / 2, fg);
+        g_r(cx - (int)(s * 0.26), cy - h + 5, w - 8, 5, 2, fg2);
+        g_r(cx - (int)(s * 0.10), cy - h + (int)(bh * 0.55), w, bh, w / 2, fg2);
+        g_r(cx + (int)(s * 0.06), cy + h - 10, 5, 5, 2, fg);
+        break;
+    }
+    case 3: {                       /* map pin */
+        int d = (int)(s * 0.62);
+        g_r(cx - d / 2, cy - (int)(s * 0.42), d, d, d / 2, fg);
+        g_r(cx - (int)(d * 0.30), cy - (int)(s * 0.42) + (int)(d * 0.30),
+            (int)(d * 0.60), (int)(d * 0.56), (int)(d * 0.24), fg);
+        g_r(cx - (int)(s * 0.06), cy + (int)(s * 0.10),
+            (int)(s * 0.12), (int)(s * 0.34), 3, fg);
+        g_r(cx - (int)(s * 0.10), cy - (int)(s * 0.30),
+            (int)(s * 0.20), (int)(s * 0.20), (int)(s * 0.10), fg2);
+        break;
+    }
+    case 4: {                       /* terminal */
+        int w = (int)(s * 0.96), bh = (int)(s * 0.74);
+        int x0 = cx - w / 2, y0 = cy - bh / 2;
+        g_r(x0, y0, w, bh, 5, fg);
+        g_r(x0 + 3, y0 + 3, w - 6, bh - 6, 4, fg2);
+        int px = x0 + (int)(w * 0.16), py = y0 + (int)(bh * 0.30);
+        for (int i = 0; i < 4; i++)
+            g_r(px + i * 4, py + i * 3, 4, 4, 1, fg);
+        for (int i = 0; i < 4; i++)
+            g_r(px + i * 4, py + 12 - i * 3, 4, 4, 1, fg);
+        g_r(x0 + (int)(w * 0.50), y0 + (int)(bh * 0.68),
+            (int)(w * 0.32), 4, 2, fg);
+        break;
+    }
+    default: {                      /* chip */
+        int d = (int)(s * 0.70);
+        g_r(cx - d / 2, cy - d / 2, d, d, 4, fg);
+        g_r(cx - d / 2 + 5, cy - d / 2 + 5, d - 10, d - 10, 3, fg2);
+        for (int i = 0; i < 3; i++) {
+            int off = -d / 2 + 8 + i * ((d - 16) / 2);
+            g_r(cx + off, cy - d / 2 - 4, 4, 5, 1, fg);
+            g_r(cx + off, cy + d / 2 - 1, 4, 5, 1, fg);
+            g_r(cx - d / 2 - 4, cy + off, 5, 4, 1, fg);
+            g_r(cx + d / 2 - 1, cy + off, 5, 4, 1, fg);
+        }
+        break;
+    }
+    }
+}
+
 static void draw_desktop_icons(int mx, int my, int clicked)
 {
     for (int i = 0; i < DSK_ICONS; i++) {
@@ -1414,14 +1495,32 @@ static void draw_desktop_icons(int mx, int my, int clicked)
         if (dsk_icon_covered(i))
             continue;
         int hover = inside(mx, my, x, y, w, h);
-        uint32_t tint = (i == 0) ? fb_rgb(70, 126, 204)
-                      : (i == 1) ? fb_rgb(96, 146, 216)
-                      : (i == 2) ? fb_rgb(52, 132, 120)
-                      : (i == 3) ? fb_rgb(60, 150, 170)
-                                 : fb_rgb(120, 90, 190);
-        draw_glass_round_rect(x, y, w, w, 12 * S, tint, hover ? 210 : 150);
-        ui_round_border(x, y, w, w, 12 * S,
-                        hover ? fb_rgb(200, 220, 255) : fb_rgb(140, 170, 220));
+        uint32_t tint = (i == 0) ? fb_rgb(64, 132, 222)
+                      : (i == 1) ? fb_rgb(88, 152, 236)
+                      : (i == 2) ? fb_rgb(48, 158, 132)
+                      : (i == 3) ? fb_rgb(52, 162, 196)
+                                 : (i == 4) ? fb_rgb(112, 92, 206)
+                                            : fb_rgb(206, 116, 74);
+        uint32_t deep = (i == 0) ? fb_rgb(30, 78, 148)
+                      : (i == 1) ? fb_rgb(40, 92, 172)
+                      : (i == 2) ? fb_rgb(20, 104, 88)
+                      : (i == 3) ? fb_rgb(24, 108, 140)
+                                 : (i == 4) ? fb_rgb(68, 52, 148)
+                                            : fb_rgb(146, 70, 44);
+        int rad = 16 * S;
+
+        /* Drop shadow, glass body, top highlight: the flat colour blocks this
+           replaces were the "old looking" part of the desktop. */
+        draw_glass_round_rect(x + 2 * S, y + 3 * S, w, w, rad,
+                              fb_rgb(4, 8, 18), hover ? 95 : 65);
+        draw_glass_round_rect(x, y, w, w, rad, tint, hover ? 232 : 176);
+        draw_glass_round_rect(x + 3 * S, y + 3 * S, w - 6 * S, w * 36 / 100,
+                              rad - 4 * S, fb_rgb(255, 255, 255),
+                              hover ? 78 : 48);
+        ui_round_border(x, y, w, w, rad,
+                        hover ? fb_rgb(232, 242, 255) : fb_rgb(168, 196, 244));
+        dsk_glyph(i, x + w / 2, y + w / 2, w - 16 * S,
+                  fb_rgb(250, 252, 255), deep);
         {
             /* Label under the tile, not squeezed inside it: longer
                translations (Japanese, German, ...) used to overflow the

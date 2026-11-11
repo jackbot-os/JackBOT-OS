@@ -1,6 +1,8 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <kernel/hal.h>
+#include <kernel/panic.h>
+#include <kernel/session.h>
 #include <kernel/serial.h>
 #include <kernel/apic.h>
 #include <kernel/pmm.h>
@@ -757,8 +759,25 @@ void kmain(uint64_t magic, uint64_t mb_info)
                                       : "[I18N] test FAIL\n");
     }
 
+    {
+        /* Report the snapshot left by the last shutdown; without a mounted
+           volume there is simply nothing to report and the boot is clean. */
+        char snap[256];
+        int n = session_load(snap, sizeof(snap));
+        serial_puts("[SESSION] previous snapshot chars=");
+        serial_puthex((uint64_t)(n < 0 ? 0 : n));
+        if (n > 0) {
+            serial_puts(" data=\"");
+            serial_puts(snap);
+            serial_puts("\"");
+        }
+        serial_putc('\n');
+    }
+
     for (;;) {
+        panic_stage("desktop");
         desktop_run();
+        panic_beat();
         thread_yield();
         __asm__ volatile("hlt");
     }

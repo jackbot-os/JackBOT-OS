@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <kernel/crash.h>
+#include <kernel/panic.h>
 #include <kernel/serial.h>
 #include <kernel/proc.h>
 #include <kernel/vmm.h>
@@ -112,6 +113,10 @@ static void watchdog_loop(void *arg)
             continue;
         }
         last = now;
+
+        /* A main loop that stops beating is a hang, not a slow frame: put the
+           stop screen up instead of leaving the machine frozen forever. */
+        panic_check_stall();
 
         for (uint64_t id = 1; ; id++) {
             thread_t *t = thread_by_id(id);

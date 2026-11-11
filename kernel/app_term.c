@@ -7,6 +7,8 @@
 #include <kernel/fat32.h>
 #include <kernel/fsprobe.h>
 #include <kernel/wlan.h>
+#include <kernel/panic.h>
+#include <kernel/session.h>
 #include <kernel/py.h>
 
 /* JackBOT OS terminal - English-only command interpreter.
@@ -499,7 +501,7 @@ static void run_line(void)
     if (eq(cmd, "help")) {
         log_str("Commands: help  ver  fs  mount <#>  umount  wifi  ls [dir]  cd <dir>");
         log_nl();
-        log_str("          cat <file>  run <file.py>  Open <file|dir>  clear  exit");
+        log_str("          cat <file>  run <file.py>  Open <file|dir>  session [save]  panic  clear  exit");
         log_nl();
     } else if (eq(cmd, "ver")) {
         log_str("JackBOT OS 1.0.9 (EastLake) - terminal");
@@ -508,6 +510,36 @@ static void run_line(void)
         cmd_fs();
     } else if (eq(cmd, "wifi") || eq(cmd, "wlan")) {
         cmd_wifi();
+    } else if (eq(cmd, "panic")) {
+        log_str("panic: deliberate stop, dumping registers and restarting");
+        log_nl();
+        panic_stop("manual stop requested from the terminal");
+    } else if (eq(cmd, "session")) {
+        if (eq(arg, "save")) {
+            int r = session_save();
+            if (r >= 0) {
+                log_str("session: snapshot saved (");
+                log_u32((uint32_t)r);
+                log_str(" bytes)");
+                log_nl();
+            } else if (r == -1) {
+                log_str("session: no writable volume, nothing saved");
+                log_nl();
+            } else {
+                log_str("session: write failed, nothing saved");
+                log_nl();
+            }
+        } else {
+            char snap[256];
+            int n = session_load(snap, sizeof(snap));
+            if (n > 0) {
+                log_str("session: last snapshot for the next boot is on disk");
+                log_nl();
+            } else {
+                log_str("session: no snapshot on the boot volume");
+                log_nl();
+            }
+        }
     } else if (eq(cmd, "mount")) {
         cmd_mount(arg);
     } else if (eq(cmd, "umount")) {

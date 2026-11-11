@@ -5,6 +5,7 @@
 #include <kernel/crash.h>
 #include <kernel/ps2.h>
 #include <kernel/posix.h>
+#include <kernel/panic.h>
 
 void timer_irq(void);
 void pic_send_eoi(uint8_t irq);
@@ -180,9 +181,10 @@ void trap_dispatch(struct trap_frame *f)
     }
 
     dump_frame(f);
-    serial_puts("halting kernel\n");
+    crash_log_frame(f, "kernel fault");
 
-    __asm__ volatile("cli");
-    for (;;)
-        __asm__ volatile("hlt");
+    /* Not a halt loop any more: show the stop screen with every register,
+       the faulting address and the stage the kernel was in, dump the same
+       data on the serial port, then restart instead of hanging here. */
+    panic_screen(f, "kernel fault inside the OS");
 }
