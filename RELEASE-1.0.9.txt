@@ -2,10 +2,10 @@ JackBOT OS v1.0.9 (EastLake) - build manifest
 =============================================
 
 Version:      1.0.9 (EastLake)
-Source:       git commit 79fa886ce002db05c3f492a45663efbc770de049 (branch master)
+Source:       git commit 2c5d6e0 (branch master, local; not yet pushed at build time)
 Image:        JackBOT-1.0.9.iso
-Size:         65,220,608 bytes
-SHA-256:      7b0ac03823ac9b05cf569e430f5e9381307579390ff3c2ba05222c285e19f3ab
+Size:         65,333,248 bytes
+SHA-256:      ae0e2758aca1d66a8123f8bf80c9e3b320dfc07884757c940bcc5beb47316d5d
 
 How this image was produced
 ---------------------------
@@ -13,29 +13,60 @@ How this image was produced
    Debian build VM (every source file compared by SHA-256, so no hand-written
    file list can leave a stale .c behind), skipping only third_party/, build/
    and build_assets/.
-2. `make iso` on the VM: MAKE rc=0, 0 errors.
-3. The VM printed sha256 7b0ac038... for build/JackBOT-1.0.9.iso, and the copy
+2. `make clean && make iso` on the VM: MAKE rc=0, 0 errors. The clean step was
+   added after an incremental build silently produced a 56,561,664 byte image
+   (27,618 sectors instead of 31,901) whose splash screen hung; the clean build
+   is the one published here.
+3. The VM printed sha256 ae0e2758... for build/JackBOT-1.0.9.iso, and the copy
    pulled back to the host hashed to the same value, so the published image is
    the one this source tree produces.
-4. The image was cold-booted in VirtualBox 7.2.14 (Extension Pack installed) and
-   reached the desktop: serial ends with `[B] desktop done`.
+4. The image was cold-booted in VirtualBox 7.2.14: login screen renders, the
+   desktop shows the new vector icon set, the terminal answers `session` and
+   `panic`, and the stop screen reboots the machine by itself.
 
 What is proven inside this image
 --------------------------------
-- xHCI (USB 3) host controller: reset, command ring, event ring, port reset,
-  Enable Slot, Address Device and EP0 GET_DESCRIPTOR all complete against a real
-  device plugged into the host; serial prints
-  `[XHCI] device port=1 vid=0x1c4f pid=0x0048 ... speed=0x2 slot=0x1`.
+- Stop screen instead of a frozen halt loop: an unhandled kernel fault (or the
+  terminal's `panic` command) dumps vector, error code, RIP/RSP/RFLAGS, CR2/CR3,
+  all general registers and the last subsystem stage on screen, and the same
+  dump goes to COM1. Esc reboots immediately, otherwise the 8042 reset line
+  fires after 12 s. Verified on jb110: serial printed
+  `cr2=0x0000008000100ff8 cr3=0x0000000000a7c000 stage="desktop"`, and the VM
+  came back to the Welcome screen on its own.
+- The countdown reads the PIT channel 0 counter (1.193182 MHz, latched), not the
+  18 Hz tick counter. The tick counter stops when the stop path runs `cli`,
+  which is exactly why the first version sat on screen forever.
+- Stall watchdog: 20 s without a main-loop heartbeat raises the same screen
+  instead of freezing silently.
+- Shutdown saves a session snapshot: before ACPI S5 the kernel flushes the disk
+  cache, writes UI scale / glass mode / clock time into JBSESSN.TXT on the boot
+  volume, reads it back to verify, and prints the honest result. On a machine
+  with no writable volume it says so instead of pretending.
+- Desktop icons are drawn as vector glyphs (folder, globe, Python, map pin,
+  terminal, chip) with shadow, top highlight and deeper tint, so they stay
+  sharp at any UI scale; no image assets or icon fonts are involved.
 - JCA bytecode VM and the jcac C front end self-test (`[C] PASS`) run at boot on
   an installed system. The live ISO skips the heavy boot self-test block, so a
   live boot shows `[JCA] self-test OK` only.
 
 Known limits (not hidden)
 -------------------------
+- AHCI/SATA still does not complete a command in VirtualBox (TFD=0x170,
+  `[BLK] backend=none`), so an installed disk does not boot and every file
+  system command on the test machine takes the "no disk" branch. The ISO path
+  is the working one; the session snapshot therefore has never been written to
+  a real partition.
+- Resolution is still 1024x768. Forcing `gfxmode=1920x1080x32` in GRUB makes
+  the VM stay at 1024x768 while the kernel assumes a larger framebuffer, which
+  renders black and once dropped the VM into Guru Meditation; the setting was
+  reverted. A real fix needs a VBE mode set inside the kernel with a readback.
 - No USB hub support: only devices directly on an xHCI root port are seen.
-- No hot-plug / interrupt handling yet: enumeration happens at boot and when the
-  USB page's Refresh is used; no class drivers (HID, storage, WLAN) yet.
-- AHCI/SATA still does not complete a command in VirtualBox (TFD=0x170), so an
-  installed disk does not boot; the ISO path is the working one.
-- 802.11 is not implemented, so the Realtek 8812BU USB NIC is detected as a USB
-  device only, with no network stack attached to it.
+  Wireless USB dongles are enumerated only; no MAC80211 layer, no firmware
+  loader, so no 802.11 association.
+- Realtek 8168 (PCIe GbE) is enumerated but has no driver; only RTL8139 has a
+  working transmit/receive path.
+- HDA audio is not implemented (AC'97 path only), so no sound on HDA boards.
+- Real-hardware boot was prepared but not performed: the reference machine
+  (Xeon E5-2689, 8 GB, GTX 950, 8086:1C02 AHCI, 10EC:8168, USB 0BDA:B812, BIOS
+  4.6.5 with no Secure Boot) is documented in 真机启动清单.md, and the ISO is a
+  hybrid BIOS image that needs a USB write done by the owner.
