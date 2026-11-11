@@ -3,9 +3,12 @@
 All files under `drivers/vendor/freebsd/` are **downloaded verbatim from the internet**,
 not written by hand. Nothing here is a stub or a placeholder.
 
-- Upstream: FreeBSD base source tree (`freebsd/freebsd-src`, branch `main`).
-- Mirror actually reachable from this build host: `https://gitee.com/mirrors/FreeBSD/raw/main/`
-  (raw.githubusercontent.com times out here; jsDelivr returns 403 for this repo).
+- Upstream: FreeBSD base source tree (`freebsd/freebsd-src`).
+- Mirrors actually reachable from this build host: `https://gitee.com/mirrors/FreeBSD/raw/main/`
+  for the files under `sys/dev` and `sys/net80211`, and `https://cgit.freebsd.org/src/plain/`
+  (the official FreeBSD cgit, `?h=releng/13.2`) for the bluetooth stack, which is no longer
+  present on `main` and is not carried by the gitee mirror's partial tree.
+  (raw.githubusercontent.com times out here; jsDelivr returns 403 for this repo.)
 - License: BSD-2-Clause for every file listed below. Full text kept in `COPYRIGHT`
   in this directory. No GPL/LGPL/AGPL code is vendored (banned by project policy).
 
@@ -31,6 +34,11 @@ not written by hand. Nothing here is a stub or a placeholder.
 | `sys/dev/usb/net/usb_ethernet.c` | 14865 | `sys/dev/usb/net/usb_ethernet.c` |
 | `sys/dev/usb/usb_transfer.c` | 97272 | `sys/dev/usb/usb_transfer.c` (USB transfer machinery) |
 | `sys/dev/usb/usb_core.c` | 2563 | `sys/dev/usb/usb_core.c` |
+| `sys/netgraph/bluetooth/drivers/ubt/ng_ubt.c` | 52065 | `sys/netgraph/bluetooth/drivers/ubt/ng_ubt.c` @ releng/13.2 |
+| `sys/netgraph/bluetooth/drivers/ubt/ng_ubt_var.h` | 5896 | `sys/netgraph/bluetooth/drivers/ubt/ng_ubt_var.h` @ releng/13.2 |
+| `sys/netgraph/bluetooth/common/ng_bluetooth.c` | 7870 | `sys/netgraph/bluetooth/common/ng_bluetooth.c` @ releng/13.2 |
+| `sys/netgraph/bluetooth/include/ng_bluetooth.h` | 6016 | `sys/netgraph/bluetooth/include/ng_bluetooth.h` @ releng/13.2 |
+| `sys/netgraph/bluetooth/include/ng_hci.h` | 79283 | `sys/netgraph/bluetooth/include/ng_hci.h` @ releng/13.2 |
 
 ## Coverage against the requested driver set
 
@@ -40,19 +48,21 @@ not written by hand. Nothing here is a stub or a placeholder.
 | WiFi (802.11) | 802.11 core + 3 hardware drivers vendored |
 | Ethernet (USB) | 3 files vendored; RTL8139 already native in kernel |
 | USB transport | transfer/core vendored; xHCI native in `drivers/usb/xhci.c` |
-| Bluetooth | **not yet** — every reachable path 404s (see below) |
+| Bluetooth | USB HCI transport (`ng_ubt`) + HCI definitions vendored from the 13.2 branch |
 | GPU | vendor native only (VMSVGA in `kernel/svga.c`) |
 
-## Bluetooth: still missing, honestly
+## Bluetooth: found, with a note on where
 
-`sys/dev/usb/bluetooth/ng_ubt.c` returns 404 on the only reachable mirror, on
-`main`, `releng/13.2`, `releng/14.0` and `stable/14`. NetBSD `ubt.c` and OpenBSD
-`ubt.c` also 404 there, and the GitHub proxy routes (ghproxy, githack) time out
-from this host. BlueZ is GPL and cannot be vendored.
+The bluetooth stack is not on `main` any more and not in the gitee mirror's partial
+tree, so the earlier "404 everywhere" conclusion was a path problem, not an absence:
+FreeBSD keeps it under `sys/netgraph/bluetooth/...` and it survives on `releng/13.2`.
+Five files were fetched from the official cgit (`cgit.freebsd.org`, `?h=releng/13.2`).
 
-This is an open item, not a finished one. Options being pursued: another
-BSD-licensed mirror, or porting the host-controller layer from the vendored
-`usb_transfer.c` machinery against the already-native xHCI path.
+Still not vendored: the HCI protocol node body (`ng_hci.c`) and the L2CAP node
+(`ng_l2cap.c`). `sys/netgraph/bluetooth/hci/` on 13.2 contains only a `TODO` file, and
+the obvious plain paths return 404 — their real location still has to be located in the
+cgit tree before those two can be fetched. The USB host-controller transport, which is
+what actually brings a dongle up, is already in hand.
 
 ## Porting status
 
