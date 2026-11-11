@@ -1,0 +1,2 @@
+# Vendored third-party sources are kept byte-exact: no EOL rewriting, no CRLF.
+drivers/vendor/** -text
