@@ -48,6 +48,7 @@
 #include <kernel/gpu_nv.h>
 #include <kernel/acpi.h>
 #include <kernel/usb.h>
+#include <kernel/wlan.h>
 #include <kernel/recycle.h>
 #include <kernel/bluetooth.h>
 #include <kernel/voice.h>
@@ -608,6 +609,8 @@ void kmain(uint64_t magic, uint64_t mb_info)
     acpi_init();
     serial_puts("[B] usb\n");
     usb_scan();
+    serial_puts("[B] wlan\n");
+    wlan_scan();
     serial_puts("[B] ac97\n");
     ac97_init();
 

@@ -28,4 +28,14 @@ const struct usb_dev_info *xhci_dev_get(int idx);
 /* Hand the probe result to the driver table the GUI reads. */
 void xhci_store_devices(const struct usb_dev_info *list, int n);
 
+/* Control transfers issued after the probe (WLAN, HID, storage drivers). The
+   data buffer must be the pointer from xhci_scratch(): the controller
+   addresses that page physically. */
+void *xhci_scratch(void);
+int xhci_scratch_size(void);
+int xhci_ctrl_in(uint8_t slot, uint8_t req, uint16_t val, uint16_t idx,
+                 void *buf, uint16_t len);
+int xhci_ctrl_out(uint8_t slot, uint8_t req, uint16_t val, uint16_t idx,
+                  const void *buf, uint16_t len);
+
 #endif

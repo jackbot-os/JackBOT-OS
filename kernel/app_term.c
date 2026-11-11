@@ -6,6 +6,7 @@
 #include <kernel/ps2.h>
 #include <kernel/fat32.h>
 #include <kernel/fsprobe.h>
+#include <kernel/wlan.h>
 #include <kernel/py.h>
 
 /* JackBOT OS terminal - English-only command interpreter.
@@ -404,6 +405,74 @@ static void cmd_umount(void)
     log_nl();
 }
 
+static void log_hex4(uint16_t v)
+{
+    const char *h = "0123456789abcdef";
+    for (int i = 12; i >= 0; i -= 4)
+        log_ch(h[(v >> i) & 0xF]);
+}
+
+static void cmd_wifi(void)
+{
+    int n = wlan_count();
+
+    if (n == 0) {
+        log_str("wifi: no wireless adapter on the bus (no USB WLAN dongle,"
+                " no PCI 0x02/0x80 device).");
+        log_nl();
+        return;
+    }
+    log_str("wifi: ");
+    log_u32((uint32_t)n);
+    log_str(" wireless adapter(s)");
+    log_nl();
+    for (int i = 0; i < n; i++) {
+        const struct wlan_dev *d = wlan_dev_get(i);
+        if (!d)
+            continue;
+        log_str("  [");
+        log_u32((uint32_t)i);
+        log_str("] ");
+        log_hex4(d->vid);
+        log_str(":");
+        log_hex4(d->pid);
+        log_str("  ");
+        log_str(d->product[0] ? d->product : "(no product string)");
+        log_nl();
+        log_str("      family=");
+        log_str(d->family);
+        log_str("  driver=");
+        log_str(d->driver);
+        log_nl();
+        log_str("      ep in=");
+        log_u32(d->ep_in);
+        log_str(" out=");
+        log_u32(d->ep_out);
+        log_str(" irq=");
+        log_u32(d->ep_irq);
+        log_str("  ifclass=");
+        log_u32(d->if_class);
+        log_nl();
+        if (d->mac_valid) {
+            log_str("      mac=");
+            for (int k = 0; k < 6; k++) {
+                log_hex4(d->mac[k] & 0xFF);
+                if (k < 5) log_ch(':');
+            }
+            log_nl();
+        }
+        if (d->reg_ok) {
+            log_str("      reg0=0x");
+            log_hex4((uint16_t)(d->reg0 >> 16));
+            log_hex4((uint16_t)d->reg0);
+            log_nl();
+        }
+        log_str("      state=");
+        log_str(d->state);
+        log_nl();
+    }
+}
+
 /* ---------------- command dispatch ------------------------------------ */
 static void run_line(void)
 {    /* echo the prompt + the typed line back into the scrollback */
@@ -428,7 +497,7 @@ static void run_line(void)
     if (!cmd[0]) { return; }
 
     if (eq(cmd, "help")) {
-        log_str("Commands: help  ver  fs  mount <#>  umount  ls [dir]  cd <dir>");
+        log_str("Commands: help  ver  fs  mount <#>  umount  wifi  ls [dir]  cd <dir>");
         log_nl();
         log_str("          cat <file>  run <file.py>  Open <file|dir>  clear  exit");
         log_nl();
@@ -437,6 +506,8 @@ static void run_line(void)
         log_nl();
     } else if (eq(cmd, "fs") || eq(cmd, "partitions")) {
         cmd_fs();
+    } else if (eq(cmd, "wifi") || eq(cmd, "wlan")) {
+        cmd_wifi();
     } else if (eq(cmd, "mount")) {
         cmd_mount(arg);
     } else if (eq(cmd, "umount")) {

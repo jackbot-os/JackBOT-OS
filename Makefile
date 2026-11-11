@@ -11,7 +11,7 @@ NASMFLAGS := -f elf64
 LDFLAGS := -n -T arch/x86_64/linker.ld
 
 BUILD := build
-KERN_SRCS := main idt pic timer clock serial trap apic pmm vmm heap kstring sched userproc crash pci ac97 dev compat nic nic_rtl8139 nic_pcnet fb svga gpu gpu_nv gpu_intel gpu_amd cursor ata blk fat32 part mkfat fsprobe payload grub_install installer installer_gui protect persist config oobe jbot i18n gfxtext ttf py jca jcac posix ps2 hwd hwcompat desktop ui apps app_power app_store app_firewall app_backup app_capture app_clock app_fontmgr app_region app_network app_audio app_maps e1000 net tcp http sha256 x25519 aes_gcm app_update app_browser gpu3d app_3d app_diskmgr app_about app_calc app_notepad app_monitor app_pyconsole app_term app_jca usb acpi recycle app_usb app_battery app_recycle app_files app_devices selftest splash hal bluetooth voice app_voice app_bluetooth hmac_sha256 tls ahci honeypot wallpaper_image app_games perm users login
+KERN_SRCS := main idt pic timer clock serial trap apic pmm vmm heap kstring sched userproc crash pci ac97 dev compat nic nic_rtl8139 nic_pcnet fb svga gpu gpu_nv gpu_intel gpu_amd cursor ata blk fat32 part mkfat fsprobe payload grub_install installer installer_gui protect persist config oobe jbot i18n gfxtext ttf py jca jcac posix ps2 hwd hwcompat desktop ui apps app_power app_store app_firewall app_backup app_capture app_clock app_fontmgr app_region app_network app_audio app_maps e1000 net tcp http sha256 x25519 aes_gcm app_update app_browser gpu3d app_3d app_diskmgr app_about app_calc app_notepad app_monitor app_pyconsole app_term app_jca usb wlan acpi recycle app_usb app_battery app_recycle app_files app_devices selftest splash hal bluetooth voice app_voice app_bluetooth hmac_sha256 tls ahci honeypot wallpaper_image app_games perm users login
 ARCH_ASM := boot gdt vectors switch
 OBJS := $(addprefix $(BUILD)/,$(addsuffix .o,$(KERN_SRCS))) \
         $(addprefix $(BUILD)/,$(addsuffix .o,$(ARCH_ASM)))
@@ -89,7 +89,9 @@ $(BUILD)/%.o: kernel/%.c | $(BUILD)
 
 # Device drivers live under drivers/ so they are readable and greppable on
 # their own. Each subdirectory is flat: one .c per driver, one .h per driver.
-DRV_SRCS := drivers/usb/xhci.c drivers/compat/jb_bsd_compat.c
+DRV_SRCS := drivers/usb/xhci.c drivers/compat/jb_bsd_compat.c \
+            drivers/net/wlan/rtl8xxxu.c drivers/net/wlan/rt2800usb.c \
+            drivers/net/wlan/ath9k_htc.c drivers/net/wlan/mt7601u.c
 DRV_OBJS := $(patsubst drivers/%.c,$(BUILD)/drv_%.o,$(DRV_SRCS))
 
 $(BUILD)/drv_%.o: drivers/%.c | $(BUILD)

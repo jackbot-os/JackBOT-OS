@@ -497,6 +497,21 @@ static int ep0_transfer(uint32_t slot, uint8_t bmRequest, uint8_t bRequest,
     uint32_t data_phys = (uint32_t)(uintptr_t)buf;
     int dir_in = (bmRequest & 0x80) != 0;
 
+    /* The EP0 ring is one page = 256 TRBs and every transfer takes three of
+       them. Once it is nearly full the ring has to be wrapped and its cycle
+       state flipped, otherwise the controller stops fetching. */
+    if (g_ep0_idx + 3 >= 250) {
+        for (int i = 0; i < 256; i++) {
+            g_ep0_ring[i].dw0 = 0;
+            g_ep0_ring[i].dw1 = 0;
+            g_ep0_ring[i].dw2 = 0;
+            g_ep0_ring[i].dw3 = 0;
+        }
+        g_ep0_idx = 0;
+        g_ep0_cyc ^= 1u;
+        __asm__ volatile("mfence" ::: "memory");
+    }
+
     trb_t *t = &g_ep0_ring[g_ep0_idx++];
     t->dw0 = (uint32_t)bmRequest | ((uint32_t)bRequest << 8) |
              ((uint32_t)wValue << 16);
@@ -746,6 +761,34 @@ int xhci_probe(uint32_t bar_phys, struct usb_dev_info *out, int max_out)
 }
 
 int xhci_dev_count(void) { return g_dev_n; }
+
+/* Control transfers for drivers that come after the probe (WLAN, HID,
+   storage). The data buffer has to be reachable from the controller, so the
+   probe's own scratch page is handed out instead of a heap pointer. */
+void *xhci_scratch(void)
+{
+    if (!g_input_phys)
+        return 0;
+    return (void *)(uintptr_t)(g_input_phys + 0x800);
+}
+
+int xhci_scratch_size(void) { return 0x800; }
+
+int xhci_ctrl_in(uint8_t slot, uint8_t req, uint16_t val, uint16_t idx,
+                 void *buf, uint16_t len)
+{
+    if (!slot || !g_ep0_ring)
+        return -1;
+    return ep0_transfer(slot, 0xC0, req, val, idx, buf, len);
+}
+
+int xhci_ctrl_out(uint8_t slot, uint8_t req, uint16_t val, uint16_t idx,
+                  const void *buf, uint16_t len)
+{
+    if (!slot || !g_ep0_ring)
+        return -1;
+    return ep0_transfer(slot, 0x40, req, val, idx, (void *)buf, len);
+}
 
 const struct usb_dev_info *xhci_dev_get(int idx)
 {

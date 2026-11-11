@@ -72,3 +72,40 @@ vendoring is step one; each driver still needs a compatibility shim layer
 (`drivers/compat/`) plus an adapter before it can drive real hardware.
 
 Nothing in this directory is compiled into the ISO yet.
+
+## Wireless: the whole USB 11n/ac family, plus the MAC80211 cores
+
+Second wireless pass, same two mirrors. sys/dev/usb/wlan on eleng/13.2 holds
+only the older drivers (the rtwn/urtwn parts moved out of that directory), so the
+RTL8188EU/8192EU code was taken from its real home under sys/dev/rtwn:
+
+| File | Bytes | Upstream path |
+| --- | --- | --- |
+| if_rum.c | 85,931 | sys/dev/usb/wlan/if_rum.c |
+| if_ural.c | 56,544 | sys/dev/usb/wlan/if_ural.c |
+| if_uath.c | 78,772 | sys/dev/usb/wlan/if_uath.c |
+| if_upgt.c | 61,260 | sys/dev/usb/wlan/if_upgt.c |
+| if_urtw.c | 120,993 | sys/dev/usb/wlan/if_urtw.c |
+| if_zyd.c | 74,900 | sys/dev/usb/wlan/if_zyd.c |
+| if_runreg.h | 48,231 | sys/dev/usb/wlan/if_runreg.h |
+| if_runvar.h | 6,835 | sys/dev/usb/wlan/if_runvar.h |
+| if_rtwn.c | 50,084 | sys/dev/rtwn/if_rtwn.c |
+| if_rtwnreg.h | 4,246 | sys/dev/rtwn/if_rtwnreg.h |
+| if_rtwnvar.h | 19,181 | sys/dev/rtwn/if_rtwnvar.h |
+| rtwn_usb_attach.c | 12,154 | sys/dev/rtwn/usb/rtwn_usb_attach.c |
+| rtwn_usb_reg.c | 4,462 | sys/dev/rtwn/usb/rtwn_usb_reg.c |
+| rtwn_usb_rx.c | 11,578 | sys/dev/rtwn/usb/rtwn_usb_rx.c |
+| rtwn_usb_tx.c | 7,321 | sys/dev/rtwn/usb/rtwn_usb_tx.c |
+| rtwn_usb_ep.c | 6,729 | sys/dev/rtwn/usb/rtwn_usb_ep.c |
+| rtwn_usb_var.h | 2,577 | sys/dev/rtwn/usb/rtwn_usb_var.h |
+| rtwn_usb_reg.h | 1,661 | sys/dev/rtwn/usb/rtwn_usb_reg.h |
+| if_iwn.c | 257,673 | sys/dev/iwn/if_iwn.c (PCI) |
+| if_ipw.c | 69,485 | sys/dev/ipw/if_ipw.c (PCI) |
+| if_iwi.c | 96,154 | sys/dev/iwi/if_iwi.c (PCI) |
+
+if_rsu.c was re-fetched from cgit and is now 97,530 bytes (the gitee copy was
+98,467). Same file, different mirror revision — the cgit copy is the one on disk.
+
+These are reference and porting material. The kernel's own WLAN layer
+(`kernel/wlan.c` + `drivers/net/wlan/*`) is written in this repo, uses the xHCI
+control-transfer API, and is what the wifi command in the terminal reports.
