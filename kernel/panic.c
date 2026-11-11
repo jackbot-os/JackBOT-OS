@@ -258,10 +258,24 @@ static void screen_report(const struct trap_frame *f, const char *why,
     fb_present_all();
 }
 
+/* The stop path runs with interrupts off, so the 18 Hz tick counter never
+   advances here and must not be used as a clock. Read the PIT channel 0
+   counter instead (latch command, 1.193182 MHz, counts down) and accumulate
+   the decrease modulo 65536 - that keeps running whatever the IRQ state is. */
+static uint16_t pit_latch(void)
+{
+    outb_port(0x43, 0x00);              /* latch channel 0 */
+    uint8_t lo = inb_port(0x40);
+    uint8_t hi = inb_port(0x40);
+    return (uint16_t)(((uint16_t)hi << 8) | lo);
+}
+
 static void wait_and_restart(void) __attribute__((noreturn));
 static void wait_and_restart(void)
 {
-    uint64_t start = timer_get_ticks();
+    const uint64_t target = 1193182ull * 12ull;   /* 12 s of PIT counts */
+    uint16_t prev = pit_latch();
+    uint64_t elapsed = 0;
 
     for (;;) {
         while (inb_port(0x64) & 0x01) {
@@ -269,7 +283,10 @@ static void wait_and_restart(void)
             if (sc == 0x01)             /* Esc make code */
                 cold_reboot();
         }
-        if (timer_get_ticks() - start >= REBOOT_TICKS)
+        uint16_t now = pit_latch();
+        elapsed += (uint64_t)((uint16_t)(prev - now));
+        prev = now;
+        if (elapsed >= target)
             cold_reboot();
         __asm__ volatile("pause");
     }

@@ -1423,16 +1423,12 @@ static void dsk_glyph(int kind, int cx, int cy, int s, uint32_t fg, uint32_t fg2
         g_r(cx - w / 2 + 3, cy - h + (int)(s * 0.34), w - 6, bh - 8, 3, fg2);
         break;
     }
-    case 1: {                       /* globe */
+    case 1: {                       /* globe: ring + cross lines */
         int d = (int)(s * 0.92);
         g_r(cx - d / 2, cy - d / 2, d, d, d / 2, fg);
-        /* meridian + equator cut in the darker tone, narrow enough that the
-           sphere still reads as a sphere instead of a capsule */
-        g_r(cx - d / 2 + 3, cy - 1, d - 6, 2, 1, fg2);
-        g_r(cx - (int)(d * 0.12), cy - d / 2 + 4, (int)(d * 0.24),
-            d - 8, (int)(d * 0.12), fg2);
-        g_r(cx - (int)(d * 0.36), cy - d / 4, (int)(d * 0.72),
-            d / 2, (int)(d * 0.25), fg2);
+        g_r(cx - d / 2 + 4, cy - d / 2 + 4, d - 8, d - 8, (d - 8) / 2, fg2);
+        g_r(cx - d / 2 + 6, cy - 1, d - 12, 3, 1, fg);
+        g_r(cx - 1, cy - d / 2 + 6, 3, d - 12, 1, fg);
         break;
     }
     case 2: {                       /* python: two interlocking bodies */
