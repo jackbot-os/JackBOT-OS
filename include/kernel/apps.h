@@ -32,6 +32,7 @@ enum {
     APP_SNAKE,
     APP_G2048,
     APP_MAPS,
+    APP_TERM,
     APP_LIMIT
 };
 

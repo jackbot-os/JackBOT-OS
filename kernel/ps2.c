@@ -142,6 +142,7 @@ void ps2_kbd_irq(void)
     if (sc == 0x3b) { enqueue(JB_KEY_F1); return; }
     if (sc == 0x3c) { enqueue(JB_KEY_F2); return; }
     if (sc == 0x3d) { enqueue(JB_KEY_F3); return; }
+    if (sc == 0x43) { enqueue(JB_KEY_F9); return; }
     char c = 0;
     if (shift && smap[sc])
         c = smap[sc];

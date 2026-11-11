@@ -1354,7 +1354,7 @@ void desktop_init(void)
 }
 
 /* ---- Desktop shortcuts: click an icon to launch a program ---- */
-#define DSK_ICONS 5
+#define DSK_ICONS 6
 static const char *dsk_label(int i)
 {
     switch (i) {
@@ -1362,11 +1362,12 @@ static const char *dsk_label(int i)
     case 1: return app_name(APP_BROWSER);
     case 2: return app_name(APP_PYTHON);
     case 3: return app_name(APP_MAPS);
+    case 4: return app_name(APP_TERM);
     default: return "Jbot";
     }
 }
 static const int dsk_app[DSK_ICONS] = {
-    APP_FILES, APP_BROWSER, APP_PYTHON, APP_MAPS, 3
+    APP_FILES, APP_BROWSER, APP_PYTHON, APP_MAPS, APP_TERM, 3
 };
 
 static void dsk_icon_geom(int i, int *x, int *y, int *w, int *h)
@@ -1740,6 +1741,15 @@ void desktop_run(void)
                 break;
             } else if (kc == JB_KEY_F3) {
                 win_id = 3; win_painted = 0; start_open = 0; jb_dirty = 1;
+                break;
+            } else if (kc == JB_KEY_F9) {
+                /* hotkey: open the terminal straight from the desktop */
+                app_open(APP_TERM);
+                win_id = APP_TERM;
+                win_painted = 0;
+                drawn_win = -1;
+                start_open = 0;
+                need_redraw = 1;
                 break;
             }
             if (kc == 27 && ctx_open) {

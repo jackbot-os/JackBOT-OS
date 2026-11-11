@@ -10,6 +10,7 @@
 #define JB_KEY_F1    0x16
 #define JB_KEY_F2    0x17
 #define JB_KEY_F3    0x18
+#define JB_KEY_F9    0x1e
 
 void ps2_init(void);
 void ps2_kbd_irq(void);
