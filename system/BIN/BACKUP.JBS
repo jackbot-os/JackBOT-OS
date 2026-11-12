@@ -1,0 +1,4 @@
+# backup - copy the system configuration to a backup folder
+mkdir \BACKUP
+copy \SYSTEM\ETC\*.INI \BACKUP\
+echo configuration backed up

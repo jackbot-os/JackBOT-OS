@@ -1,0 +1,5 @@
+# clean - clear temporary files from the boot volume
+echo cleaning \TEMP
+del \TEMP\*
+echo cleaning \RECYCLED
+del \RECYCLED\*

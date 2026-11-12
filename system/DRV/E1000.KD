@@ -1,0 +1,5 @@
+name=e1000
+bus=pci
+vendor=0x8086
+devices=0x100E,0x100F,0x10D3
+provides=net

@@ -1,0 +1,15 @@
+JackBOT OS License (draft, not legal advice)
+=============================================
+Copyright (c) 2026 the JackBOT OS author. All rights reserved.
+
+1. You may run this software on any machine you own.
+2. You may read the source for learning and for reporting bugs.
+3. You may not redistribute the source or binaries, in whole or in part,
+   without written permission.
+4. You may not ship it inside another product, paid or free.
+5. No warranty. The author is not liable for data loss or hardware damage.
+
+This is NOT the GNU GPL. The GPL requires that everyone who receives the
+software also receives the source and may redistribute it; that is the
+opposite of what this licence allows, so the GPL name must not be used on
+this project.

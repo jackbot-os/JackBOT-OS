@@ -1,0 +1,5 @@
+name=ps2
+bus=isa
+irq=1
+ports=0x60,0x64
+provides=keyboard,mouse

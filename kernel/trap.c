@@ -169,6 +169,15 @@ void trap_dispatch(struct trap_frame *f)
                 return;
             }
             crash_log_frame(f, "user exception recovered");
+            {
+                uint64_t cr2;
+                __asm__ volatile("mov %%cr2, %0" : "=r"(cr2));
+                serial_puts("[CRASH] user cr2=");
+                serial_puthex(cr2);
+                serial_puts(" err=");
+                serial_puthex(f->error);
+                serial_putc('\n');
+            }
             /* The fault came from user code, so the kernel is intact. Rewind the
                task to its entry point and let it run again; a task that keeps
                faulting immediately is killed after RECOVER_LIMIT attempts. */

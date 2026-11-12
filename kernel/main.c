@@ -70,6 +70,7 @@ void gdt_init(void);
 void tss_set_rsp0(uint64_t rsp0);
 thread_t *spawn_test_user(void);
 thread_t *spawn_crash_user(void);
+thread_t *spawn_pthread_user(void);
 int useriso_kernel_half(void);
 void sched_iso_report(void);
 void pic_remap(void);
@@ -658,6 +659,12 @@ void kmain(uint64_t magic, uint64_t mb_info)
             __asm__ volatile("hlt");
     }
     tss_set_rsp0(user->kstack_top);
+    /* pthread layer acceptance test: a second ring-3 process drives
+       arch_prctl / mmap / clone / futex / thread-exit and prints its
+       verdict on the serial console. */
+    serial_puts("[B] pthread ring3 test\n");
+    if (!spawn_pthread_user())
+        serial_puts("[PTHREAD] spawn failed\n");
     serial_puts("[B] iso report\n");
     sched_iso_report();
     /* The scheduler now loads CR3 per thread (kernel threads run on the

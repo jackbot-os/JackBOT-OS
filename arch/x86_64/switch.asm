@@ -24,6 +24,17 @@ global user_enter
 user_enter:
     iretq
 
+; Clone children come back to the instruction after the int 0x80 in the
+; parent, under their own user stack, with rax = 0 and r9 still holding the
+; entry function (musl's __clone relies on both). The stack carries a pointer
+; to a two-word block {rax, r9} owned by the thread slot.
+global user_enter_clone
+user_enter_clone:
+    pop rdi
+    mov rax, [rdi]
+    mov r9, [rdi+8]
+    iretq
+
 global thread_trampoline
 thread_trampoline:
     sti

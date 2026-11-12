@@ -25,6 +25,26 @@ struct trap_frame;
 #define SYS_SLEEP   31   /* milliseconds */
 #define SYS_UPTIME  32   /* seconds since boot */
 
+/* ---- pthread / clone layer (musl 1.2.5 port in ports/musl_thread) ----
+   These numbers are mirrored by ports/musl_thread/include/syscall.h; the
+   kernel table is authoritative for JackBOT. */
+#define SYS_CLONE        33  /* flags, stack, ptid, tls, ctid (SysV order) */
+#define SYS_THREAD_EXIT  34  /* ends the calling thread only */
+#define SYS_EXIT_GROUP   35  /* ends every thread of the address space */
+#define SYS_FUTEX        36  /* WAIT(0)/WAKE(1); REQUEUE(3) reports ENOSYS */
+#define SYS_SET_TID_ADDR 37  /* set_tid_address: park *addr for clear-on-exit */
+#define SYS_MMAP         38  /* anonymous, MAP_FIXED is not honoured */
+#define SYS_MUNMAP       39
+#define SYS_MPROTECT     40  /* accepted, pages are always RW + NX */
+#define SYS_RT_SIGPROCMASK 41  /* no signals yet: ENOSYS */
+#define SYS_SET_ROBUST_LIST 42 /* ENOSYS */
+#define SYS_ARCH_PRCTL   43  /* ARCH_SET_FS = 0x1002 */
+#define SYS_TKILL        44  /* ENOSYS */
+#define SYS_SCHED_SETSCHEDULER 45  /* accepted, one policy */
+#define SYS_CLOCK_GETTIME 46
+#define SYS_GETTID       47
+#define SYS_WRITE_THREAD 48  /* musl's SYS_write; same console/file path */
+
 /* Handle one POSIX call; the return value is written back into f->rax. */
 void posix_syscall(struct trap_frame *f);
 

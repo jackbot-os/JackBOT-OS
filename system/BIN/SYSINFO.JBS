@@ -1,0 +1,5 @@
+# sysinfo - print product, memory and display facts
+echo JackBOT OS 1.0.9 (EastLake)
+echo arch   : x86_64
+mem
+display

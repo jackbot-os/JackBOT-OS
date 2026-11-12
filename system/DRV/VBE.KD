@@ -1,0 +1,4 @@
+name=vbe
+bus=bios
+provides=framebuffer
+modes=vesa,bochs,vmware

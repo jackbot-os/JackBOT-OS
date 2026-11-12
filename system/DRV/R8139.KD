@@ -1,0 +1,5 @@
+name=rtl8139
+bus=pci
+vendor=0x10EC
+devices=0x8139
+provides=net

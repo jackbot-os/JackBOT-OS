@@ -33,6 +33,7 @@ enum {
     APP_G2048,
     APP_MAPS,
     APP_TERM,
+    APP_PROCMGR,
     APP_LIMIT
 };
 

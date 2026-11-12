@@ -96,10 +96,33 @@ enable_paging:
     mov eax, cr4
     or eax, 1 << 5
     mov cr4, eax
+    ; EFER: LME (bit 8) is required for long mode; NXE (bit 11) unlocks
+    ; the NX bit in page-table entries. Without NXE the CPU treats bit 63
+    ; as a reserved bit, so every PTE_NX page (user stacks, mmap'd data)
+    ; faults with a reserved-bit #PF the moment ring 3 touches it.
+    ; Set NXE only when CPUID says the CPU knows the feature.
+    push ebx
+    mov eax, 0x80000000
+    cpuid
+    cmp eax, 0x80000001
+    jb .efer_no_nx
+    mov eax, 0x80000001
+    cpuid
+    test edx, 1 << 20
+    jz .efer_no_nx
+    pop ebx
+    mov ecx, 0xC0000080
+    rdmsr
+    or eax, (1 << 8) | (1 << 11)
+    wrmsr
+    jmp .efer_done
+.efer_no_nx:
+    pop ebx
     mov ecx, 0xC0000080
     rdmsr
     or eax, 1 << 8
     wrmsr
+.efer_done:
     mov eax, cr0
     or eax, 1 << 31
     mov cr0, eax

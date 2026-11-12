@@ -53,6 +53,20 @@ static uint64_t *next_table_u(uint64_t *parent, uint64_t index, int user)
     return table;
 }
 
+/* NX in a PTE is only a legal bit while EFER.NXE is set. On a CPU where
+   we could not enable it, bit 63 is reserved and any such mapping faults
+   with a reserved-bit #PF, so drop the bit when mapping. */
+static int nx_usable(void)
+{
+    static int state = -1;
+    if (state < 0) {
+        uint32_t lo, hi;
+        __asm__ volatile("rdmsr" : "=a"(lo), "=d"(hi) : "c"(0xC0000080u));
+        state = (lo & (1u << 11)) ? 1 : 0;
+    }
+    return state;
+}
+
 void vmm_map_in(uint64_t p4phys, uint64_t virt, uint64_t phys, uint64_t flags)
 {
     int user = (flags & PTE_USER) != 0;
@@ -71,6 +85,8 @@ void vmm_map_in(uint64_t p4phys, uint64_t virt, uint64_t phys, uint64_t flags)
     uint64_t *p1 = next_table_u(p2, i2, user);
     if (!p1)
         vmm_oom_halt(virt);
+    if ((flags & PTE_NX) && !nx_usable())
+        flags &= ~PTE_NX;
     p1[i1] = (phys & ADDR_MASK) | flags;
 }
 
@@ -125,16 +141,17 @@ void vmm_unmap_page(uint64_t virt)
     vmm_invlpg(virt);
 }
 
-uint64_t vmm_phys_of(uint64_t virt)
+uint64_t vmm_phys_of_in(uint64_t p4phys, uint64_t virt)
 {
     uint64_t i4 = (virt >> 39) & 0x1ff;
     uint64_t i3 = (virt >> 30) & 0x1ff;
     uint64_t i2 = (virt >> 21) & 0x1ff;
     uint64_t i1 = (virt >> 12) & 0x1ff;
 
-    if (!(P4_VIRT[i4] & PTE_PRESENT))
+    uint64_t *p4 = (uint64_t *)(uintptr_t)p4phys;
+    if (!(p4[i4] & PTE_PRESENT))
         return 0;
-    uint64_t *p3 = (uint64_t *)(uintptr_t)(P4_VIRT[i4] & ADDR_MASK);
+    uint64_t *p3 = (uint64_t *)(uintptr_t)(p4[i4] & ADDR_MASK);
     if (!(p3[i3] & PTE_PRESENT))
         return 0;
     uint64_t *p2 = (uint64_t *)(uintptr_t)(p3[i3] & ADDR_MASK);
@@ -146,4 +163,40 @@ uint64_t vmm_phys_of(uint64_t virt)
     if (!(p1[i1] & PTE_PRESENT))
         return 0;
     return (p1[i1] & ADDR_MASK) + (virt & 0xfff);
+}
+
+/* Drop one mapping in an arbitrary address space. Returns the physical
+   frame that was mapped there, or 0, so the caller can hand it back to the
+   page allocator. */
+uint64_t vmm_unmap_in(uint64_t p4phys, uint64_t virt)
+{
+    uint64_t i4 = (virt >> 39) & 0x1ff;
+    uint64_t i3 = (virt >> 30) & 0x1ff;
+    uint64_t i2 = (virt >> 21) & 0x1ff;
+    uint64_t i1 = (virt >> 12) & 0x1ff;
+
+    uint64_t *p4 = (uint64_t *)(uintptr_t)p4phys;
+    if (!(p4[i4] & PTE_PRESENT))
+        return 0;
+    uint64_t *p3 = (uint64_t *)(uintptr_t)(p4[i4] & ADDR_MASK);
+    if (!(p3[i3] & PTE_PRESENT))
+        return 0;
+    uint64_t *p2 = (uint64_t *)(uintptr_t)(p3[i3] & ADDR_MASK);
+    if (!(p2[i2] & PTE_PRESENT) || (p2[i2] & PTE_HUGE))
+        return 0;
+    uint64_t *p1 = (uint64_t *)(uintptr_t)(p2[i2] & ADDR_MASK);
+    if (!(p1[i1] & PTE_PRESENT))
+        return 0;
+    uint64_t phys = p1[i1] & ADDR_MASK;
+    p1[i1] = 0;
+    uint64_t cr3;
+    __asm__ volatile("mov %%cr3, %0" : "=r"(cr3));
+    if ((cr3 & ADDR_MASK) == (p4phys & ADDR_MASK))
+        vmm_invlpg(virt);
+    return phys;
+}
+
+uint64_t vmm_phys_of(uint64_t virt)
+{
+    return vmm_phys_of_in((uint64_t)(uintptr_t)P4_VIRT, virt);
 }

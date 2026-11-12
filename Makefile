@@ -11,7 +11,7 @@ NASMFLAGS := -f elf64
 LDFLAGS := -n -T arch/x86_64/linker.ld
 
 BUILD := build
-KERN_SRCS := main idt pic timer clock serial trap apic pmm vmm heap kstring sched userproc crash panic pci session ac97 dev compat nic nic_rtl8139 nic_pcnet fb svga gpu gpu_nv gpu_intel gpu_amd cursor ata blk fat32 part mkfat fsprobe payload grub_install installer installer_gui protect persist config oobe jbot i18n gfxtext ttf py jca jcac posix ps2 hwd hwcompat desktop ui apps app_power app_store app_firewall app_backup app_capture app_clock app_fontmgr app_region app_network app_audio app_maps e1000 net tcp http sha256 x25519 aes_gcm app_update app_browser gpu3d app_3d app_diskmgr app_about app_calc app_notepad app_monitor app_pyconsole app_term app_jca usb wlan acpi recycle app_usb app_battery app_recycle app_files app_devices selftest splash hal bluetooth voice app_voice app_bluetooth hmac_sha256 tls ahci honeypot wallpaper_image app_games perm users login
+KERN_SRCS := main idt pic timer clock serial trap apic pmm vmm heap kstring sched userproc crash panic pci session ac97 dev compat nic nic_rtl8139 nic_pcnet fb svga gpu gpu_nv gpu_intel gpu_amd cursor ata blk fat32 part mkfat fsprobe payload grub_install installer installer_gui protect persist config oobe jbot i18n gfxtext ttf py jca jcac posix ps2 hwd hwcompat desktop ui apps app_power app_store app_firewall app_backup app_capture app_clock app_fontmgr app_region app_network app_audio app_maps e1000 net tcp http sha256 x25519 aes_gcm app_update app_browser gpu3d app_3d app_diskmgr app_about app_calc app_notepad app_monitor app_pyconsole app_term app_procmgr app_jca usb wlan acpi recycle app_usb app_battery app_recycle app_files app_devices selftest splash hal bluetooth voice app_voice app_bluetooth hmac_sha256 tls ahci honeypot wallpaper_image app_games perm users login
 ARCH_ASM := boot gdt vectors switch
 OBJS := $(addprefix $(BUILD)/,$(addsuffix .o,$(KERN_SRCS))) \
         $(addprefix $(BUILD)/,$(addsuffix .o,$(ARCH_ASM)))
@@ -22,6 +22,8 @@ ISO := $(BUILD)/JackBOT-1.0.9.iso
 DISK := $(BUILD)/disk.img
 USER_BIN := $(BUILD)/ustest.bin
 USER_H := $(BUILD)/ustest.h
+PTHREAD_USER_BIN := $(BUILD)/uthread.bin
+PTHREAD_USER_H := $(BUILD)/uthread.h
 
 .PHONY: all iso clean
 
@@ -40,6 +42,10 @@ $(USER_H): user/ustest.asm | $(BUILD)
 $(CRASH_USER_H): user/ucrash.asm | $(BUILD)
 	$(NASM) -f bin $< -o $(CRASH_USER_BIN)
 	python3 tools/bin_to_header.py $(CRASH_USER_BIN) $@ ucrash_bin
+
+$(PTHREAD_USER_H): user/uthread.asm | $(BUILD)
+	$(NASM) -f bin $< -o $(PTHREAD_USER_BIN)
+	python3 tools/bin_to_header.py $(PTHREAD_USER_BIN) $@ uthread_bin
 
 I18N_JSON := tools/i18n_data.json
 I18N_H := $(BUILD)/i18n_data.h
@@ -107,7 +113,7 @@ RENDER_OPT_SRCS := desktop fb cursor ui gfxtext ttf gpu3d app_3d apps \
                    app_files app_browser app_games wallpaper_image splash
 $(foreach f,$(RENDER_OPT_SRCS),$(eval $(BUILD)/$(f).o: CFLAGS += -O2))
 
-$(BUILD)/userproc.o: $(USER_H) $(CRASH_USER_H)
+$(BUILD)/userproc.o: $(USER_H) $(CRASH_USER_H) $(PTHREAD_USER_H)
 
 $(BUILD)/%.o: arch/x86_64/%.asm | $(BUILD)
 	$(NASM) $(NASMFLAGS) $< -o $@
@@ -127,8 +133,9 @@ $(BOOT_PCM) $(WARN_PCM): assets/sounds/boot.wav assets/sounds/warn.wav tools/wav
 	python3 tools/wav_to_pcm.py assets/sounds/boot.wav $(BOOT_PCM) 48000
 	python3 tools/wav_to_pcm.py assets/sounds/warn.wav $(WARN_PCM) 48000
 
-$(ISO): $(KERNEL) iso/boot/grub/grub.cfg iso/boot/grub/hd.cfg tools/prep_grub.sh $(BOOT_PCM) $(WARN_PCM)
+$(ISO): $(KERNEL) $(DISK) iso/boot/grub/grub.cfg iso/boot/grub/hd.cfg tools/prep_grub.sh $(BOOT_PCM) $(WARN_PCM)
 	bash tools/prep_grub.sh
+	cp $(DISK) iso/boot/JACKBOT.IMG
 	grub-mkrescue -o $@ iso
 
 DISK_FONTS := assets/fonts/SANS.ttf assets/fonts/MONO.ttf \
@@ -138,8 +145,8 @@ DISK_FONTS := assets/fonts/SANS.ttf assets/fonts/MONO.ttf \
               $(wildcard assets/fonts/lang/*.ttf)
 
 $(DISK): assets/logo.png $(DISK_FONTS) | $(BUILD)
-	dd if=/dev/zero of=$@ bs=1M count=64
-	mkfs.fat -F32 $@ >/dev/null
+	dd if=/dev/zero of=$@ bs=1M count=128
+	mformat -i $@ -F :: >/dev/null 2>&1
 	mcopy -i $@ assets/logo.png ::LOGO.PNG
 	mcopy -i $@ assets/fonts/SANS.ttf  ::SANS.TTF
 	mcopy -i $@ assets/fonts/MONO.ttf  ::MONO.TTF
@@ -149,6 +156,12 @@ $(DISK): assets/logo.png $(DISK_FONTS) | $(BUILD)
 	-mcopy -i $@ assets/fonts/AR.ttf   ::AR.TTF
 	-mcopy -i $@ assets/fonts/TH.ttf   ::TH.TTF
 	-mcopy -i $@ assets/fonts/HI.ttf   ::HI.TTF
+	for d in SYSTEM SYSTEM/ETC SYSTEM/BIN SYSTEM/DRV SYSTEM/LIB SYSTEM/LICENSE; do \
+	    mmd -i $@ ::$$d 2>/dev/null || true; done
+	@for f in $$(find system -type f | sort); do \
+	    rel=$${f#system/}; up=$$(printf 'SYSTEM/%s' "$$rel" | tr 'a-z' 'A-Z'); \
+	    mcopy -o -i $@ "$$f" "::$$up" >/dev/null 2>&1 || echo "  pack skip $$f"; \
+	done; echo "  system files on disk: $$(find system -type f | wc -l)"
 	@n=0; for f in assets/fonts/lang/*.ttf; do b=$$(basename $$f); u=$$(echo $$b | tr 'a-z' 'A-Z'); mcopy -o -i $@ $$f ::$$u >/dev/null 2>&1 && n=$$((n+1)); done; echo "  lang fonts on disk: $$n"
 
 clean:

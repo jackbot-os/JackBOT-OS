@@ -1,0 +1,5 @@
+name=ata
+bus=pci
+class=0x0101
+provides=block
+pio=1

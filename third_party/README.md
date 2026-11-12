@@ -9,6 +9,7 @@ copyleft）一律不进树，也不做"只参考不抄"式的改写。
 | `nimble/` | apache/mynewt-nimble（master 快照，2026-11-10 下载） | Apache-2.0 | `nimble/host`、`nimble/controller`、`nimble/include`、`porting/` | 源码已入树，**尚未接到 JackBOT 内核** |
 | `tinyusb/` | hathach/tinyusb（master 快照，2026-11-10 下载） | MIT | `src/`（host + device + common）、`hw/` | 源码已入树，**尚未接到 JackBOT 内核** |
 | `cpython/` | python/cpython | PSF License（宽松，非 copyleft） | 官方源码 | 已有移植层骨架 |
+| `musl-1.2.5/` | musl.libc.org 官方发布包 `musl-1.2.5.tar.gz`（2026-11-12 下载；sha256 `a9a118bbe84d8764da0ea0d28b3ab3fae8477fc7e4085d90102b8596fc7c75e4`，与 Buildroot 2024.05/2024.08/2024.11 台账一致） | MIT（`COPYRIGHT` 随树） | 官方源码树全量（2697 文件，`VERSION`=1.2.5）；压缩包原件同目录保留 | 源码已入树；pthread 移植层见 `ports/musl_thread/` |
 
 许可是**逐字校验**过的：`LICENSE` 原文就在各自目录里，两个新增目录内
 `GNU General Public License` 命中数为 0（在 `third_party` 下扫描时只有

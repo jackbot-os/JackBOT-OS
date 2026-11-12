@@ -1,0 +1,4 @@
+name=usb_hid
+bus=usb
+class=0x03
+provides=keyboard,mouse

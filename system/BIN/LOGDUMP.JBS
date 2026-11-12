@@ -1,0 +1,3 @@
+# logdump - copy the last boot log out of the volume
+copy \BOOT.LOG \LOGS\LAST.LOG
+echo copied

@@ -501,7 +501,7 @@ static void run_line(void)
     if (eq(cmd, "help")) {
         log_str("Commands: help  ver  fs  mount <#>  umount  wifi  ls [dir]  cd <dir>");
         log_nl();
-        log_str("          cat <file>  run <file.py>  Open <file|dir>  session [save]  panic  clear  exit");
+        log_str("          cat <file>  run <file.py>  Open <file|dir>  session [save]  clear  exit");
         log_nl();
     } else if (eq(cmd, "ver")) {
         log_str("JackBOT OS 1.0.9 (EastLake) - terminal");
@@ -510,10 +510,6 @@ static void run_line(void)
         cmd_fs();
     } else if (eq(cmd, "wifi") || eq(cmd, "wlan")) {
         cmd_wifi();
-    } else if (eq(cmd, "panic")) {
-        log_str("panic: deliberate stop, dumping registers and restarting");
-        log_nl();
-        panic_stop("manual stop requested from the terminal");
     } else if (eq(cmd, "session")) {
         if (eq(arg, "save")) {
             int r = session_save();

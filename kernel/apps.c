@@ -34,6 +34,7 @@ void snake_open(void);    int snake_frame(int, int, int);
 void g2048_open(void);    int g2048_frame(int, int, int);
 void maps_open(void);     int maps_frame(int, int, int);
 void term_open(void);     int term_frame(int, int, int);
+void procmgr_open(void);  int procmgr_frame(int, int, int);
 
 typedef void (*openfn)(void);
 typedef int (*framefn)(int, int, int);
@@ -83,6 +84,7 @@ static void setup(void)
     set(APP_G2048, g2048_open, g2048_frame);
     set(APP_MAPS, maps_open, maps_frame);
     set(APP_TERM, term_open, term_frame);
+    set(APP_PROCMGR, procmgr_open, procmgr_frame);
     done = 1;
 }
 
@@ -136,6 +138,7 @@ const char *app_name(int id)
     case APP_G2048: return tr(STR_AN_G2048);
     case APP_MAPS: return "Maps";
     case APP_TERM: return "Terminal";
+    case APP_PROCMGR: return "Process Manager";
     default: return "";
     }
 }
@@ -145,7 +148,8 @@ int app_persistent(int id)
     return id == APP_DISKMGR || id == APP_ABOUT || id == APP_NOTEPAD
         || id == APP_MONITOR || id == APP_PYTHON || id == APP_JCA
         || id == APP_USB || id == APP_BATTERY || id == APP_RECYCLE
-        || id == APP_FILES || id == APP_DEVICES || id == APP_TERM;
+        || id == APP_FILES || id == APP_DEVICES || id == APP_TERM
+        || id == APP_PROCMGR;
 }
 
 int app_refresh_period(int id)

@@ -347,6 +347,163 @@ void posix_selftest(void)
     say_i("[POSIX] unlink=", r);
 }
 
+/* ---- pthread / clone layer (musl 1.2.5 ABI, see ports/musl_thread) ---- */
+
+#define CLONE_VM             0x00000100
+#define CLONE_SETTLS         0x00080000
+#define CLONE_PARENT_SETTID  0x00100000
+#define CLONE_CHILD_CLEARTID 0x00200000
+
+#define ARCH_SET_FS 0x1002
+#define ARCH_GET_FS 0x1001
+
+#define E_FAULT   (-14)
+#define E_INVAL   (-22)
+#define E_NOMEM   (-12)
+#define E_NOSYS   (-38)
+
+/* Anonymous mappings live above the heap. The cursor only moves forward so
+   a freed range is never handed out twice: a stale pointer then faults
+   instead of quietly aliasing someone else's new stack. */
+#define MMAP_BASE (USER_HEAP_BASE + USER_HEAP_MAX + 0x10000000ull)
+#define MMAP_TOP  (USER_HEAP_BASE + 0x180000000ull)
+static uint64_t mmap_next = MMAP_BASE;
+
+static int64_t sys_mmap_anon(uint64_t addr, uint64_t len)
+{
+    thread_t *t = current_thread();
+    uint64_t pages, base, p;
+
+    if (!t || !t->is_user || !t->p4phys)
+        return E_INVAL;
+    if (len == 0 || len > 0x400000ull)          /* 4 MiB per call */
+        return E_INVAL;
+    pages = (len + 0xfffull) >> 12;
+
+    base = addr ? (addr & ~0xfffull) : ((mmap_next + 0xfffull) & ~0xfffull);
+    if (base < MMAP_BASE || base + pages * 4096 > MMAP_TOP)
+        return E_NOMEM;
+    if (!addr)
+        mmap_next = base + pages * 4096;
+
+    for (p = 0; p < pages; p++)
+        if (vmm_phys_of_in(t->p4phys, base + p * 4096))
+            return E_INVAL;                     /* range already in use */
+
+    for (p = 0; p < pages; p++) {
+        void *frame = pmm_alloc_page_below(0x40000000ull);
+        if (!frame) {
+            for (uint64_t k = 0; k < p; k++) {
+                uint64_t phys = vmm_unmap_in(t->p4phys, base + k * 4096);
+                if (phys)
+                    pmm_free_page((void *)(uintptr_t)phys);
+            }
+            return E_NOMEM;
+        }
+        memset(frame, 0, 4096);
+        /* thread stacks and mmap'd blobs are data, not code */
+        vmm_map_in(t->p4phys, base + p * 4096, (uint64_t)(uintptr_t)frame,
+                   PTE_PRESENT | PTE_WRITABLE | PTE_USER | PTE_NX);
+    }
+    return (int64_t)base;
+}
+
+static int64_t sys_munmap(uint64_t addr, uint64_t len)
+{
+    thread_t *t = current_thread();
+    uint64_t pages;
+
+    if (!t || !t->is_user || !t->p4phys || (addr & 0xfffull) || len == 0)
+        return E_INVAL;
+    pages = (len + 0xfffull) >> 12;
+    for (uint64_t p = 0; p < pages; p++) {
+        uint64_t phys = vmm_unmap_in(t->p4phys, addr + p * 4096);
+        if (phys)
+            pmm_free_page((void *)(uintptr_t)phys);
+    }
+    return 0;
+}
+
+static int64_t sys_futex(uint64_t uaddr, int op, int val, uint64_t timeout_ptr)
+{
+    int cmd = op & 0x7f;                        /* drop PRIVATE/CLOCK flags */
+
+    if (!uok((void *)uaddr, 4))
+        return E_FAULT;
+    if (cmd == 0) {                             /* FUTEX_WAIT */
+        uint64_t tmo = 0;
+        if (timeout_ptr) {
+            uint64_t *ts = (uint64_t *)(uintptr_t)timeout_ptr;
+            if (!uok(ts, 16))
+                return E_FAULT;
+            tmo = ts[0] * 100ull + ts[1] / 10000000ull;   /* TIMER_HZ = 100 */
+            if (tmo == 0)
+                tmo = 1;
+        }
+        return futex_wait_word((volatile int *)(uintptr_t)uaddr, val, tmo);
+    }
+    if (cmd == 1)                               /* FUTEX_WAKE */
+        return futex_wake_word((volatile int *)(uintptr_t)uaddr, val);
+    /* REQUEUE and the robust-list ops: musl's condvar falls back to a
+       plain wake when this reports ENOSYS, so none of them are required. */
+    return E_NOSYS;
+}
+
+static int64_t sys_clone(struct trap_frame *f)
+{
+    thread_t *parent = current_thread();
+    uint64_t flags = f->rdi, stack = f->rsi, ptid = f->rdx;
+    uint64_t tls = f->r10, ctid = f->r8;
+    thread_t *child;
+
+    if (!parent || !parent->is_user || !parent->p4phys)
+        return E_INVAL;
+    if (!(flags & CLONE_VM))
+        return E_INVAL;                 /* only shared address spaces exist */
+    if (stack && !uok((void *)stack, 8))
+        return E_FAULT;
+    if (!uok((void *)f->rip, 1))
+        return E_FAULT;                 /* the resume address must be mapped */
+
+    child = thread_create_clone(parent, f->rip, stack,
+                                (flags & CLONE_SETTLS) ? tls : parent->tls_base,
+                                (flags & CLONE_CHILD_CLEARTID) ? ctid : 0,
+                                f->r9);
+    if (!child)
+        return E_NOMEM;
+    if ((flags & CLONE_PARENT_SETTID) && uok((void *)ptid, 4))
+        *(uint32_t *)(uintptr_t)ptid = (uint32_t)child->tid;
+    return (int64_t)child->tid;
+}
+
+static int64_t sys_arch_prctl(int code, uint64_t addr)
+{
+    if (code == ARCH_SET_FS) {
+        thread_set_fs(addr);
+        return 0;
+    }
+    if (code == ARCH_GET_FS) {
+        if (!uok((void *)addr, 8))
+            return E_FAULT;
+        *(uint64_t *)(uintptr_t)addr = thread_get_fs();
+        return 0;
+    }
+    return E_INVAL;
+}
+
+static int64_t sys_clock_gettime(int clk, void *ts)
+{
+    uint64_t t = timer_get_ticks();
+    uint64_t *p = ts;
+
+    (void)clk;
+    if (!uok(ts, 16))
+        return E_FAULT;
+    p[0] = t / 100ull;
+    p[1] = (t % 100ull) * 10000000ull;
+    return 0;
+}
+
 void posix_syscall(struct trap_frame *f)
 {
     uint64_t num = f->rax;
@@ -403,6 +560,60 @@ void posix_syscall(struct trap_frame *f)
         break;
     case SYS_UPTIME:
         r = (int64_t)(timer_get_ticks() / 100u);
+        break;
+    case SYS_CLONE:
+        r = sys_clone(f);
+        break;
+    case SYS_THREAD_EXIT:
+        thread_exit_status(f->rdi);     /* does not return */
+        r = 0;
+        break;
+    case SYS_EXIT_GROUP:
+        thread_exit_group(f->rdi);      /* does not return */
+        r = 0;
+        break;
+    case SYS_FUTEX:
+        r = sys_futex(f->rdi, (int)f->rsi, (int)f->rdx, f->r10);
+        break;
+    case SYS_SET_TID_ADDR: {
+        thread_t *t = current_thread();
+        if (t) {
+            if (uok((void *)f->rdi, 4))
+                t->clear_tid = f->rdi;
+            r = (int64_t)t->tid;
+        }
+        break;
+    }
+    case SYS_MMAP:
+        r = sys_mmap_anon(f->rdi, f->rsi);
+        break;
+    case SYS_MUNMAP:
+        r = sys_munmap(f->rdi, f->rsi);
+        break;
+    case SYS_MPROTECT:
+        r = 0;                          /* pages are already RW and NX */
+        break;
+    case SYS_RT_SIGPROCMASK:
+    case SYS_SET_ROBUST_LIST:
+    case SYS_TKILL:
+        r = E_NOSYS;
+        break;
+    case SYS_SCHED_SETSCHEDULER:
+        r = 0;                          /* one scheduling policy for now */
+        break;
+    case SYS_ARCH_PRCTL:
+        r = sys_arch_prctl((int)f->rdi, f->rsi);
+        break;
+    case SYS_CLOCK_GETTIME:
+        r = sys_clock_gettime((int)f->rdi, (void *)f->rsi);
+        break;
+    case SYS_GETTID: {
+        thread_t *t = current_thread();
+        r = t ? (int64_t)t->tid : 0;
+        break;
+    }
+    case SYS_WRITE_THREAD:
+        r = sys_write((int)f->rdi, (const void *)f->rsi, (uint32_t)f->rdx);
         break;
     default:
         r = -1;

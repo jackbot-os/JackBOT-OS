@@ -1,0 +1,5 @@
+name=ahci
+bus=pci
+class=0x0106
+provides=block
+dma=1

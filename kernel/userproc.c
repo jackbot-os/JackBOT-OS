@@ -6,6 +6,7 @@
 #include <kernel/serial.h>
 #include "../build/ustest.h"
 #include "../build/ucrash.h"
+#include "../build/uthread.h"
 
 #define USER_BASE 0x8000000000ull
 #define USER_STACK_VADDR (USER_BASE + 0x100000)
@@ -85,6 +86,13 @@ thread_t *spawn_test_user(void)
 thread_t *spawn_crash_user(void)
 {
     return spawn_from(ucrash_bin, ucrash_bin_len);
+}
+
+/* Ring-3 acceptance test for the pthread layer: arch_prctl(TLS), mmap,
+   clone, futex wait/wake and the CLONE_CHILD_CLEARTID join signal. */
+thread_t *spawn_pthread_user(void)
+{
+    return spawn_from(uthread_bin, uthread_bin_len);
 }
 
 /* Load an arbitrary machine-code image (e.g. a JCAN payload produced by

@@ -1,0 +1,6 @@
+Kernel to app interface, current call set:
+  ui_fit / ui_window / ui_rect / ui_border   window drawing
+  fb_*                                        framebuffer access
+  thread_enum / thread_count_user             process enumeration
+  pmm_total_bytes / pmm_free_bytes            memory facts
+  timer_get_ticks                             uptime source
