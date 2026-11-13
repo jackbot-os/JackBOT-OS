@@ -15,6 +15,9 @@
 #include <kernel/ata.h>
 #include <kernel/ahci.h>
 #include <kernel/fat32.h>
+#include <kernel/vfs.h>
+#include <kernel/oom.h>
+#include <kernel/elf.h>
 #include <kernel/part.h>
 #include <kernel/posix.h>
 #include <kernel/blk.h>
@@ -71,6 +74,7 @@ void tss_set_rsp0(uint64_t rsp0);
 thread_t *spawn_test_user(void);
 thread_t *spawn_crash_user(void);
 thread_t *spawn_pthread_user(void);
+thread_t *spawn_elf_test_user(void);
 int useriso_kernel_half(void);
 void sched_iso_report(void);
 void pic_remap(void);
@@ -665,6 +669,11 @@ void kmain(uint64_t magic, uint64_t mb_info)
     serial_puts("[B] pthread ring3 test\n");
     if (!spawn_pthread_user())
         serial_puts("[PTHREAD] spawn failed\n");
+    /* ELF loader acceptance: a real ELF64 executable linked at USER_BASE is
+       parsed, its PT_LOAD segments mapped, and it must print ELF_OK. */
+    serial_puts("[B] elf loader test\n");
+    if (!spawn_elf_test_user())
+        serial_puts("[ELF] spawn failed\n");
     serial_puts("[B] iso report\n");
     sched_iso_report();
     /* The scheduler now loads CR3 per thread (kernel threads run on the
@@ -704,6 +713,15 @@ void kmain(uint64_t magic, uint64_t mb_info)
     /* The POSIX surface the libc payload talks to: prove mkdir/rename/
        access/unlink/stat and console input really work on this machine. */
     posix_selftest();
+
+    /* VFS: the mount table and descriptor layer every future filesystem
+       (exFAT/NTFS/JBFS) sits behind. Runs after the libc test so LC.TXT
+       exists for the open/read proof. */
+    serial_puts("[B] vfs\n");
+    if (vfs_init() == 0)
+        vfs_selftest();
+    else
+        serial_puts("[VFS] mount failed\n");
 
 
     serial_puts("[B] desktop\n");

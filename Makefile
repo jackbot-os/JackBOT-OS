@@ -11,7 +11,7 @@ NASMFLAGS := -f elf64
 LDFLAGS := -n -T arch/x86_64/linker.ld
 
 BUILD := build
-KERN_SRCS := main idt pic timer clock serial trap apic pmm vmm heap kstring sched userproc crash panic pci session ac97 dev compat nic nic_rtl8139 nic_pcnet fb svga gpu gpu_nv gpu_intel gpu_amd cursor ata blk fat32 part mkfat fsprobe payload grub_install installer installer_gui protect persist config oobe jbot i18n gfxtext ttf py jca jcac posix ps2 hwd hwcompat desktop ui apps app_power app_store app_firewall app_backup app_capture app_clock app_fontmgr app_region app_network app_audio app_maps e1000 net tcp http sha256 x25519 aes_gcm app_update app_browser gpu3d app_3d app_diskmgr app_about app_calc app_notepad app_monitor app_pyconsole app_term app_procmgr app_jca usb wlan acpi recycle app_usb app_battery app_recycle app_files app_devices selftest splash hal bluetooth voice app_voice app_bluetooth hmac_sha256 tls ahci honeypot wallpaper_image app_games perm users login
+KERN_SRCS := main idt pic timer clock serial trap apic pmm vmm heap kstring sched userproc vfs oom elf crash panic pci session ac97 dev compat nic nic_rtl8139 nic_pcnet fb svga gpu gpu_nv gpu_intel gpu_amd cursor ata blk fat32 part mkfat fsprobe payload grub_install installer installer_gui protect persist config oobe jbot i18n gfxtext ttf py jca jcac posix ps2 hwd hwcompat desktop ui apps app_power app_store app_firewall app_backup app_capture app_clock app_fontmgr app_region app_network app_audio app_maps e1000 net tcp http sha256 x25519 aes_gcm app_update app_browser gpu3d app_3d app_diskmgr app_about app_calc app_notepad app_monitor app_pyconsole app_term app_procmgr app_jca usb wlan acpi recycle app_usb app_battery app_recycle app_files app_devices selftest splash hal bluetooth voice app_voice app_bluetooth hmac_sha256 tls ahci honeypot wallpaper_image app_games perm users login
 ARCH_ASM := boot gdt vectors switch
 OBJS := $(addprefix $(BUILD)/,$(addsuffix .o,$(KERN_SRCS))) \
         $(addprefix $(BUILD)/,$(addsuffix .o,$(ARCH_ASM)))
@@ -46,6 +46,14 @@ $(CRASH_USER_H): user/ucrash.asm | $(BUILD)
 $(PTHREAD_USER_H): user/uthread.asm | $(BUILD)
 	$(NASM) -f bin $< -o $(PTHREAD_USER_BIN)
 	python3 tools/bin_to_header.py $(PTHREAD_USER_BIN) $@ uthread_bin
+
+ELF_USER_OBJ := $(BUILD)/elftest.o
+ELF_USER_BIN := $(BUILD)/elftest.elf
+ELF_USER_H := $(BUILD)/elftest.h
+$(ELF_USER_H): user/elftest.asm | $(BUILD)
+	$(NASM) -f elf64 $< -o $(ELF_USER_OBJ)
+	ld -Ttext=0x8000000000 -o $(ELF_USER_BIN) $(ELF_USER_OBJ)
+	python3 tools/bin_to_header.py $(ELF_USER_BIN) $@ elftest_bin
 
 I18N_JSON := tools/i18n_data.json
 I18N_H := $(BUILD)/i18n_data.h
@@ -113,7 +121,7 @@ RENDER_OPT_SRCS := desktop fb cursor ui gfxtext ttf gpu3d app_3d apps \
                    app_files app_browser app_games wallpaper_image splash
 $(foreach f,$(RENDER_OPT_SRCS),$(eval $(BUILD)/$(f).o: CFLAGS += -O2))
 
-$(BUILD)/userproc.o: $(USER_H) $(CRASH_USER_H) $(PTHREAD_USER_H)
+$(BUILD)/userproc.o: $(USER_H) $(CRASH_USER_H) $(PTHREAD_USER_H) $(ELF_USER_H)
 
 $(BUILD)/%.o: arch/x86_64/%.asm | $(BUILD)
 	$(NASM) $(NASMFLAGS) $< -o $@

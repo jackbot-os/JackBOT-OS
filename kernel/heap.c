@@ -3,6 +3,7 @@
 #include <kernel/heap.h>
 #include <kernel/pmm.h>
 #include <kernel/vmm.h>
+#include <kernel/oom.h>
 
 #define KHEAP_BASE 0xffff800000000000ull
 #define ALIGN16(x) (((x) + 15) & ~(size_t)15)
@@ -28,8 +29,17 @@ static block_hdr *grow(size_t bytes)
     size_t pages = (need + PAGE_SIZE - 1) / PAGE_SIZE;
 
     uint64_t base = heap_end;
+    int reclaim_tried = 0;
     for (size_t i = 0; i < pages; i++) {
         void *frame = pmm_alloc_page();
+        if (!frame && !reclaim_tried) {
+            /* Before giving up, let the OOM killer take the largest user
+               process and try again: a kernel allocation failing usually
+               means a runaway ring-3 app, not a genuinely full machine. */
+            reclaim_tried = 1;
+            if (oom_reclaim("kernel heap"))
+                frame = pmm_alloc_page();
+        }
         if (!frame) {
             /* Roll back the pages already allocated for this growth so
                they are not leaked while the rest of the kernel keeps

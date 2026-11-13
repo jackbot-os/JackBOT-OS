@@ -4,13 +4,12 @@
 #include <kernel/vmm.h>
 #include <kernel/proc.h>
 #include <kernel/serial.h>
+#include <kernel/userimg.h>
+#include <kernel/oom.h>
 #include "../build/ustest.h"
 #include "../build/ucrash.h"
 #include "../build/uthread.h"
-
-#define USER_BASE 0x8000000000ull
-#define USER_STACK_VADDR (USER_BASE + 0x100000)
-#define USER_STACK_TOP (USER_STACK_VADDR + 0x1000)
+#include "../build/elftest.h"
 
 extern uint64_t p4_table[512];
 
@@ -102,4 +101,54 @@ thread_t *spawn_user_image(const uint8_t *code, uint64_t len)
     if (!code || len == 0 || len > 0x100000)
         return 0;
     return spawn_from(code, len);
+}
+
+/* ---- shared loader primitives (also used by kernel/elf.c) ---------- */
+
+uint64_t user_p4_new(void)
+{
+    void *p4f = pmm_alloc_page_below(0x40000000);
+    if (!p4f)
+        return 0;
+    uint64_t *p4 = p4f;
+    for (int i = 0; i < 512; i++)
+        p4[i] = p4_table[i];
+    return (uint64_t)(uintptr_t)p4f;
+}
+
+int user_map_page_from(uint64_t p4phys, uint64_t vaddr, const uint8_t *src,
+                       uint64_t off, uint64_t n, uint64_t flags)
+{
+    if ((vaddr & 0xfff) || off + n > 4096)
+        return -1;
+    void *frame = pmm_alloc_page_below(0x40000000);
+    if (!frame) {
+        if (!oom_reclaim("user image: page"))
+            return -1;
+        frame = pmm_alloc_page_below(0x40000000);
+        if (!frame)
+            return -1;
+    }
+    uint8_t *dst = frame;
+    for (int i = 0; i < 4096; i++)
+        dst[i] = 0;
+    for (uint64_t k = 0; k < n; k++)
+        dst[off + k] = src[k];
+    vmm_map_in(p4phys, vaddr, (uint64_t)(uintptr_t)frame, flags);
+    return 0;
+}
+
+int user_stack_map(uint64_t p4phys)
+{
+    /* stack is data: NX stops ring 3 from executing whatever it writes into
+       its own stack, so a shellcode buffer stays dead weight */
+    return user_map_page_from(p4phys, USER_STACK_VADDR, 0, 0, 0,
+                              PTE_PRESENT | PTE_WRITABLE | PTE_USER | PTE_NX);
+}
+
+/* ELF acceptance: proves the loader can turn a real ELF64 file into a
+   running ring-3 process, not just a flat image. */
+thread_t *spawn_elf_test_user(void)
+{
+    return spawn_user_elf(elftest_bin, elftest_bin_len);
 }
