@@ -12,6 +12,7 @@
 #include <kernel/ps2.h>
 #include <kernel/ipc.h>
 #include <kernel/fork.h>
+#include <kernel/eventpoll.h>
 
 uint64_t timer_get_ticks(void);
 
@@ -624,6 +625,37 @@ void posix_syscall(struct trap_frame *f)
     case SYS_FORK:
         r = sys_fork(f);
         break;
+    case SYS_EPOLL_CREATE1:
+        r = eventpoll_create();
+        break;
+    case SYS_EPOLL_CTL:
+        r = uok((void *)f->r10, sizeof(struct epoll_event))
+                ? eventpoll_ctl((int)f->rdi, (int)f->rsi, (int)f->rdx,
+                                (const struct epoll_event *)f->r10)
+                : -1;
+        break;
+    case SYS_EPOLL_WAIT: {
+        int maxev = (int)f->rdx;
+        int timeout = (int)f->r10;
+        if (maxev < 0 || (uint64_t)maxev > 64u ||
+            !uok((void *)f->rsi, (uint64_t)maxev * sizeof(struct epoll_event))) {
+            r = -1;
+            break;
+        }
+        r = eventpoll_wait((int)f->rdi, (struct epoll_event *)f->rsi,
+                           maxev, timeout);
+        break;
+    }
+    case SYS_POLL: {
+        int nfds = (int)f->rsi;
+        if (nfds < 0 || (uint64_t)nfds > 64u ||
+            !uok((void *)f->rdi, (uint64_t)nfds * sizeof(struct pollfd_k))) {
+            r = -1;
+            break;
+        }
+        r = eventpoll_poll((struct pollfd_k *)f->rdi, nfds, (int)f->rdx);
+        break;
+    }
     case SYS_PIPE: {
         int fds[2];
         if (!uok((void *)f->rdi, 8)) {

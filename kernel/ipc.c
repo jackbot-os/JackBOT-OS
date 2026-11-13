@@ -157,6 +157,38 @@ int64_t ipc_pipe_read(int fd, void *buf, uint32_t len)
     return (int64_t)done;
 }
 
+/* 1 when the pipe object behind this descriptor still exists. */
+int ipc_pipe_alive(int fd)
+{
+    int slot = pipe_slot(fd);
+    if (slot < 0)
+        return 0;
+    return g_pipes[slot].used;
+}
+
+/* Readiness probes for epoll/poll: 1 when the end could move data now. */
+int ipc_pipe_readable(int fd)
+{
+    int slot = pipe_slot(fd);
+    if (slot < 0 || ((fd - IPC_FD_BASE) & 1) != 0)
+        return 0;
+    struct ipc_pipe *p = &g_pipes[slot];
+    if (!p->used)
+        return 0;
+    return pipe_used_bytes(p) > 0 || p->writers == 0;
+}
+
+int ipc_pipe_writable(int fd)
+{
+    int slot = pipe_slot(fd);
+    if (slot < 0 || ((fd - IPC_FD_BASE) & 1) == 0)
+        return 0;
+    struct ipc_pipe *p = &g_pipes[slot];
+    if (!p->used)
+        return 0;
+    return pipe_used_bytes(p) < IPC_PIPE_BUF - 1;
+}
+
 int ipc_pipe_close(int fd)
 {
     int slot = pipe_slot(fd);

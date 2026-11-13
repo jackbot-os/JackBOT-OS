@@ -57,6 +57,12 @@ struct trap_frame;
 #define SYS_MQ_RECV     57  /* id, buf, len -> len / -1 */
 #define SYS_FORK        58  /* -> child pid in the parent, 0 in the child */
 
+/* ---- readiness layer (kernel/eventpoll.c) ---- */
+#define SYS_EPOLL_CREATE1 59 /* flags -> epfd */
+#define SYS_EPOLL_CTL     60 /* epfd, op, fd, event* */
+#define SYS_EPOLL_WAIT    61 /* epfd, events*, maxevents, timeout_ms */
+#define SYS_POLL          62 /* pollfd*, nfds, timeout_ms */
+
 /* Handle one POSIX call; the return value is written back into f->rax. */
 void posix_syscall(struct trap_frame *f);
 

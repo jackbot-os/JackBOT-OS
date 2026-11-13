@@ -18,6 +18,7 @@
 #include <kernel/vfs.h>
 #include <kernel/ipc.h>
 #include <kernel/fork.h>
+#include <kernel/eventpoll.h>
 #include <kernel/oom.h>
 #include <kernel/elf.h>
 #include <kernel/part.h>
@@ -736,6 +737,12 @@ void kmain(uint64_t magic, uint64_t mb_info)
        write. This exercises the machinery the user-space fork caller uses. */
     serial_puts("[B] cow\n");
     cow_selftest();
+
+    /* Readiness layer: epoll/poll over the pipes and descriptors created
+       above. This is the blocking primitive Chromium's loop needs. */
+    serial_puts("[B] epoll\n");
+    eventpoll_init();
+    eventpoll_selftest();
 
 
     serial_puts("[B] desktop\n");

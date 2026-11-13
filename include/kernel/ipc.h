@@ -25,6 +25,10 @@ int ipc_fd_is_pipe(int fd);
 int64_t ipc_pipe_read(int fd, void *buf, uint32_t len);
 int64_t ipc_pipe_write(int fd, const void *buf, uint32_t len);
 int ipc_pipe_close(int fd);
+/* Readiness probes used by epoll/poll. 1 means the end can move data now. */
+int ipc_pipe_alive(int fd);
+int ipc_pipe_readable(int fd);
+int ipc_pipe_writable(int fd);
 
 /* ---- shared memory ---- */
 /* size is rounded up to whole pages. Returns a handle or -1. */
