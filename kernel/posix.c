@@ -10,6 +10,8 @@
 #include <kernel/serial.h>
 #include <kernel/kstring.h>
 #include <kernel/ps2.h>
+#include <kernel/ipc.h>
+#include <kernel/fork.h>
 
 uint64_t timer_get_ticks(void);
 
@@ -103,6 +105,8 @@ static int64_t sys_write(int fd, const void *buf, uint32_t len)
             serial_putc(p[i]);
         return (int64_t)len;
     }
+    if (ipc_fd_is_pipe(fd))
+        return ipc_pipe_write(fd, buf, len);
     {
         int h = fd_file(fd);
         if (h < 0)
@@ -117,6 +121,8 @@ static int64_t sys_read(int fd, void *buf, uint32_t len)
         return -1;
     if (fd == 0)
         return sys_read_console(buf, len);
+    if (ipc_fd_is_pipe(fd))
+        return ipc_pipe_read(fd, buf, len);
     {
         int h = fd_file(fd);
         if (h < 0)
@@ -614,6 +620,53 @@ void posix_syscall(struct trap_frame *f)
     }
     case SYS_WRITE_THREAD:
         r = sys_write((int)f->rdi, (const void *)f->rsi, (uint32_t)f->rdx);
+        break;
+    case SYS_FORK:
+        r = sys_fork(f);
+        break;
+    case SYS_PIPE: {
+        int fds[2];
+        if (!uok((void *)f->rdi, 8)) {
+            r = -1;
+            break;
+        }
+        r = (ipc_pipe_create(fds) == 0) ? 0 : -1;
+        if (r == 0) {
+            int *out = (int *)f->rdi;
+            out[0] = fds[0];
+            out[1] = fds[1];
+        }
+        break;
+    }
+    case SYS_SHM_CREATE:
+        r = ipc_shm_create((uint32_t)f->rdi);
+        break;
+    case SYS_SHM_MAP: {
+        thread_t *t = current_thread();
+        r = t ? ipc_shm_map((int)f->rdi, t->p4phys, f->rsi) : -1;
+        break;
+    }
+    case SYS_SEM_CREATE:
+        r = ipc_sem_create((int)f->rdi);
+        break;
+    case SYS_SEM_WAIT:
+        r = ipc_sem_wait((int)f->rdi);
+        break;
+    case SYS_SEM_POST:
+        r = ipc_sem_post((int)f->rdi);
+        break;
+    case SYS_MQ_CREATE:
+        r = ipc_mq_create();
+        break;
+    case SYS_MQ_SEND:
+        r = uok((void *)f->rsi, (uint32_t)f->rdx)
+                ? ipc_mq_send((int)f->rdi, (const void *)f->rsi, (uint32_t)f->rdx)
+                : -1;
+        break;
+    case SYS_MQ_RECV:
+        r = uok((void *)f->rsi, (uint32_t)f->rdx)
+                ? ipc_mq_recv((int)f->rdi, (void *)f->rsi, (uint32_t)f->rdx)
+                : -1;
         break;
     default:
         r = -1;

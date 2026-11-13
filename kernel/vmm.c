@@ -200,3 +200,74 @@ uint64_t vmm_phys_of(uint64_t virt)
 {
     return vmm_phys_of_in((uint64_t)(uintptr_t)P4_VIRT, virt);
 }
+
+/* ---------------- copy-on-write ---------------- */
+
+/* Returns a pointer to the level-1 entry for virt, or 0 when any level
+   above it is missing. Walks tables through the identity map. */
+static uint64_t *pte_slot(uint64_t p4phys, uint64_t virt)
+{
+    uint64_t i4 = (virt >> 39) & 0x1ff;
+    uint64_t i3 = (virt >> 30) & 0x1ff;
+    uint64_t i2 = (virt >> 21) & 0x1ff;
+    uint64_t i1 = (virt >> 12) & 0x1ff;
+
+    uint64_t *p4 = (uint64_t *)(uintptr_t)p4phys;
+    if (!(p4[i4] & PTE_PRESENT))
+        return 0;
+    uint64_t *p3 = (uint64_t *)(uintptr_t)(p4[i4] & ADDR_MASK);
+    if (!(p3[i3] & PTE_PRESENT))
+        return 0;
+    uint64_t *p2 = (uint64_t *)(uintptr_t)(p3[i3] & ADDR_MASK);
+    if (!(p2[i2] & PTE_PRESENT) || (p2[i2] & PTE_HUGE))
+        return 0;
+    uint64_t *p1 = (uint64_t *)(uintptr_t)(p2[i2] & ADDR_MASK);
+    return &p1[i1];
+}
+
+uint64_t vmm_pte_of_in(uint64_t p4phys, uint64_t virt)
+{
+    uint64_t *pte = pte_slot(p4phys, virt);
+    return pte ? *pte : 0;
+}
+
+/* Take write permission away from one writable user page and remember that
+   the frame is now shared. Returns 1 when the page was converted. */
+int vmm_cow_mark(uint64_t p4phys, uint64_t virt)
+{
+    uint64_t *pte = pte_slot(p4phys, virt);
+    if (!pte)
+        return 0;
+    if (!(*pte & PTE_PRESENT) || !(*pte & PTE_USER))
+        return 0;
+    if (!(*pte & PTE_WRITABLE))
+        return 0;
+    *pte = (*pte & ~PTE_WRITABLE) | PTE_COW;
+    vmm_invlpg(virt);
+    return 1;
+}
+
+/* Write fault on a shared page: give this address space a private copy.
+   Returns 1 when the fault is resolved and the instruction can be retried. */
+int vmm_cow_break(uint64_t p4phys, uint64_t virt)
+{
+    uint64_t va = virt & ~0xfffull;
+    uint64_t *pte = pte_slot(p4phys, va);
+    if (!pte)
+        return 0;
+    if (!(*pte & PTE_PRESENT) || !(*pte & PTE_COW))
+        return 0;
+
+    uint64_t old_phys = *pte & ADDR_MASK;
+    void *frame = pmm_alloc_page();
+    if (!frame)
+        return 0;
+    uint8_t *dst = frame;
+    const uint8_t *src = (const uint8_t *)(uintptr_t)old_phys;
+    for (int i = 0; i < 4096; i++)
+        dst[i] = src[i];
+    *pte = ((uint64_t)(uintptr_t)frame) | PTE_PRESENT | PTE_WRITABLE |
+           PTE_USER | (*pte & PTE_NX);
+    vmm_invlpg(va);
+    return 1;
+}

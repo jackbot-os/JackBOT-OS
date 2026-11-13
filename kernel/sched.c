@@ -256,6 +256,69 @@ thread_t *thread_create_clone(thread_t *parent, uint64_t user_rip, uint64_t user
     return t;
 }
 
+/* fork(): like thread_create_clone, but the child gets its own page table
+   (already filled from the parent with copy-on-write pages) and resumes at
+   the same user instruction with rax = 0. */
+thread_t *thread_create_fork(thread_t *parent, uint64_t new_p4,
+                             uint64_t user_rip, uint64_t user_rsp)
+{
+    int i;
+    for (i = 1; i < MAX_THREADS; i++)
+        if (threads[i].state == T_UNUSED)
+            break;
+    if (i >= MAX_THREADS)
+        return 0;
+
+    thread_t *t = &threads[i];
+    t->id = i;
+    t->tid = i;
+    t->is_user = 1;
+    t->user_entry = user_rip;
+    t->recover_count = 0;
+    t->recover_tick = 0;
+    t->cpu_ticks = 0;
+    t->mem_bytes = 0;
+    t->last_alive_tick = 0;
+    t->kill_reason = 0;
+    t->wait_addr = 0;
+    t->exit_code = 0;
+    t->detached = 0;
+    t->p4phys = new_p4;
+    t->heap_cur = parent->heap_cur;
+    t->mmap_cur = parent->mmap_cur;
+    t->quota_mem_bytes = parent->quota_mem_bytes;
+    t->quota_cpu_ticks = parent->quota_cpu_ticks;
+    t->has_tls = parent->has_tls;
+    t->tls_base = parent->tls_base;
+    t->clear_tid = 0;
+
+    t->kstack = (uint64_t)kmalloc(KSTACK_SIZE);
+    if (!t->kstack)
+        return 0;
+    t->kstack_top = t->kstack + KSTACK_SIZE;
+
+    t->boot_rax = 0;
+    t->boot_r9 = 0;
+
+    uint64_t *sp = (uint64_t *)t->kstack_top;
+    *--sp = 0x23;
+    *--sp = user_rsp;
+    *--sp = 0x202;
+    *--sp = 0x1b;
+    *--sp = user_rip;
+    *--sp = (uint64_t)&t->boot_rax;
+    *--sp = (uint64_t)user_enter_clone;
+    *--sp = 0;
+    *--sp = 0;
+    *--sp = 0;
+    *--sp = 0;
+    *--sp = 0;
+    *--sp = 0;
+    t->rsp = (uint64_t)sp;
+    t->state = T_READY;
+    return t;
+}
+
 /* Slots of finished threads are recycled here. Only call it from a context
    that may sleep: the timer interrupt path enters with IF clear. */
 static void sched_reap(void)

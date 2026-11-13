@@ -62,6 +62,9 @@ thread_t *thread_create_user(uint64_t p4phys, uint64_t user_rip, uint64_t user_r
 thread_t *thread_create_clone(thread_t *parent, uint64_t user_rip, uint64_t user_rsp,
                               uint64_t tls, uint64_t clear_tid, uint64_t start_r9);
 void thread_yield(void);
+/* fork(): child address space with copy-on-write pages. */
+thread_t *thread_create_fork(thread_t *parent, uint64_t new_p4,
+                             uint64_t user_rip, uint64_t user_rsp);
 void thread_exit(void);
 /* Exit the current thread with a status: honours CLONE_CHILD_CLEARTID
    (writes 0 to *clear_tid and wakes the futex) before switching away. */

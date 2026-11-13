@@ -45,6 +45,18 @@ struct trap_frame;
 #define SYS_GETTID       47
 #define SYS_WRITE_THREAD 48  /* musl's SYS_write; same console/file path */
 
+/* ---- IPC layer (kernel/ipc.c) ---- */
+#define SYS_PIPE        49  /* int fds[2] -> 0 / -1 */
+#define SYS_SHM_CREATE  50  /* size -> handle */
+#define SYS_SHM_MAP     51  /* handle, vaddr -> 0 / -1 */
+#define SYS_SEM_CREATE  52  /* value -> id */
+#define SYS_SEM_WAIT    53
+#define SYS_SEM_POST    54
+#define SYS_MQ_CREATE   55  /* -> id */
+#define SYS_MQ_SEND     56  /* id, buf, len -> 0 / -1 */
+#define SYS_MQ_RECV     57  /* id, buf, len -> len / -1 */
+#define SYS_FORK        58  /* -> child pid in the parent, 0 in the child */
+
 /* Handle one POSIX call; the return value is written back into f->rax. */
 void posix_syscall(struct trap_frame *f);
 

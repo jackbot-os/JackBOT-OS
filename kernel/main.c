@@ -16,6 +16,8 @@
 #include <kernel/ahci.h>
 #include <kernel/fat32.h>
 #include <kernel/vfs.h>
+#include <kernel/ipc.h>
+#include <kernel/fork.h>
 #include <kernel/oom.h>
 #include <kernel/elf.h>
 #include <kernel/part.h>
@@ -722,6 +724,18 @@ void kmain(uint64_t magic, uint64_t mb_info)
         vfs_selftest();
     else
         serial_puts("[VFS] mount failed\n");
+
+    /* IPC: pipes, shared memory, semaphores and message queues. Runs after
+       VFS because nothing here touches the disk, and after the pthread test
+       so thread_yield() is known to schedule cleanly. */
+    serial_puts("[B] ipc\n");
+    ipc_init();
+    ipc_selftest();
+
+    /* Copy-on-write: fork() shares frames read-only and copies on the first
+       write. This exercises the machinery the user-space fork caller uses. */
+    serial_puts("[B] cow\n");
+    cow_selftest();
 
 
     serial_puts("[B] desktop\n");

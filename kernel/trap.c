@@ -5,6 +5,7 @@
 #include <kernel/crash.h>
 #include <kernel/ps2.h>
 #include <kernel/posix.h>
+#include <kernel/vmm.h>
 #include <kernel/panic.h>
 
 void timer_irq(void);
@@ -155,6 +156,16 @@ void trap_dispatch(struct trap_frame *f)
         return;
 
     if (f->vector < 32 && (f->cs & 3) == 3) {
+        /* A write fault (#PF with the write bit set) on a page marked
+           PTE_COW is a forked child touching a shared frame: copy it,
+           make it writable and retry the instruction. */
+        if (f->vector == 14 && (f->error & 2)) {
+            thread_t *ct = current_thread();
+            uint64_t cr2;
+            __asm__ volatile("mov %%cr2, %0" : "=r"(cr2));
+            if (ct && ct->p4phys && vmm_cow_break(ct->p4phys, cr2))
+                return;
+        }
         thread_t *t = current_thread();
         if (t && t->user_entry) {
             uint64_t now = timer_get_ticks();
