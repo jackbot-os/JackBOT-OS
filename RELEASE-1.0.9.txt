@@ -1,0 +1,52 @@
+JackBOT OS 1.0.9 (EastLake)
+===========================
+
+Version:   1.0.9, code name EastLake
+Arch:      x86_64, BIOS + UEFI hybrid image
+Image:     JackBOT-1.0.9.iso
+Size:      65,333,248 bytes
+SHA-256:   ae0e2758aca1d66a8123f8bf80c9e3b320dfc07884757c940bcc5beb47316d5d
+
+This download is the public build of JackBOT OS 1.0.9. Verify the SHA-256
+before writing the image to a physical disk.
+
+What this build does
+--------------------
+- Boots from a hybrid ISO through GRUB (Multiboot2) into a self-written 64-bit
+  kernel: GDT/IDT, paging, scheduler, system calls and user-space isolation.
+- Native graphical installer: language selection, disk detection, region and
+  time zone, automatic or custom partitioning, FAT32 formatting, GRUB install.
+- Full-screen adaptive desktop with vector-drawn icons (folder, globe, Python,
+  map pin, terminal, chip) that stay sharp at any UI scale.
+- Light EastLake wallpaper by day, windows shade to black at night, taskbar
+  moves from blue to white.
+- Stop screen instead of a frozen halt: an unhandled kernel fault dumps the
+  vector, error code, RIP/RSP/RFLAGS, CR2/CR3, all general registers and the
+  last subsystem stage on screen (the same dump also goes to COM1). Esc
+  restarts immediately; otherwise the machine resets itself after 12 seconds.
+  A 20-second heartbeat watchdog raises the same screen rather than hanging.
+- Shutdown saves a small session snapshot (UI scale, glass mode, clock) to the
+  boot volume before power-off, and reports honestly when there is no writable
+  volume.
+- USB UHCI/OHCI/EHCI/xHCI host controllers with root-port enumeration.
+- ATA/IDE LBA48 PIO, MBR partitioning, FAT32 read/write, PCI device tree with
+  vendor/device IDs and IRQs, ACPI power management.
+- RTL8139 networking with ARP/ICMP/DHCP/DNS/TCP/HTTP, and a from-scratch TLS
+  1.2 client (X25519 + AES-128-GCM) in the built-in browser.
+- Built-in terminal with `panic` and `session` commands for testing the stop
+  screen and the snapshot path.
+
+Known limits (not hidden)
+-------------------------
+- The test machine cannot complete an AHCI/SATA command, so an installed disk
+  does not boot there; the ISO path is the working one.
+- Display output is 1024x768 in the test VM. Higher modes need a VBE mode set
+  inside the kernel; forcing the GRUB video mode only produced a black screen.
+- No USB hub support, no hot-plug, no HID/storage/WLAN class drivers yet.
+- 802.11 is not implemented: wireless dongles are enumerated but never associate.
+- Realtek 8168 (PCIe GbE) is detected but has no driver; only RTL8139 works.
+- HDA audio is not implemented (AC'97 path only).
+- Real-hardware boot is prepared but not performed; test in a virtual machine
+  before using it on physical hardware.
+
+Tested in VirtualBox 7.2.14 (2048 MB RAM, VMSVGA graphics, PS/2 mouse).
