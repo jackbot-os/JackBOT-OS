@@ -1,7 +1,11 @@
 {
   "sha256": "014dfc1fd6d7f4206a24248767fa6d47a36bd51553ce2431934130d2c5b9ad11",
-  "download_url": "https://jackbot-os.github.io/JackBOT-OS/JackBOT-OS-2.0-arm64.img",
-  "notes": "JackBOT OS 2.0 beta (AArch64) flash package: raw image + Android boot.img container with our payload in the kernel field. Signed Xiaomi bootloader is not bypassed.",
+  "x86_latest_local": "1.0.9",
   "latest_version": "2.0-beta-arm64",
-  "boot_img_sha256": "1f5857ad46683a344ccff57ac692d9e31d36a46b11905f6a8909753ba8b19ebe"
+  "download_url": "https://jackbot-os.github.io/JackBOT-OS/JackBOT-OS-2.0-arm64.img",
+  "boot_img_sha256": "1f5857ad46683a344ccff57ac692d9e31d36a46b11905f6a8909753ba8b19ebe",
+  "notes": "JackBOT OS 2.0 beta (AArch64) flash package: raw image + Android boot.img container. x86_64 channel still 1.0.4 published.",
+  "x86_iso_blocked_reason": "199.7 MB ISO exceeds GitHub 100 MB per-file limit; no release-asset upload path available",
+  "x86_iso_published": false,
+  "x86_latest_local_bytes": 199682048
 }
