@@ -1,0 +1,6 @@
+{
+  "notes": "JackBOT OS 2.0 beta (AArch64): bare-metal kernel, phone-style status bar and notification shade, 640x480 photo wallpaper, disk-persisted language/timezone.",
+  "latest_version": "2.0-beta-arm64",
+  "download_url": "https://jackbot-os.github.io/JackBOT-OS/JackBOT-OS-2.0-arm64-kernel.bin",
+  "sha256": "014dfc1fd6d7f4206a24248767fa6d47a36bd51553ce2431934130d2c5b9ad11"
+}
