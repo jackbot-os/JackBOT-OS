@@ -4,15 +4,33 @@ JackBOT OS 2.0 — "Moscow River"
 Release tag: v2.0
 Date: 2026-11-23
 
-This is the first two-architecture release of JackBOT OS.
+This is the first two-architecture release of JackBOT OS: an AArch64 build and
+an x86_64 hybrid ISO.
 
-AArch64 (ARM64) — new in 2.0
-----------------------------
-Bare-metal AArch64 bring-up on QEMU "virt" with ramfb. Our own BL1/BL2
-loader hands control to our own AArch64 kernel: PL011 console, GIC-400,
-generic timer, MMU, framebuffer desktop, phone-style status bar, notification
-shade with five working toggles, dialer/SMS over the AT stack (local modem
-simulator), and a first-boot wizard persisted to a virtio-blk disk.
+x86_64 — JackBOT-2.0-full.iso
+-----------------------------
+64-bit BIOS + UEFI hybrid ISO, built 2026-11-21. The GRUB menu offers:
+
+  * Try JackBOT OS 2.0 (Live Desktop) — full desktop with no disk and no install
+  * Install JackBOT OS                  — native graphical installer
+  * FAT Disk Self-Test                  — headless regression entry
+
+gfxpayload negotiates up to 3840x2160x32. The build keeps the graphical
+installer, the 205 setup languages with real TrueType fonts, the GPU-composited
+hardware cursor, the TLS 1.2 HTTPS client (certificate chain parsed but not
+validated against a trust store, TLS 1.3 not implemented), the AMD PCnet NIC
+driver and the 231-ID PCI compatibility table. Many compatibility entries are
+detection probes rather than full drivers; AHCI/SATA, NVMe and e1000e command
+queues are not driven. Test in a virtual machine (VirtualBox, 2048 MB, VMSVGA,
+PS/2 mouse) before using real hardware.
+
+AArch64 (ARM64) — flash package
+-------------------------------
+Bare-metal AArch64 bring-up on QEMU "virt" with ramfb. Our own BL1/BL2 loader
+hands control to our own AArch64 kernel: PL011 console, GIC-400, generic timer,
+MMU, framebuffer desktop, phone-style status bar, notification shade with five
+working toggles, dialer/SMS over the AT stack (local modem simulator), and a
+first-boot wizard persisted to a virtio-blk disk.
 
 Honest boundaries:
   * targets QEMU virt only. It is NOT Mi Pad 4 (clover) firmware and will not
@@ -23,16 +41,11 @@ Honest boundaries:
   * no map data bundle; camera, music player and file manager are not
     implemented in this build.
 
-x86_64 — unchanged at 1.0.9
---------------------------
-The x86_64 channel is still the 1.0.9 build (built 2026-11-13): graphical
-installer, 205 setup languages, GPU-composited hardware cursor, TLS 1.2
-HTTPS client, AMD PCnet NIC driver, 231-ID PCI compatibility table.
-A 2.0 x86_64 image has NOT been compiled yet, so this ISO keeps its real
-name and real version instead of being relabelled.
-
 Assets
 ------
+  JackBOT-2.0-full.iso          198,135,808 bytes
+      sha256 b16cfdadcce04a983a44dc4c992b6eb5c05474577a6c4298c9e6274fc015524d
+
   JackBOT-OS-2.0-arm64-flash.zip  1,530,263 bytes
       sha256 9ae6da41a52fe9b2b27bafbcc3192d99824ca26d7a9a01d7a6e1cc9740fed37d
       contains JackBOT-OS-2.0-arm64.img, boot.img, SHA256SUMS.txt,
@@ -43,9 +56,6 @@ Assets
 
   boot.img                        2,822,144 bytes
       sha256 1f5857ad46683a344ccff57ac692d9e31d36a46b11905f6a8909753ba8b19ebe
-
-  JackBOT-1.0.9.iso             199,682,048 bytes
-      sha256 532a41f3a8b1e8d7e6b788898ded3faecd9d17c6a7fe291d53ab28d86ee1b97d
 
 Running the ARM64 image
 -----------------------

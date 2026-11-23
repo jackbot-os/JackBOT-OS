@@ -276,11 +276,9 @@
                     firmware, and the phone/SMS paths are proven against the local AT simulator, not a real
                     baseband.
                     <br><br>
-                    The x86_64 line describes the graphical installer, 205 setup languages, the hardware cursor
-                    and the TLS&nbsp;1.2 client below; that image is still the 1.0.9 build, because a 2.0 x86_64
-                    image has not been compiled yet &mdash; this page says so instead of relabelling the old ISO.
-                    <br><br>
-                    The 1.0.9 x86_64 build integrates a from-scratch TLS 1.2 client into the HTTP client
+                    The x86_64 image (<code>JackBOT-2.0-full.iso</code>, BIOS + UEFI hybrid, 189 MB) keeps the
+                    graphical installer, the 205 setup languages and the hardware cursor, and integrates a
+                    from-scratch TLS 1.2 client into the HTTP client
                     &mdash; ECDHE/X25519 key exchange, AES-128-GCM record layer, SHA-256 PRF and
                     Finished-message verification &mdash; so <code>https://</code> pages load and decrypt.
                     An AMD PCnet NIC driver brings up the VirtualBox default network adapter, and the PCI
@@ -437,12 +435,12 @@
                 <div class="download-box">
                     <div class="download-info">
                         <h3>JackBOT OS 2.0 &middot; x86_64 PC image</h3>
-                        <p>Image file name: <strong>JackBOT-1.0.9.iso</strong>. The x86_64 channel is still the 1.0.9 build &mdash; a 2.0 x86_64 image has not been compiled yet, and the page will not relabel an old ISO.</p>
-                        <p>64-bit hybrid ISO (BIOS + UEFI). Recommended VM: Oracle VirtualBox, 2048 MB RAM, VMSVGA graphics, PS/2 mouse.</p>
-                        <p style="margin-top:10px;font-size:13px;color:#6b7280;">Size: 199,682,048 bytes &middot; Verify with SHA-256:</p>
-                        <p style="font-family:monospace;font-size:12px;color:#374151;background:#f3f4f6;padding:8px 10px;border-radius:6px;word-break:break-all;">532a41f3a8b1e8d7e6b788898ded3faecd9d17c6a7fe291d53ab28d86ee1b97d</p>
+                        <p>Image file name: <strong>JackBOT-2.0-full.iso</strong>. 64-bit hybrid ISO (BIOS + UEFI); the GRUB menu offers <strong>Try JackBOT OS 2.0 (Live Desktop)</strong> and <strong>Install JackBOT OS</strong>.</p>
+                        <p>Recommended VM: Oracle VirtualBox, 2048 MB RAM, VMSVGA graphics, PS/2 mouse.</p>
+                        <p style="margin-top:10px;font-size:13px;color:#6b7280;">Size: 198,135,808 bytes &middot; Verify with SHA-256:</p>
+                        <p style="font-family:monospace;font-size:12px;color:#374151;background:#f3f4f6;padding:8px 10px;border-radius:6px;word-break:break-all;">b16cfdadcce04a983a44dc4c992b6eb5c05474577a6c4298c9e6274fc015524d</p>
                     </div>
-                    <a class="download-btn" href="https://github.com/jackbot-os/JackBOT-OS/releases/download/v2.0/JackBOT-1.0.9.iso">Download 64-bit ISO</a>
+                    <a class="download-btn" href="https://github.com/jackbot-os/JackBOT-OS/releases/download/v2.0/JackBOT-2.0-full.iso">Download 64-bit ISO</a>
                 </div>
                 <div class="note">
                     <strong>Licence &amp; notices:</strong> JackBOT OS is distributed under the HJMA proprietary
@@ -479,7 +477,7 @@
                     <li><strong>v2.0 &ldquo;Moscow River&rdquo; &mdash; first AArch64 release:</strong> bare-metal AArch64 bring-up on QEMU <code>virt</code> &mdash; our own BL1/BL2 loader hands control to our own AArch64 kernel, with PL011 console, GIC-400, generic timer, MMU and a ramfb framebuffer; photo wallpaper is decoded at boot and drawn as RGB565 without stretching.</li>
                     <li><strong>v2.0 &mdash; phone-style desktop:</strong> status bar (signal, AC/battery, SIM, AIR, WLAN, Bluetooth dot, 12/24-hour clock), a notification shade / control centre with five working toggles, and a first-boot wizard whose language and time zone are written to a virtio-blk disk and restored after reboot.</li>
                     <li><strong>v2.0 &mdash; telephony bring-up:</strong> dialer, SMS and the AT stack run against a local modem simulator over UART1. <strong>Honest boundary:</strong> not proven against a real baseband; the QEMU target has no Wi-Fi/Bluetooth radio, so those toggles only change state.</li>
-                    <li><strong>v2.0 &mdash; x86_64 channel:</strong> the 1.0.9 x86_64 ISO remains the latest x86_64 build and is now published as a release asset; a 2.0 x86_64 image has not been compiled yet.</li>
+                    <li><strong>v2.0 &mdash; x86_64 image published:</strong> <code>JackBOT-2.0-full.iso</code> (198,135,808 bytes, SHA-256 b16cfdad&hellip;) is a BIOS + UEFI hybrid ISO whose GRUB menu offers "Try JackBOT OS 2.0 (Live Desktop)" and "Install JackBOT OS", with gfxpayload up to 3840x2160x32.</li>
 <li><strong>v1.0.9 &mdash; built-in C compiler:</strong> a C front end (jcac) lowers a C subset (functions, locals, if/else, while, for, break/continue, short-circuit &amp;&amp; and ||, compound assignment, printf/puts) to JCA bytecode and runs it on the in-kernel VM; the self-test that runs at boot on an installed system compiles and runs loop-sum, recursive fibonacci, gcd and boolean-logic programs and prints <code>[C] PASS</code>.</li><li><strong>v1.0.9 &mdash; liquid glass is back and switchable:</strong> windows, the Start menu, Settings and the Jbot window now blend over the wallpaper, and Settings &rarr; System has a "Liquid Glass" switch that applies live and is stored in JBOT.CFG.</li><li><strong>v1.0.9 &mdash; hardware probes:</strong> NVMe, Intel HDA and xHCI are identified through real register reads instead of stubs, next to AHCI/ATA, e1000/rtl8139/pcnet, AC97, PS/2, USB and VMSVGA.</li>
                     <li><strong>v1.0.9 &mdash; real HTTPS (TLS 1.2) in the built-in browser:</strong> a from-scratch TLS 1.2 client (ECDHE/X25519 key exchange, AES-128-GCM record layer, SHA-256 PRF, Finished-message verification) is integrated into the HTTP client; HTTPS pages load and decrypt correctly. <strong>Honest boundary:</strong> the server certificate chain is parsed but NOT validated against a trust store (no CA bundle, no chain/signature check), and TLS 1.3 is not implemented.</li>
                     <li><strong>v1.0.9 &mdash; AMD PCnet NIC driver:</strong> a new PCnet-PCI II / FAST III (Am79C970A/973) driver brings up the VirtualBox default network adapter; DHCP, DNS, TCP, HTTP and HTTPS now work with it (verified in VirtualBox: DHCP bound, https://example.com 584-byte page fetched through TLS).</li>
@@ -494,7 +492,7 @@
                     <li><strong>v1.0.9 &mdash; real networked browser (verified in VirtualBox):</strong> the e1000/82540EM driver now brings the link up (DHCP bound), the TCP stack loads pages over plain HTTP, and JBrowser renders real HTTP&nbsp;200 pages with relative-URL navigation and automatic 302-redirect following. Keyboard-only browsing is supported (Ctrl+L focuses the address bar). HTTPS/TLS is not implemented yet.</li>
                     <li><strong>v1.0.9 &mdash; AC97 audio and boot chime:</strong> an Intel AC97/STAC9700 driver plays a PCM boot sound through the VirtualBox sound card.</li>
                     <li><strong>v1.0.9 &mdash; voice assistant and Bluetooth/LED panels:</strong> Jbot Voice (mic-level UI) and a Bluetooth &amp; Lamps control panel (adapter detection, color/brightness lamp UI). These are interface/control skeletons: on-device speech-to-text and the full L2CAP/GATT pairing stack are clearly marked as next-stage work.</li>
-                    <li><strong>v1.0.9 &mdash; new Live Desktop boot mode:</strong> select "Try JackBOT OS 1.0 (Live Desktop)" in GRUB to boot the full desktop with no disk and no install.</li>
+                    <li><strong>v1.0.9 &mdash; new Live Desktop boot mode:</strong> select the Live Desktop entry in GRUB to boot the full desktop with no disk and no install.</li>
                     <li><strong>v1.0.9 &mdash; five new system-management apps:</strong> USB Devices, Battery &amp; Power (ACPI), Recycle Bin, File Explorer and Device Manager.</li>
                     <li><strong>v1.0.9 &mdash; real hardware enumeration, verified in VirtualBox:</strong> ACPI RSDP/FADT parsing (PM1 control block, AC-adapter detection), USB host-controller and root-hub port enumeration (OHCI/UHCI/EHCI/xHCI), and a PCI device tree showing vendor/device IDs, BDF and IRQs.</li>
                     <li><strong>v1.0.9 &mdash; FAT32 directory listing and file move</strong> backing the Recycle Bin (\RECYCLED) and File Explorer (delete, restore, empty).</li>
@@ -570,7 +568,7 @@
 +'<ul class="list">'
 +'<li>Attach the ISO to the VM optical drive, or burn it to a DVD as an image.</li>'
 +'<li>Start the machine and open the boot menu if the VM does not boot from the disc on its own.</li>'
-+'<li>In the GRUB menu choose <b>Try JackBOT OS 1.0 (Live Desktop)</b> to see the desktop without installing.</li>'
++'<li>In the GRUB menu choose <b>Try JackBOT OS 2.0 (Live Desktop)</b> to see the desktop without installing.</li>'
 +'<li>Live mode writes nothing to the disk: everything disappears on reboot.</li>'
 +'</ul>'
 +'<div class="folio r">04</div>'
@@ -635,8 +633,8 @@
 +'<div class="rule"></div>'
 +'<p>ARM64 flash package <b>JackBOT-OS-2.0-arm64-flash.zip</b> is 1,530,263 bytes; the image inside is 2,818,152 bytes. SHA-256 of the image:</p>'
 +'<div class="code">014dfc1fd6d7f4206a24248767fa6d47a36bd51553ce2431934130d2c5b9ad11</div>'
-+'<p>x86_64 image <b>JackBOT-1.0.9.iso</b> is 199,682,048 bytes. SHA-256:</p>'
-+'<div class="code">532a41f3a8b1e8d7e6b788898ded3faecd9d17c6a7fe291d53ab28d86ee1b97d</div>'
++'<p>x86_64 image <b>JackBOT-2.0-full.iso</b> is 198,135,808 bytes. SHA-256:</p>'
++'<div class="code">b16cfdadcce04a983a44dc4c992b6eb5c05474577a6c4298c9e6274fc015524d</div>'
 +'<p>If a hash does not match, delete the file and download it again.</p>'
 +'<div class="folio l">09</div>'
 +'</div>',
@@ -825,7 +823,7 @@
 <p style="font-size:13px;color:#f59e0b;margin-bottom:14px;">Known limits: this image targets QEMU virt only &mdash; it is not Mi Pad 4 (clover) firmware and will not boot there; there is no Wi-Fi/Bluetooth radio in the target, so those toggles only change state; no map data bundle, and camera / music / file manager are not implemented.</p>
 <p style="font-size:13px;color:#94a3b8;margin-top:16px;">Licensing: JackBOT OS is distributed under the HJMA proprietary licence (<a href="LICENSES/JackBOT-HJMA-LICENSE.md" style="color:#60a5fa;">LICENSES/JackBOT-HJMA-LICENSE.md</a>). Third-party parts carrying the <b>GPL</b> are listed and marked in <a href="LICENSES/THIRD_PARTY_LICENSES.md" style="color:#60a5fa;">LICENSES/THIRD_PARTY_LICENSES.md</a> and are not part of the proprietary core. AOSP-derived RIL audit: <a href="LICENSES/AOSP-RIL-LICENSE-AUDIT.md" style="color:#60a5fa;">AOSP-RIL-LICENSE-AUDIT.md</a>.</p>
 </div></section>
-<section id="x86" style="padding:32px 0;"><div class="container"><h3 style="font-size:20px;margin-bottom:8px;">x86_64 channel</h3><p style="color:#475569;font-size:14px;">The newest x86_64 build is 1.0.9 (built 2026-11-13), a 199.7 MB hybrid ISO. It is published as a release asset in the 2.0 release, because a 2.0 x86_64 image has not been compiled yet. We would rather say that than relabel an old image as 2.0.</p></div></section>
+<section id="x86" style="padding:32px 0;"><div class="container"><h3 style="font-size:20px;margin-bottom:8px;">x86_64 image</h3><p style="color:#475569;font-size:14px;">JackBOT-2.0-full.iso (198,135,808 bytes, built 2026-11-21) is the current x86_64 build: a BIOS + UEFI hybrid ISO whose GRUB menu offers a Live Desktop entry and an installer entry, with gfxpayload up to 3840x2160x32. The older 1.0.9 ISO is no longer linked from this page.</p></div></section>
 </body>
 </html>
 

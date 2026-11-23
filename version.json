@@ -16,11 +16,12 @@
     "target": "QEMU virt (aarch64), ramfb; not Mi Pad 4 / clover firmware"
   },
   "x86_64": {
-    "image": "JackBOT-1.0.9.iso",
-    "bytes": 199682048,
-    "sha256": "532a41f3a8b1e8d7e6b788898ded3faecd9d17c6a7fe291d53ab28d86ee1b97d",
-    "note": "x86_64 channel is still the 1.0.9 build; a 2.0 x86_64 image has not been compiled, so it is published under its real name, not relabelled as 2.0"
+    "image": "JackBOT-2.0-full.iso",
+    "bytes": 198135808,
+    "sha256": "b16cfdadcce04a983a44dc4c992b6eb5c05474577a6c4298c9e6274fc015524d",
+    "built": "2026-11-21",
+    "boot": "BIOS + UEFI hybrid ISO; GRUB menu: Try JackBOT OS 2.0 (Live Desktop) / Install JackBOT OS; gfxpayload up to 3840x2160x32"
   },
   "licence": "HJMA proprietary licence (LICENSES/JackBOT-HJMA-LICENSE.md); GPL third-party parts listed in LICENSES/THIRD_PARTY_LICENSES.md",
-  "notes": "JackBOT OS 2.0 Moscow River: bare-metal AArch64 build (own BL1/BL2 + own kernel, phone-style desktop) plus the x86_64 1.0.9 build."
+  "notes": "JackBOT OS 2.0 Moscow River: bare-metal AArch64 build (own BL1/BL2 + own kernel, phone-style desktop) and the x86_64 hybrid ISO (Live Desktop + installer)."
 }
