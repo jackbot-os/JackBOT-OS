@@ -1,0 +1,60 @@
+JackBOT OS 2.0 — "Moscow River"
+================================
+
+Release tag: v2.0
+Date: 2026-11-23
+
+This is the first two-architecture release of JackBOT OS.
+
+AArch64 (ARM64) — new in 2.0
+----------------------------
+Bare-metal AArch64 bring-up on QEMU "virt" with ramfb. Our own BL1/BL2
+loader hands control to our own AArch64 kernel: PL011 console, GIC-400,
+generic timer, MMU, framebuffer desktop, phone-style status bar, notification
+shade with five working toggles, dialer/SMS over the AT stack (local modem
+simulator), and a first-boot wizard persisted to a virtio-blk disk.
+
+Honest boundaries:
+  * targets QEMU virt only. It is NOT Mi Pad 4 (clover) firmware and will not
+    boot on that hardware; an unlocked bootloader would still be required.
+  * no Wi-Fi/Bluetooth radio in the target: those toggles only change state.
+  * the phone/SMS paths are proven against the local AT simulator, not a real
+    baseband.
+  * no map data bundle; camera, music player and file manager are not
+    implemented in this build.
+
+x86_64 — unchanged at 1.0.9
+--------------------------
+The x86_64 channel is still the 1.0.9 build (built 2026-11-13): graphical
+installer, 205 setup languages, GPU-composited hardware cursor, TLS 1.2
+HTTPS client, AMD PCnet NIC driver, 231-ID PCI compatibility table.
+A 2.0 x86_64 image has NOT been compiled yet, so this ISO keeps its real
+name and real version instead of being relabelled.
+
+Assets
+------
+  JackBOT-OS-2.0-arm64-flash.zip  1,530,263 bytes
+      sha256 9ae6da41a52fe9b2b27bafbcc3192d99824ca26d7a9a01d7a6e1cc9740fed37d
+      contains JackBOT-OS-2.0-arm64.img, boot.img, SHA256SUMS.txt,
+      JBFLASH-README.txt
+
+  JackBOT-OS-2.0-arm64.img        2,818,152 bytes
+      sha256 014dfc1fd6d7f4206a24248767fa6d47a36bd51553ce2431934130d2c5b9ad11
+
+  boot.img                        2,822,144 bytes
+      sha256 1f5857ad46683a344ccff57ac692d9e31d36a46b11905f6a8909753ba8b19ebe
+
+  JackBOT-1.0.9.iso             199,682,048 bytes
+      sha256 532a41f3a8b1e8d7e6b788898ded3faecd9d17c6a7fe291d53ab28d86ee1b97d
+
+Running the ARM64 image
+-----------------------
+  qemu-system-aarch64 -M virt -cpu cortex-a53 -m 256 \
+      -kernel JackBOT-OS-2.0-arm64.img -device ramfb
+
+Licence
+-------
+JackBOT OS is distributed under the HJMA proprietary licence
+(LICENSES/JackBOT-HJMA-LICENSE.md). Third-party components carrying the GPL
+are listed and marked in LICENSES/THIRD_PARTY_LICENSES.md and are not part of
+the proprietary core. AOSP-derived RIL audit: LICENSES/AOSP-RIL-LICENSE-AUDIT.md.

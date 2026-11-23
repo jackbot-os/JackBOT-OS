@@ -1,11 +1,26 @@
 {
-  "sha256": "014dfc1fd6d7f4206a24248767fa6d47a36bd51553ce2431934130d2c5b9ad11",
-  "x86_latest_local": "1.0.9",
-  "latest_version": "2.0-beta-arm64",
-  "download_url": "https://jackbot-os.github.io/JackBOT-OS/JackBOT-OS-2.0-arm64.img",
-  "boot_img_sha256": "1f5857ad46683a344ccff57ac692d9e31d36a46b11905f6a8909753ba8b19ebe",
-  "notes": "JackBOT OS 2.0 beta (AArch64) flash package: raw image + Android boot.img container. x86_64 channel still 1.0.4 published.",
-  "x86_iso_blocked_reason": "199.7 MB ISO exceeds GitHub 100 MB per-file limit; no release-asset upload path available",
-  "x86_iso_published": false,
-  "x86_latest_local_bytes": 199682048
+  "version": "2.0",
+  "codename": "Moscow River",
+  "release_tag": "v2.0",
+  "release_url": "https://github.com/jackbot-os/JackBOT-OS/releases/tag/v2.0",
+  "arm64": {
+    "flash_zip": "JackBOT-OS-2.0-arm64-flash.zip",
+    "flash_zip_bytes": 1530263,
+    "flash_zip_sha256": "9ae6da41a52fe9b2b27bafbcc3192d99824ca26d7a9a01d7a6e1cc9740fed37d",
+    "image": "JackBOT-OS-2.0-arm64.img",
+    "image_bytes": 2818152,
+    "image_sha256": "014dfc1fd6d7f4206a24248767fa6d47a36bd51553ce2431934130d2c5b9ad11",
+    "boot_img": "boot.img",
+    "boot_img_bytes": 2822144,
+    "boot_img_sha256": "1f5857ad46683a344ccff57ac692d9e31d36a46b11905f6a8909753ba8b19ebe",
+    "target": "QEMU virt (aarch64), ramfb; not Mi Pad 4 / clover firmware"
+  },
+  "x86_64": {
+    "image": "JackBOT-1.0.9.iso",
+    "bytes": 199682048,
+    "sha256": "532a41f3a8b1e8d7e6b788898ded3faecd9d17c6a7fe291d53ab28d86ee1b97d",
+    "note": "x86_64 channel is still the 1.0.9 build; a 2.0 x86_64 image has not been compiled, so it is published under its real name, not relabelled as 2.0"
+  },
+  "licence": "HJMA proprietary licence (LICENSES/JackBOT-HJMA-LICENSE.md); GPL third-party parts listed in LICENSES/THIRD_PARTY_LICENSES.md",
+  "notes": "JackBOT OS 2.0 Moscow River: bare-metal AArch64 build (own BL1/BL2 + own kernel, phone-style desktop) plus the x86_64 1.0.9 build."
 }
