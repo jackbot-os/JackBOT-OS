@@ -361,36 +361,35 @@
 
         <section class="section" id="screenshots">
             <div class="container">
-                <h2>Screenshots (VirtualBox, VMSVGA)</h2>
+                <h2>Screenshots &mdash; v2.0, x86_64 and AArch64</h2>
                 <div class="shots-grid">
                     <figure class="shot">
-                        <img src="images/01-language.png" alt="Installer language selection" />
-                        <figcaption>Installer first screen &mdash; choose among 205 languages (native names, real TTF).</figcaption>
+                        <img src="images/07-desktop.png" alt="JackBOT OS 2.0 desktop on x86_64" />
+                        <figcaption>x86_64 desktop (VirtualBox, VMSVGA) &mdash; Moscow River wallpaper, icon dock and taskbar.</figcaption>
                     </figure>
                     <figure class="shot">
-                        <img src="images/02-welcome.png" alt="Welcome screen with disk detection" />
-                        <figcaption>Welcome &mdash; the target disk is detected and reported automatically.</figcaption>
+                        <img src="images/11-installer-language.png" alt="Installer language step with English selected" />
+                        <figcaption>x86_64 installer, language step &mdash; English selected, 205 languages listed in native names.</figcaption>
                     </figure>
                     <figure class="shot">
-                        <img src="images/03-region.png" alt="Time zone and region page" />
-                        <figcaption>Time zone &amp; region &mdash; the two-column list scales to the screen without overflow.</figcaption>
+                        <img src="images/21-arm-picker.png" alt="AArch64 first-boot language picker" />
+                        <figcaption>AArch64 first boot &mdash; the same language picker, here showing the English entries.</figcaption>
                     </figure>
                     <figure class="shot">
-                        <img src="images/04-disk.png" alt="Disk partitioning page" />
-                        <figcaption>Disk partitioning &mdash; automatic 75/25 split or custom sizing, with a clear erase warning.</figcaption>
+                        <img src="images/22-arm-lock.png" alt="AArch64 lock screen" />
+                        <figcaption>AArch64 lock screen &mdash; clock read from the PL031 RTC, tap to unlock.</figcaption>
                     </figure>
                     <figure class="shot">
-                        <img src="images/05-complete.png" alt="Installation complete" />
-                        <figcaption>Installation complete &mdash; remove the disc and restart into the new system.</figcaption>
+                        <img src="images/23-arm-home.png" alt="AArch64 home screen" />
+                        <figcaption>AArch64 home &mdash; phone-style status bar, eight apps on the Moscow River wallpaper.</figcaption>
                     </figure>
                     <figure class="shot">
-                        <img src="images/06-oobe-keyboard.png" alt="First-boot OOBE keyboard layout" />
-                        <figcaption>First-boot OOBE &mdash; keyboard layout selection before the desktop loads.</figcaption>
+                        <img src="images/24-arm-phone.png" alt="AArch64 Phone app showing live modem status" />
+                        <figcaption>Phone app &mdash; SIM, network and signal level read live from the AT modem.</figcaption>
                     </figure>
-                    <figure class="shot">
-                        <img src="images/07-desktop.png" alt="Adaptive full-screen desktop" />
-                        <figcaption>The desktop after OOBE &mdash; full-screen adaptive layout, taskbar and wallpaper.</figcaption>
-                    </figure>
+                </div>
+                <div class="note">
+                    <strong>Install step, honestly:</strong> the x86_64 installer needs an AHCI disk. Under VirtualBox its AHCI IDENTIFY command never completes, so the wizard reports &ldquo;No hard disk detected&rdquo; and the install does not finish yet &mdash; the disk probe is the open bug, not the screenshots. The language step above is a real v2.0 capture; the old 1.0.9 disk/completion shots were removed rather than relabelled.
                 </div>
             </div>
         </section>
