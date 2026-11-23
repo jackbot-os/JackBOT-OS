@@ -514,6 +514,12 @@
         <div class="container footer-inner">
             <p>JackBOT OS&trade; &copy; 2026 Official Website</p>
             <p>Educational hobby operating system. Test in a virtual machine first.</p>
+            <p style="flex-basis:100%;font-size:13px;color:#94a3b8;margin-top:6px;">
+                Licence: JackBOT OS is distributed under the <a href="LICENSES/JackBOT-HJMA-LICENSE.md" style="color:#60a5fa;">HJMA proprietary licence</a>.
+                Third-party components carrying the <strong>GPL</strong> are listed and marked in
+                <a href="LICENSES/THIRD_PARTY_LICENSES.md" style="color:#60a5fa;">THIRD_PARTY_LICENSES.md</a> and are not part of the proprietary core.
+                AOSP-derived RIL audit: <a href="LICENSES/AOSP-RIL-LICENSE-AUDIT.md" style="color:#60a5fa;">AOSP-RIL-LICENSE-AUDIT.md</a>.
+            </p>
         </div>
     </footer>
     <script>
@@ -807,23 +813,6 @@
         paint(0);
     })();
     </script>
-<section id="arm64" style="padding:56px 0;background:#0b1220;color:#e5e7eb;"><div class="container">
-<h2 style="font-size:26px;margin-bottom:14px;color:#f8fafc;">JackBOT OS 2.0 &mdash; AArch64</h2>
-<p style="margin-bottom:12px;color:#cbd5e1;">The 2.0 build for ARM64. Bare-metal AArch64 on QEMU <code style="color:#93c5fd;">virt</code> with ramfb: our own BL1/BL2 boot path hands control to our own kernel &mdash; no Linux kernel underneath.</p>
-<ul style="margin:0 0 18px 18px;color:#cbd5e1;line-height:1.85;">
-<li>Real framebuffer desktop (XR24 ramfb) with a photo wallpaper decoded at boot and drawn as RGB565, no stretching.</li>
-<li>Phone-style status bar: signal, AC/battery, SIM, AIR, WLAN bars, Bluetooth dot and a 12/24-hour clock.</li>
-<li>Notification shade / control centre with five working toggles.</li>
-<li>Dialer, SMS and the AT stack running against a local modem simulator over UART1.</li>
-<li>Language, keyboard and time zone picked in the first-boot wizard are written to a virtio-blk disk and restored after reboot.</li>
-</ul>
-<p style="margin-bottom:10px;"><a href="https://github.com/jackbot-os/JackBOT-OS/releases/download/v2.0/JackBOT-OS-2.0-arm64-flash.zip" style="color:#60a5fa;font-weight:700;">Download JackBOT-OS-2.0-arm64-flash.zip (flash package, 1.5 MB)</a></p>
-<p style="font-size:13px;color:#94a3b8;margin-bottom:14px;">Also in the release: <a href="https://github.com/jackbot-os/JackBOT-OS/releases/download/v2.0/JackBOT-OS-2.0-arm64.img" style="color:#60a5fa;">JackBOT-OS-2.0-arm64.img</a> &middot; <a href="https://github.com/jackbot-os/JackBOT-OS/releases/download/v2.0/boot.img" style="color:#60a5fa;">boot.img</a> &middot; <a href="https://github.com/jackbot-os/JackBOT-OS/releases/download/v2.0/SHA256SUMS.txt" style="color:#60a5fa;">SHA256SUMS.txt</a> &middot; <a href="https://github.com/jackbot-os/JackBOT-OS/releases/download/v2.0/JBFLASH-README.txt" style="color:#60a5fa;">flash README</a></p>
-<p style="font-size:13px;color:#94a3b8;margin-bottom:14px;">SHA-256 (image): <span style="font-family:monospace;word-break:break-all;">014dfc1fd6d7f4206a24248767fa6d47a36bd51553ce2431934130d2c5b9ad11</span></p>
-<p style="font-size:13px;color:#f59e0b;margin-bottom:14px;">Known limits: this image targets QEMU virt only &mdash; it is not Mi Pad 4 (clover) firmware and will not boot there; there is no Wi-Fi/Bluetooth radio in the target, so those toggles only change state; no map data bundle, and camera / music / file manager are not implemented.</p>
-<p style="font-size:13px;color:#94a3b8;margin-top:16px;">Licensing: JackBOT OS is distributed under the HJMA proprietary licence (<a href="LICENSES/JackBOT-HJMA-LICENSE.md" style="color:#60a5fa;">LICENSES/JackBOT-HJMA-LICENSE.md</a>). Third-party parts carrying the <b>GPL</b> are listed and marked in <a href="LICENSES/THIRD_PARTY_LICENSES.md" style="color:#60a5fa;">LICENSES/THIRD_PARTY_LICENSES.md</a> and are not part of the proprietary core. AOSP-derived RIL audit: <a href="LICENSES/AOSP-RIL-LICENSE-AUDIT.md" style="color:#60a5fa;">AOSP-RIL-LICENSE-AUDIT.md</a>.</p>
-</div></section>
-<section id="x86" style="padding:32px 0;"><div class="container"><h3 style="font-size:20px;margin-bottom:8px;">x86_64 image</h3><p style="color:#475569;font-size:14px;">JackBOT-2.0-full.iso (198,135,808 bytes, built 2026-11-21) is the current x86_64 build: a BIOS + UEFI hybrid ISO whose GRUB menu offers a Live Desktop entry and an installer entry, with gfxpayload up to 3840x2160x32. The older 1.0.9 ISO is no longer linked from this page.</p></div></section>
 </body>
 </html>
 
